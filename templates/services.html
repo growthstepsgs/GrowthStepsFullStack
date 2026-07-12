@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web Development Services | GS-Growth Steps</title>
+  <meta name="description" content="GS-Growth Steps offers professional web development — portfolio sites, business websites, and high-conversion landing pages that help you grow online." />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+</head>
+<body>
+
+<!-- ☰ SIDEBAR TOGGLE -->
+<button class="menu-toggle" id="menuToggle" aria-label="Open navigation menu">☰</button>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar" aria-hidden="true">
+  <div class="sidebar-header">
+    <h3>GS-Growth Steps</h3>
+    <button id="closeSidebar" aria-label="Close navigation">✕</button>
+  </div>
+  <ul>
+    <li><a href="{{ url_for('home') }}">🏠 Home</a></li>
+    <li><a href="{{ url_for('courses') }}">📚 Courses</a></li>
+    <li><a href="{{ url_for('services') }}" class="active-page">🚀 Services</a></li>
+    <li><a href="{{ url_for('login') }}">🔐 Login</a></li>
+  </ul>
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay"></div>
+
+<!-- ═══ LOADING SCREEN ═══ -->
+<div id="gs-loader" aria-hidden="true">
+  <div class="loader-inner">
+    <div class="loader-logo">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 22C28 14 38 10 52 10C67 10 79 16 86 27" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        <path d="M18 48H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        <path d="M18 64H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        <path d="M54 23V86" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        <path d="M22 88H76C86 88 92 82 92 73C92 63 85 58 74 58H54" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="loader-wordmark">GS-Growth Steps</div>
+    <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+    <div class="loader-sub">Loading your experience…</div>
+  </div>
+</div>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="container nav">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 22C28 14 38 10 52 10C67 10 79 16 86 27" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <path d="M18 48H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <path d="M18 64H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <path d="M54 23V86" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <path d="M22 88H76C86 88 92 82 92 73C92 63 85 58 74 58H54" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="brand-copy">
+        <h1>GS-Growth Steps</h1>
+        <p>Freelance Web Development</p>
+      </div>
+    </div>
+    <div class="nav-row">
+      <nav aria-label="Services navigation">
+        <ul>
+          <li><a href="#services">Services</a></li>
+          <li><a href="#process">Process</a></li>
+          <li><a href="#why-us">Why Us</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode" title="Toggle theme">
+        <span class="icon-sun"  aria-hidden="true">☀️</span>
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ═══ HERO ═══ -->
+  <section class="hero services-hero">
+    <div class="container">
+      <article class="hero-card hero-main reveal">
+        <div class="eyebrow">🚀 Freelance Web Development</div>
+        <h2>Modern Websites for <span>Businesses</span> &amp; Professionals</h2>
+        <p>I design and build responsive, fast, and visually striking websites that help businesses establish credibility, attract customers, and grow online — delivered with speed and quality that clients trust.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#contact">Start Your Project →</a>
+          <a class="btn btn-secondary" href="{{ url_for('home') }}">View Portfolio</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><strong>5+</strong><span>Websites Delivered</span></div>
+          <div class="stat"><strong>Fast</strong><span>Turnaround Guaranteed</span></div>
+          <div class="stat"><strong>100%</strong><span>Responsive &amp; Mobile-Ready</span></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ═══ SERVICES OFFERED ═══ -->
+  <section class="section" id="services">
+    <div class="container">
+      <div class="section-title reveal">
+        <h2>Services Offered</h2>
+        <p>Everything you need for a strong, credible online presence.</p>
+      </div>
+      <div class="services-grid">
+
+        <div class="service-box reveal">
+          <h3>🌐 Portfolio Websites</h3>
+          <p>Personal branding sites for students, developers, trainers, and freelancers that make a lasting first impression and help you stand out to employers or clients.</p>
+        </div>
+
+        <div class="service-box reveal">
+          <h3>🏢 Business Websites</h3>
+          <p>Professional, conversion-focused websites for startups, agencies, and local businesses. Built to generate leads, build trust, and represent your brand with confidence.</p>
+        </div>
+
+        <div class="service-box reveal">
+          <h3>🚀 Landing Pages</h3>
+          <p>High-impact, single-purpose pages for product launches, marketing campaigns, and service promotions — designed specifically to convert visitors into customers.</p>
+        </div>
+
+        <div class="service-box reveal">
+          <h3>📱 Responsive Design</h3>
+          <p>Every website is built mobile-first, ensuring a pixel-perfect experience across all screen sizes — desktop, tablet, and mobile devices.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ WHY CHOOSE GS ═══ -->
+  <section class="section" id="why-us">
+    <div class="container">
+      <div class="section-title reveal">
+        <h2>Why GS-Growth Steps?</h2>
+        <p>Quality, speed, and a genuine focus on your business goals.</p>
+      </div>
+      <div class="about-grid">
+        <article class="info-card reveal">
+          <h4>⚡ Fast Delivery</h4>
+          <p>Quick turnaround without cutting corners. You get a production-ready website on schedule — always.</p>
+        </article>
+        <article class="info-card reveal">
+          <h4>🎨 Modern UI Design</h4>
+          <p>Clean, visually distinctive interfaces that reflect your brand and set you apart from template-based competitors.</p>
+        </article>
+        <article class="info-card reveal">
+          <h4>📈 Business-Focused</h4>
+          <p>Every design decision is made with your growth in mind — generating leads, building credibility, and driving conversions.</p>
+        </article>
+        <article class="info-card reveal">
+          <h4>🤝 Direct Communication</h4>
+          <p>No middlemen. You work directly with me — quick updates, clear timelines, and full transparency throughout the project.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ DEVELOPMENT PROCESS ═══ -->
+  <section class="section" id="process">
+    <div class="container">
+      <div class="section-title reveal">
+        <h2>My Development Process</h2>
+        <p>A clear, collaborative process from idea to launch.</p>
+      </div>
+      <div class="timeline-wrap">
+
+        <article class="timeline-card reveal">
+          <h3>1. Requirement Discussion</h3>
+          <p>We start with a detailed conversation to understand your business, target audience, goals, and what you need the website to accomplish.</p>
+        </article>
+
+        <article class="timeline-card reveal">
+          <h3>2. UI Planning &amp; Structure</h3>
+          <p>I design the page structure, visual hierarchy, and overall experience — sharing wireframes or references before a single line of code is written.</p>
+        </article>
+
+        <article class="timeline-card reveal">
+          <h3>3. Development &amp; Review</h3>
+          <p>Clean, semantic code built for speed and responsiveness. You get regular previews and full opportunity to give feedback at every stage.</p>
+        </article>
+
+        <article class="timeline-card reveal">
+          <h3>4. Launch &amp; Handover</h3>
+          <p>Final testing across devices and browsers, then a clean handover with all source files, deployment guidance, and post-launch support.</p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ TECHNOLOGIES ═══ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-title reveal">
+        <h2>Technologies Used</h2>
+        <p>Modern, standards-compliant tools for fast, reliable websites.</p>
+      </div>
+      <div class="skill-tags" style="margin-top: 8px;">
+        <span class="tag reveal">HTML5</span>
+        <span class="tag reveal">CSS3</span>
+        <span class="tag reveal">JavaScript</span>
+        <span class="tag reveal">Responsive Design</span>
+        <span class="tag reveal">UI / UX Principles</span>
+        <span class="tag reveal">GitHub</span>
+        <span class="tag reveal">Vercel / Netlify</span>
+        <span class="tag reveal">Figma</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CONTACT ═══ -->
+  <section class="section" id="contact">
+    <div class="container">
+      <div class="section-title reveal">
+        <h2>Start a Project</h2>
+        <p>Describe your project and I'll get back to you within 24 hours.</p>
+      </div>
+      <div class="contact-grid">
+
+        <article class="contact-card reveal">
+          <h4>Reach Out Directly</h4>
+          <p>For quick project discussions, WhatsApp is the fastest channel. Email works great for detailed briefs.</p>
+          <div class="contact-buttons">
+            <a class="btn btn-primary"
+               href="https://wa.me/919952855157?text=Hello%20Vijay%2C%20I%27m%20interested%20in%20your%20web%20development%20service."
+               target="_blank" rel="noopener noreferrer">
+              WhatsApp Me
+            </a>
+            <a class="btn btn-secondary"
+               href="mailto:rsvijaysarathi123@gmail.com?subject=Website%20Development%20Inquiry%20%E2%80%94%20GS-Growth%20Steps&body=Hello%20Vijay%2C%0A%0AProject%20type%3A%20%0ABudget%3A%20%0ATimeline%3A%20%0A%0ADetails%3A%20">
+              Send Email
+            </a>
+          </div>
+          <div class="form-warning" style="margin-top: 20px;">
+            ⚡ I typically respond within a few hours — you'll get a clear quote and timeline after our first chat.
+          </div>
+        </article>
+
+        <article class="contact-card reveal">
+          <h4>Send a Project Inquiry</h4>
+          <div class="form-warning">
+            Your message goes directly to <strong>rsvijaysarathi123@gmail.com</strong> — I reply within 24 hours.
+          </div>
+          <form id="contactForm" class="contact-form">
+            <div>
+              <label for="name">Your Name</label>
+              <input id="name" name="name" type="text" placeholder="Enter your name" required />
+            </div>
+            <div>
+              <label for="email">Your Email</label>
+              <input id="email" name="email" type="email" placeholder="Enter your email" required />
+            </div>
+            <div>
+              <label for="projectType">Project Type</label>
+              <select id="projectType" name="projectType"
+                style="width:100%;padding:13px 16px;border-radius:14px;border:1px solid var(--border);background:var(--form-input-bg);color:var(--text);font-family:inherit;font-size:1rem;transition:220ms ease;cursor:pointer;">
+                <option value="" disabled selected>Select a project type…</option>
+                <option value="Portfolio Website">Portfolio Website</option>
+                <option value="Business Website">Business Website</option>
+                <option value="Landing Page">Landing Page</option>
+                <option value="Full Frontend Build">Full Frontend Build</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label for="message">Project Details</label>
+              <textarea id="message" name="message" rows="4"
+                placeholder="Describe your project — audience, key pages, design preferences, budget, and timeline…"
+                required></textarea>
+            </div>
+            <button class="btn btn-primary" type="submit">Send Inquiry</button>
+          </form>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="container footer-box">
+    <span>© 2026 GS-Growth Steps · Vijay Sarathi R S</span>
+    <div class="footer-links">
+      <a href="{{ url_for('home') }}">Home</a>
+      <a href="{{ url_for('courses') }}">Courses</a>
+      <a href="{{ url_for('services') }}">Services</a>
+      <a href="mailto:rsvijaysarathi123@gmail.com">Email</a>
+      <a href="https://wa.me/919952855157" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

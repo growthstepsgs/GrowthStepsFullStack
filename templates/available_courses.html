@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Available Courses | GS-Growth Steps</title>
+  <meta name="description" content="Browse all live courses from GS-Growth Steps — including the Agentic AI Sunday WORKSHOP covering AI Agents, No-Code Automation with n8n, and Code Development." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  
+  <style>
+    /* ── RESET & BASE (Copied from Fixed Index for Consistency) ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* Light Theme Palette */
+      --bg:                #F8F9FC;
+      --surface:           #FFFFFF;
+      --surface-2:         #F1F3FA;
+      --text:              #1A1D2E;
+      --muted:             #64748B;
+      --border:            #E2E8F0;
+      
+      /* Brand Colors (Hero/Footer) */
+      --brand-bg:          #0F1729;       /* Deep Navy */
+      --brand-bg-accent:   #1E2C4F;       /* Slightly lighter Navy */
+      --brand-text:        #FFFFFF;
+      --brand-text-muted:  rgba(255,255,255,0.7);
+      
+      /* Action Colors */
+      --primary:           #6366F1;       /* Indigo */
+      --primary-hover:     #4F46E5;
+      --primary-light:     #EEF0FE;
+      
+      /* Utilities */
+      --gold:              #F59E0B;
+      --radius:            20px;
+      --radius-sm:         12px;
+      --shadow:            0 4px 24px rgba(15,23,41,0.08);
+      --shadow-lg:         0 8px 40px rgba(15,23,41,0.13);
+      --nav:               rgba(255,255,255,0.9);
+    }
+
+    [data-theme="dark"] {
+        --bg: #0B0F1E;
+        --surface: #151E32;
+        --surface-2: #1E293B;
+
+        --text: #F8FAFC;
+        --muted: #CBD5E1;
+        --border: #334155;
+
+        --brand-bg: #020617;
+        --brand-bg-accent: #0F1729;
+        --brand-text: #FFFFFF;
+        --brand-text-muted: rgba(255,255,255,0.75);
+
+        --primary: #818CF8;
+        --primary-hover: #6366F1;
+        --primary-light: #312E81;
+
+        --nav: rgba(11,15,30,0.9);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    /* ── COMMON COMPONENTS ─────────────────────────────── */
+    .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+    .section { padding: 72px 0; }
+    .section-title { text-align: center; margin-bottom: 48px; max-width: 700px; margin-inline: auto; }
+    .section-title h2 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 2rem; font-weight: 800; color: var(--text); margin-bottom: 12px;
+    }
+    .section-title p { color: var(--muted); font-size: 1.05rem; }
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.55s ease, transform 0.55s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 28px; border-radius: 14px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.95rem; font-weight: 700;
+      text-decoration: none; cursor: pointer; border: none;
+      transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary {
+      background: var(--primary);
+      color: #000000;
+      text-decoration-color: #000000;
+      text-transform: uppercase;
+      box-shadow: 0 4px 20px rgba(99,102,241,0.4);
+    }
+    .btn-primary:hover { background: var(--primary-hover); box-shadow: 0 6px 28px rgba(99,102,241,0.55); }
+    .btn-secondary {
+      background: rgba(255,255,255,0.1); color: var(--text); border: 1.5px solid var(--border);
+    }
+    [data-theme="light"] .btn-secondary { background: #fff; color: var(--text); }
+    .btn-secondary:hover { background: var(--surface-2); }
+
+    /* ── HEADER & SIDEBAR (Exact match to Index/Courses) ─ */
+    .menu-toggle {
+      position: fixed; top: 18px; left: 18px; z-index: 1100;
+      background: var(--surface); border: 1.5px solid var(--border);
+      color: var(--text); border-radius: 10px;
+      width: 40px; height: 40px; font-size: 1.1rem;
+      cursor: pointer; display: none; align-items: center; justify-content: center;
+      box-shadow: var(--shadow);
+    }
+    @media (max-width: 768px) { .menu-toggle { display: flex; } }
+
+    .sidebar {
+      position: fixed; top: 0; left: -280px; width: 260px; height: 100%;
+      background: var(--surface); border-right: 1px solid var(--border);
+      z-index: 1200; transition: left 0.3s ease; padding: 24px 20px;
+      box-shadow: var(--shadow-lg);
+    }
+    .sidebar.open { left: 0; }
+    .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+    .sidebar-header h3 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 800; color: var(--primary); }
+    .sidebar-header button { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 1.2rem; padding: 4px; }
+    .sidebar ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .sidebar ul li a {
+      display: block; padding: 12px 16px; border-radius: 12px;
+      color: var(--text); text-decoration: none; font-size: 0.95rem; font-weight: 500;
+      transition: background 0.2s, color 0.2s;
+    }
+    .sidebar ul li a:hover { background: var(--primary-light); color: var(--primary); }
+    .sidebar ul li a.active-page { background: var(--primary-light); color: var(--primary); font-weight: 700; }
+
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1100; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    .overlay.active { opacity: 1; pointer-events: all; }
+
+    header {
+      position: sticky; top: 0; z-index: 900;
+      background: var(--nav);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav { display: flex; align-items: center; justify-content: space-between; padding-top: 14px; padding-bottom: 14px; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .brand-mark svg { width: 36px; height: 36px; color: var(--primary); display: block; }
+    .brand-copy h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1rem; font-weight: 800; color: var(--text); line-height: 1.2;
+    }
+    .brand-tagline { font-size: 0.7rem; color: var(--muted); font-weight: 500; letter-spacing: 0.03em; text-transform: uppercase; }
+    
+    .nav-row { display: flex; align-items: center; gap: 16px; }
+    nav ul { list-style: none; display: flex; gap: 4px; }
+    nav ul li a {
+      padding: 8px 14px; border-radius: 8px;
+      color: var(--muted); font-size: 0.88rem; font-weight: 500;
+      text-decoration: none; transition: color 0.2s, background 0.2s;
+    }
+    nav ul li a:hover { color: var(--text); background: var(--surface-2); }
+    nav ul li a.active { color: var(--primary); background: var(--primary-light); }
+    @media (max-width: 768px) { nav { display: none; } }
+
+    .theme-toggle {
+      background: var(--surface-2); border: 1.5px solid var(--border);
+      border-radius: 10px; cursor: pointer; padding: 6px 10px;
+      font-size: 1rem; transition: background 0.2s; color: var(--text);
+    }
+    .theme-toggle:hover { background: var(--border); }
+    [data-theme="light"] .icon-sun { display: none; }
+    [data-theme="dark"] .icon-moon { display: none; }
+
+    /* ── LOADER ───────────────────────────────────────── */
+    #gs-loader {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--brand-bg);
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.5s ease;
+    }
+    #gs-loader.hidden { opacity: 0; pointer-events: none; }
+    .loader-inner { text-align: center; color: #fff; }
+    .loader-logo svg { width: 64px; height: 64px; color: #fff; margin-bottom: 14px; }
+    .loader-wordmark {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.3rem; font-weight: 800; letter-spacing: 0.02em; margin-bottom: 18px;
+    }
+    .loader-bar-wrap {
+      width: 180px; height: 3px; background: rgba(255,255,255,0.2);
+      border-radius: 99px; margin: 0 auto 12px; overflow: hidden;
+    }
+    .loader-bar { height: 100%; background: #818CF8; border-radius: 99px; animation: loadprog 1.4s ease-in-out forwards; }
+    @keyframes loadprog { from { width: 0 } to { width: 100% } }
+    .loader-sub { font-size: 0.8rem; opacity: 0.55; }
+
+    /* ── PAGE HERO (reuses .hero from courses.html design system) ── */
+    .hero {
+      padding: 60px 0 80px;
+      background: linear-gradient(155deg, var(--brand-bg-accent) 0%, var(--brand-bg) 100%);
+      position: relative; overflow: hidden;
+      color: var(--brand-text);
+    }
+    .hero-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 40px;
+      backdrop-filter: blur(10px);
+    }
+    .demo-badge {
+      display: inline-block; background: rgba(239,68,68,0.2); color: #FCA5A5;
+      border: 1px solid rgba(239,68,68,0.4); padding: 6px 16px; border-radius: 99px;
+      font-size: 0.8rem; font-weight: 700; margin-bottom: 20px;
+    }
+    .hero h2 {
+      font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 800; line-height: 1.1; margin-bottom: 20px;
+    }
+    .hero h2 span { color: var(--primary); }
+    .hero p { font-size: 1.1rem; color: var(--brand-text-muted); margin-bottom: 32px; max-width: 600px; }
+    .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+
+    /* ── AVAILABLE COURSES: 2-COLUMN CARD GRID ──────────
+       New component, built entirely from the existing
+       design tokens above (var(--surface), var(--border),
+       var(--primary), var(--radius), var(--shadow), etc.)
+       so it automatically follows the light/dark theme. */
+    .courses-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px;
+    }
+    @media (max-width: 768px) {
+      .courses-grid { grid-template-columns: 1fr; }
+    }
+
+    .course-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .course-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+    }
+    .course-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 6px;
+      background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+    }
+    .course-card.is-coming-soon { opacity: 0.85; }
+
+    .course-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+    .course-card-badge {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 5px 14px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .course-card-badge.soon { background: var(--surface-2); color: var(--muted); }
+    .course-card-price { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; color: var(--primary); font-size: 1.1rem; white-space: nowrap; }
+    .course-card-price del { color: var(--muted); font-weight: 500; font-size: 0.85rem; margin-right: 6px; }
+
+    .course-card h3 { font-size: 1.4rem; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); margin-bottom: 10px; }
+    .course-card p.course-desc { color: var(--muted); font-size: 0.95rem; line-height: 1.7; margin-bottom: 20px; }
+
+    .course-meta-row {
+      display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;
+      padding-bottom: 20px; border-bottom: 1px solid var(--border);
+    }
+    .course-meta-item { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--muted); }
+    .course-meta-item strong { color: var(--text); font-weight: 600; }
+
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+    .tag {
+      background: var(--surface-2); padding: 6px 12px; border-radius: 8px; font-size: 0.85rem;
+      color: var(--text); border: 1px solid var(--border);
+    }
+
+    .course-card .btn { width: 100%; justify-content: center; margin-top: auto; }
+
+  /* Footer */
+    footer { background: var(--brand-bg); border-top: 1px solid rgba(255,255,255,0.1); padding: 32px 0; }
+    .footer-box { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .footer-box span { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
+    .footer-links a { color: rgba(255,255,255,0.6); text-decoration: none; margin-left: 20px; font-size: 0.9rem; transition: color 0.2s; }
+    .footer-links a:hover { color: #fff; }
+
+    @media (max-width: 768px) {
+      .trainer-card { flex-direction: column; text-align: center; }
+      .trainer-achievements { grid-template-columns: 1fr; }
+      .trainer-achievements li { justify-content: center; }
+      .footer-box { flex-direction: column; text-align: center; }
+      .footer-links a { margin: 0 10px; }
+    }
+  </style>
+
+  <!-- ═══ THEME INITIALIZATION (Moved to Head to prevent Flash) ═══ -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('gs-theme');
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', initialTheme);
+    })();
+  </script>
+</head>
+<body>
+
+  <script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const themeToggle = document.getElementById('themeToggle');
+
+    const savedTheme =
+        localStorage.getItem('gs-theme') || 'light';
+
+    document.documentElement.setAttribute(
+        'data-theme',
+        savedTheme
+    );
+
+    themeToggle.addEventListener('click', () => {
+
+        const currentTheme =
+            document.documentElement.getAttribute('data-theme');
+
+        const newTheme =
+            currentTheme === 'light'
+            ? 'dark'
+            : 'light';
+
+        document.documentElement.setAttribute(
+            'data-theme',
+            newTheme
+        );
+
+        localStorage.setItem(
+            'gs-theme',
+            newTheme
+        );
+    });
+});
+</script>
+
+<!-- ☰ SIDEBAR TOGGLE -->
+<button class="menu-toggle" id="menuToggle" aria-label="Open navigation menu">☰</button>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar" aria-hidden="true">
+  <div class="sidebar-header">
+    <h3>GS-Growth Steps</h3>
+    <button id="closeSidebar" aria-label="Close navigation">✕</button>
+  </div>
+  <ul>
+    <li><a href="/">🏠 Home</a></li>
+    <li><a href="/courses">📚 Courses</a></li>
+    <li><a href="/services">🚀 Services</a></li>
+  </ul>
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay"></div>
+
+<!-- ═══ LOADING SCREEN ═══ -->
+<div id="gs-loader" aria-hidden="true">
+  <div class="loader-inner">
+    <div class="loader-logo">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 22C28 14 38 10 52 10C67 10 79 16 86 27" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        <path d="M18 48H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        <path d="M18 64H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        <path d="M54 23V86" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        <path d="M22 88H76C86 88 92 82 92 73C92 63 85 58 74 58H54" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="loader-wordmark">GS-Growth Steps</div>
+    <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+    <div class="loader-sub">Loading your experience…</div>
+  </div>
+</div>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="container nav">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 22C28 14 38 10 52 10C67 10 79 16 86 27" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <path d="M18 48H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <path d="M18 64H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <path d="M54 23V86" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <path d="M22 88H76C86 88 92 82 92 73C92 63 85 58 74 58H54" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="brand-copy">
+        <h1>GS-Growth Steps</h1>
+        <div class="brand-tagline">Agentic AI Training</div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <nav aria-label="Site navigation">
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/available-courses" class="active">Courses</a></li>
+          <li><a href="/services">Web Services</a></li>
+        </ul>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode" title="Toggle theme">
+        <span class="icon-sun"  aria-hidden="true">☀️</span>
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+
+
+  <!-- ═══ SECTION 2: COURSES — 2-COLUMN GRID ═══ -->
+  <section class="section" id="courses">
+    <div class="container">
+      <div class="section-title reveal">
+        <h2>Our Courses</h2>
+        <p>Side-by-side comparison of every program we currently offer.</p>
+      </div>
+
+      <div class="courses-grid reveal">
+
+        <!-- COURSE CARD 1 — Live course, links to courses.html -->
+        <article class="course-card reveal">
+          <div class="course-card-top">
+            <span class="course-card-badge">🔴 Live · Enrolling Now</span>
+            <span class="course-card-price"><del>₹1999</del>₹999</span>
+          </div>
+          <h3>Agentic AI Sunday WORKSHOP</h3>
+          <p class="course-desc">A 4-week, Sunday-only live program covering AI Agent foundations, no-code agent building with n8n, and code-based agent development — finishing with deployed, portfolio-ready projects.</p>
+          <div class="course-meta-row">
+            <span class="course-meta-item">📅 <strong>4 Sundays</strong></span>
+            <span class="course-meta-item">⏰ <strong>2 hrs/session</strong></span>
+            <span class="course-meta-item">💻 <strong>Online</strong></span>
+          </div>
+          <div class="skill-tags">
+            <span class="tag">Agentic AI</span>
+            <span class="tag">n8n</span>
+            <span class="tag">Python</span>
+            <span class="tag">AI APIs</span>
+          </div>
+          <a class="btn btn-primary" href="{{ url_for('courses') }}">View Course Details →</a>
+        </article>
+
+        <!-- COURSE CARD 2 — Placeholder for your next course. Duplicate this
+             block and edit the text to add more courses to the grid. -->
+        <article class="course-card is-coming-soon reveal">
+          <div class="course-card-top">
+            <span class="course-card-badge soon">🚀 Coming Soon</span>
+          </div>
+          <h3>New Course Launching Soon</h3>
+          <p class="course-desc">We're building the next program for our learners. Join our community to be the first to know when enrollment opens and grab early-bird pricing.</p>
+          <div class="course-meta-row">
+            <span class="course-meta-item">📅 <strong>TBA</strong></span>
+            <span class="course-meta-item">⏰ <strong>TBA</strong></span>
+            <span class="course-meta-item">💻 <strong>Online</strong></span>
+          </div>
+          <div class="skill-tags">
+            <span class="tag">Stay Tuned</span>
+          </div>
+          <a class="btn btn-secondary" href="https://wa.me/919952855157" target="_blank" rel="noopener noreferrer">Notify Me on WhatsApp</a>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="container footer-box">
+    <span>© 2026 GS-Growth Steps </span>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/courses">Courses</a>
+      <a href="/services">Services</a>
+      <a href="mailto:rsvijaysarathi123@gmail.com">Email</a>
+      <a href="https://wa.me/919952855157" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+    </div>
+  </div>
+</footer>
+
+<!-- Keeping your script tags as requested -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+<!-- ═══ UI LOGIC (identical to courses.html) ═══ -->
+<script>
+  // ── LOADER ──
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      const loader = document.getElementById('gs-loader');
+      if (loader) {
+        loader.classList.add('hidden');
+        setTimeout(() => loader.remove(), 600);
+      }
+    }, 1200);
+  });
+
+  // ── UI INTERACTIONS (Wrapped in DOMContentLoaded for safety) ──
+  document.addEventListener('DOMContentLoaded', () => {
+    
+    // ── SIDEBAR ──
+    const menuToggle   = document.getElementById('menuToggle');
+    const sidebar      = document.getElementById('sidebar');
+    const closeSidebar = document.getElementById('closeSidebar');
+    const overlay      = document.getElementById('overlay');
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      overlay.classList.add('active');
+      sidebar.setAttribute('aria-hidden', 'false');
+    }
+    function closeSidebarFn() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('active');
+      sidebar.setAttribute('aria-hidden', 'true');
+    }
+    if (menuToggle)   menuToggle.addEventListener('click', openSidebar);
+    if (closeSidebar) closeSidebar.addEventListener('click', closeSidebarFn);
+    if (overlay)      overlay.addEventListener('click', closeSidebarFn);
+
+    // ── THEME TOGGLE ──
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next    = current === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('gs-theme', next);
+      });
+    }
+
+    // ── REVEAL ON SCROLL ──
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } }),
+      { threshold: 0.12 }
+    );
+    reveals.forEach(el => observer.observe(el));
+  });
+</script>
+</body>
+</html>

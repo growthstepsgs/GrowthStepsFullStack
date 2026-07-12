@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic AI WORKSHOP – GrowthSteps</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::selection { background-color: #e7e5e4; color: #1c1917; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .gradient-text {
+            background: linear-gradient(135deg, #1c1917 0%, #57534e 50%, #1c1917 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-glow {
+            background: radial-gradient(ellipse at 50% 0%, rgba(233,213,255,0.15) 0%, transparent 60%);
+        }
+        .card-hover { transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -12px rgba(28,25,23,0.1); }
+        .week-card { border-left: 4px solid transparent; transition: all 300ms; }
+        .week-card:hover { border-left-color: #1c1917; background-color: #fafaf9; }
+        .project-card { transition: all 300ms; }
+        .project-card:hover { background-color: #f5f5f4; }
+        .pulse-dot {
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .float-animation { animation: float 3s ease-in-out infinite; }
+        @media print {
+            .no-print { display: none !important; }
+            .page-break { page-break-before: always; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body class="bg-stone-50 font-sans text-stone-900 antialiased">
+
+    <!-- Fixed Download Button -->
+    <button id="downloadBtn" onclick="downloadPDF()" class="no-print fixed bottom-6 right-6 z-50 bg-stone-900 text-white px-5 py-3 rounded-full shadow-lg hover:bg-stone-800 transition-all duration-300 flex items-center gap-2 group hover:shadow-xl">
+        <iconify-icon icon="lucide:download" width="18" class="group-hover:translate-y-0.5 transition-transform duration-300"></iconify-icon>
+        <span class="text-sm font-medium">Download PDF</span>
+    </button>
+
+    <!-- PDF Content Wrapper -->
+    <div id="pdfContent">
+
+        <!-- Navigation -->
+        <nav class="no-print fixed top-0 w-full z-40 bg-stone-50/80 backdrop-blur-md border-b border-stone-200/60">
+            <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <iconify-icon icon="lucide:rocket" width="22" class="text-stone-900"></iconify-icon>
+                    <span class="font-serif text-xl font-medium tracking-tight">GrowthSteps</span>
+                </div>
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="#why" class="text-sm font-medium text-stone-500 hover:text-stone-900 transition-colors duration-150">Why</a>
+                    <a href="#curriculum" class="text-sm font-medium text-stone-500 hover:text-stone-900 transition-colors duration-150">Curriculum</a>
+                    <a href="#projects" class="text-sm font-medium text-stone-500 hover:text-stone-900 transition-colors duration-150">Projects</a>
+                    <a href="#pricing" class="text-sm font-medium text-stone-500 hover:text-stone-900 transition-colors duration-150">Pricing</a>
+                    <a href="#register" class="bg-stone-900 text-white text-sm font-medium px-5 py-2.5 rounded-full hover:bg-stone-800 transition-colors duration-150 shadow-lg shadow-stone-900/10">
+                        Register Free
+                    </a>
+                </div>
+                <button onclick="document.getElementById('mobileMenu').classList.toggle('hidden')" class="md:hidden p-2">
+                    <iconify-icon icon="lucide:menu" width="20"></iconify-icon>
+                </button>
+            </div>
+            <div id="mobileMenu" class="hidden md:hidden border-t border-stone-200/60 bg-stone-50/95 backdrop-blur-md">
+                <div class="px-6 py-4 flex flex-col gap-3">
+                    <a href="#why" class="text-sm font-medium text-stone-600 py-2">Why Learn Agentic AI</a>
+                    <a href="#curriculum" class="text-sm font-medium text-stone-600 py-2">Curriculum</a>
+                    <a href="#projects" class="text-sm font-medium text-stone-600 py-2">Projects</a>
+                    <a href="#pricing" class="text-sm font-medium text-stone-600 py-2">Pricing</a>
+                    <a href="#register" class="bg-stone-900 text-white text-sm font-medium px-5 py-2.5 rounded-full text-center mt-2">Register Free</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="pt-32 pb-20 md:pt-40 md:pb-32 hero-glow relative overflow-hidden">
+            <!-- Decorative elements -->
+            <div class="absolute top-20 left-10 w-72 h-72 bg-purple-200/20 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-10 right-10 w-96 h-96 bg-stone-200/30 rounded-full blur-3xl"></div>
+
+            <div class="max-w-6xl mx-auto px-6 relative">
+                <div class="max-w-3xl mx-auto text-center">
+                    <!-- Badge -->
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-stone-200 bg-white shadow-sm mb-8">
+                        <span class="pulse-dot w-2 h-2 rounded-full bg-green-500"></span>
+                        <span class="text-xs font-semibold uppercase tracking-widest text-stone-500">Free Live Demo Session</span>
+                    </div>
+
+                    <h1 class="font-serif text-5xl md:text-7xl font-normal tracking-tight leading-[1.1] mb-6">
+                        Agentic AI<br>
+                        <span class="italic text-stone-500">WORKSHOP</span>
+                    </h1>
+
+                    <p class="text-lg md:text-xl text-stone-500 font-light leading-relaxed max-w-xl mx-auto mb-4">
+                        Build Real AI Agents. Create Your Future in AI.
+                    </p>
+
+                    <p class="text-sm text-stone-400 font-light leading-relaxed max-w-md mx-auto mb-10">
+                        Experience the course before you enroll. Join our live online demo session and discover how Agentic AI is changing the way modern applications are built.
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <a href="#register" class="bg-stone-900 text-white px-8 py-3.5 rounded-full text-sm font-medium hover:bg-stone-800 transition-colors duration-150 shadow-lg shadow-stone-900/10 inline-flex items-center gap-2">
+                            Register for Free Demo
+                            <iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>
+                        </a>
+                        <a href="#curriculum" class="border border-stone-200 bg-white text-stone-600 px-8 py-3.5 rounded-full text-sm font-medium hover:bg-stone-50 hover:border-stone-300 transition-all duration-150">
+                            View Curriculum
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why Learn Section -->
+        <section id="why" class="py-20 md:py-32">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="max-w-3xl mx-auto text-center mb-16">
+                    <span class="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-4 block">Why Now</span>
+                    <h2 class="font-serif text-4xl md:text-5xl tracking-tight leading-[1.1] mb-6">Why Learn Agentic AI Now?</h2>
+                    <p class="text-stone-500 font-light leading-relaxed">AI is moving beyond simple chatbots. The future is about AI systems that can think, decide, and act.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-6 max-w-4xl mx-auto">
+                    <div class="card-hover bg-white rounded-2xl border border-stone-200 p-6 text-center">
+                        <div class="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
+                            <iconify-icon icon="lucide:target" width="22" class="text-stone-600"></iconify-icon>
+                        </div>
+                        <h3 class="text-sm font-medium mb-1">Understand Goals</h3>
+                        <p class="text-xs text-stone-400 font-light">Interpret complex objectives</p>
+                    </div>
+                    <div class="card-hover bg-white rounded-2xl border border-stone-200 p-6 text-center">
+                        <div class="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
+                            <iconify-icon icon="lucide:brain" width="22" class="text-stone-600"></iconify-icon>
+                        </div>
+                        <h3 class="text-sm font-medium mb-1">Make Decisions</h3>
+                        <p class="text-xs text-stone-400 font-light">Reason and choose paths</p>
+                    </div>
+                    <div class="card-hover bg-white rounded-2xl border border-stone-200 p-6 text-center">
+                        <div class="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
+                            <iconify-icon icon="lucide:wrench" width="22" class="text-stone-600"></iconify-icon>
+                        </div>
+                        <h3 class="text-sm font-medium mb-1">Use Tools</h3>
+                        <p class="text-xs text-stone-400 font-light">Leverage external APIs</p>
+                    </div>
+                    <div class="card-hover bg-white rounded-2xl border border-stone-200 p-6 text-center">
+                        <div class="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
+                            <iconify-icon icon="lucide:zap" width="22" class="text-stone-600"></iconify-icon>
+                        </div>
+                        <h3 class="text-sm font-medium mb-1">Automate Tasks</h3>
+                        <p class="text-xs text-stone-400 font-light">Eliminate repetitive work</p>
+                    </div>
+                    <div class="card-hover bg-white rounded-2xl border border-stone-200 p-6 text-center">
+                        <div class="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
+                            <iconify-icon icon="lucide:workflow" width="22" class="text-stone-600"></iconify-icon>
+                        </div>
+                        <h3 class="text-sm font-medium mb-1">Complete Workflows</h3>
+                        <p class="text-xs text-stone-400 font-light">End-to-end automation</p>
+                    </div>
+                </div>
+
+                <p class="text-center text-sm text-stone-400 font-light mt-10 max-w-lg mx-auto">
+                    Companies are moving towards AI-powered automation, and learning Agentic AI can help you build future-ready skills.
+                </p>
+            </div>
+        </section>
+
+        <!-- Free Demo Section -->
+        <section class="py-20 md:py-24 bg-white border-y border-stone-200/60">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="max-w-4xl mx-auto">
+                    <div class="text-center mb-12">
+                        <span class="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-4 block">Free Demo</span>
+                        <h2 class="font-serif text-4xl md:text-5xl tracking-tight leading-[1.1] mb-4">What You Will Experience in the FREE Demo</h2>
+                        <p class="text-sm text-stone-400 font-light">No previous AI experience required.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-start gap-4 p-5 rounded-2xl border border-stone-100 bg-stone-50/50 card-hover">
+                            <span class="text-xl mt-0.5">🔥</span>
+                            <div>
+                                <h3 class="text-sm font-medium mb-0.5">Introduction to Agentic AI</h3>
+                                <p class="text-xs text-stone-400 font-light">Understand what Agentic AI is and why it matters</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-5 rounded-2xl border border-stone-100 bg-stone-50/50 card-hover">
+                            <span class="text-xl mt-0.5">🔥</span>
+                            <div>
+                                <h3 class="text-sm font-medium mb-0.5">How AI Agents Actually Work</h3>
+                                <p class="text-xs text-stone-400 font-light">See the inner workings of AI agent systems</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-5 rounded-2xl border border-stone-100 bg-stone-50/50 card-hover">
+                            <span class="text-xl mt-0.5">🔥</span>
+                            <div>
+                                <h3 class="text-sm font-medium mb-0.5">Live AI Agent Application Demo</h3>
+                                <p class="text-xs text-stone-400 font-light">Watch a real AI agent in action</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-5 rounded-2xl border border-stone-100 bg-stone-50/50 card-hover">
+                            <span class="text-xl mt-0.5">🔥</span>
+                            <div>
+                                <h3 class="text-sm font-medium mb-0.5">No-Code AI Agent Building with n8n</h3>
+                                <p class="text-xs text-stone-400 font-light">Build an agent visually without writing code</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-5 rounded-2xl border border-stone-100 bg-stone-50/50 card-hover">
+                            <span class="text-xl mt-0.5">🔥</span>
+                            <div>
+                                <h3 class="text-sm font-medium mb-0.5">Career Roadmap in AI</h3>
+                                <p class="text-xs text-stone-400 font-light">Plan your path into the AI industry</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-5 rounded-2xl border border-stone-100 bg-stone-50/50 card-hover">
+                            <span class="text-xl mt-0.5">🔥</span>
+                            <div>
+                                <h3 class="text-sm font-medium mb-0.5">Complete WORKSHOP Overview</h3>
+                                <p class="text-xs text-stone-400 font-light">Full walkthrough of the 4-week program</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Curriculum Section -->
+        <section id="curriculum" class="py-20 md:py-32">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="max-w-3xl mx-auto text-center mb-16">
+                    <span class="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-4 block">4-Week Program</span>
+                    <h2 class="font-serif text-4xl md:text-5xl tracking-tight leading-[1.1] mb-4">Agentic AI 4-Week WORKSHOP</h2>
+                    <p class="text-stone-500 font-light leading-relaxed">From fundamentals to deployment — a structured path to mastering Agentic AI.</p>
+                </div>
+
+                <div class="max-w-3xl mx-auto space-y-4">
+                    <!-- Week 1 -->
+                    <div class="week-card bg-white rounded-2xl border border-stone-200 p-8">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-stone-900 text-white flex items-center justify-center text-sm font-medium">1</div>
+                            <div>
+                                <h3 class="font-serif text-xl font-medium">Agentic AI Foundations</h3>
+                                <p class="text-xs text-stone-400 font-light">Week 1</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-stone-500 font-light mb-4">Learn the fundamentals of AI Agents.</p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                What is Agentic AI?
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                How AI Agents work
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                AI Agent ecosystem
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                Setting up your development environment
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                Build your first AI Agent
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Week 2 -->
+                    <div class="week-card bg-white rounded-2xl border border-stone-200 p-8">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-stone-900 text-white flex items-center justify-center text-sm font-medium">2</div>
+                            <div>
+                                <h3 class="font-serif text-xl font-medium">No-Code AI Automation with n8n</h3>
+                                <p class="text-xs text-stone-400 font-light">Week 2</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-stone-500 font-light mb-4">Create AI workflows without writing code.</p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                n8n workflow automation
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                Connecting AI models
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                API integrations
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                Visual AI agent workflows
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Week 3 -->
+                    <div class="week-card bg-white rounded-2xl border border-stone-200 p-8">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-stone-900 text-white flex items-center justify-center text-sm font-medium">3</div>
+                            <div>
+                                <h3 class="font-serif text-xl font-medium">Code-Based AI Agent Development</h3>
+                                <p class="text-xs text-stone-400 font-light">Week 3</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-stone-500 font-light mb-4">Build professional AI agents using Python.</p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                Python AI Agent development
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                OpenAI & Gemini APIs
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                Tool calling
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                Memory systems
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                Task automation
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Week 4 -->
+                    <div class="week-card bg-white rounded-2xl border border-stone-200 p-8">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-stone-900 text-white flex items-center justify-center text-sm font-medium">4</div>
+                            <div>
+                                <h3 class="font-serif text-xl font-medium">Build & Deploy AI Applications</h3>
+                                <p class="text-xs text-stone-400 font-light">Week 4</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-stone-500 font-light mb-4">Create portfolio-ready AI projects.</p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                Streamlit applications
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                RAG basics
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                Deployment
+                            </li>
+                            <li class="flex items-center gap-2 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400"></iconify-icon>
+                                Complete AI project development
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="py-20 md:py-32 bg-white border-y border-stone-200/60">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="max-w-3xl mx-auto text-center mb-16">
+                    <span class="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-4 block">Hands-On</span>
+                    <h2 class="font-serif text-4xl md:text-5xl tracking-tight leading-[1.1] mb-4">Projects You Will Build</h2>
+                    <p class="text-stone-500 font-light leading-relaxed">8 real-world projects to add to your portfolio.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+                    <div class="project-card bg-stone-50 rounded-2xl border border-stone-200/60 p-6">
+                        <span class="text-2xl mb-3 block">🤖</span>
+                        <h3 class="text-sm font-medium mb-1">AI Chat Agent</h3>
+                        <p class="text-xs text-stone-400 font-light leading-relaxed">Build an intelligent AI assistant with reasoning capabilities.</p>
+                    </div>
+                    <div class="project-card bg-stone-50 rounded-2xl border border-stone-200/60 p-6">
+                        <span class="text-2xl mb-3 block">📄</span>
+                        <h3 class="text-sm font-medium mb-1">Document Q&A Agent</h3>
+                        <p class="text-xs text-stone-400 font-light leading-relaxed">Upload documents and interact with your data using AI.</p>
+                    </div>
+                    <div class="project-card bg-stone-50 rounded-2xl border border-stone-200/60 p-6">
+                        <span class="text-2xl mb-3 block">✍️</span>
+                        <h3 class="text-sm font-medium mb-1">AI Content Generator Agent</h3>
+                        <p class="text-xs text-stone-400 font-light leading-relaxed">Generate blogs, emails, and content automatically.</p>
+                    </div>
+                    <div class="project-card bg-stone-50 rounded-2xl border border-stone-200/60 p-6">
+                        <span class="text-2xl mb-3 block">🧾</span>
+                        <h3 class="text-sm font-medium mb-1">Resume Analyzer Agent</h3>
+                        <p class="text-xs text-stone-400 font-light leading-relaxed">Analyze resumes and get improvement suggestions.</p>
+                    </div>
+                    <div class="project-card bg-stone-50 rounded-2xl border border-stone-200/60 p-6">
+                        <span class="text-2xl mb-3 block">⚙️</span>
+                        <h3 class="text-sm font-medium mb-1">n8n AI Automation Agent</h3>
+                        <p class="text-xs text-stone-400 font-light leading-relaxed">Create AI workflows without coding.</p>
+                    </div>
+                    <div class="project-card bg-stone-50 rounded-2xl border border-stone-200/60 p-6">
+                        <span class="text-2xl mb-3 block">📧</span>
+                        <h3 class="text-sm font-medium mb-1">AI Email Automation Agent</h3>
+                        <p class="text-xs text-stone-400 font-light leading-relaxed">Automate email generation and responses.</p>
+                    </div>
+                    <div class="project-card bg-stone-50 rounded-2xl border border-stone-200/60 p-6">
+                        <span class="text-2xl mb-3 block">🧠</span>
+                        <h3 class="text-sm font-medium mb-1">Multi-Agent Task Planner</h3>
+                        <p class="text-xs text-stone-400 font-light leading-relaxed">Build AI agents that collaborate to solve tasks.</p>
+                    </div>
+                    <div class="project-card bg-stone-50 rounded-2xl border border-stone-200/60 p-6">
+                        <span class="text-2xl mb-3 block">🛒</span>
+                        <h3 class="text-sm font-medium mb-1">AI Customer Support Agent</h3>
+                        <p class="text-xs text-stone-400 font-light leading-relaxed">Create an AI-powered customer service system.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section class="py-20 md:py-24">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="max-w-3xl mx-auto text-center mb-12">
+                    <span class="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-4 block">Outcomes</span>
+                    <h2 class="font-serif text-4xl md:text-5xl tracking-tight leading-[1.1] mb-4">Skills You Will Gain</h2>
+                    <p class="text-stone-500 font-light">By the end of this WORKSHOP, you will learn:</p>
+                </div>
+
+                <div class="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="flex items-center gap-3 p-4 rounded-xl bg-white border border-stone-200/60">
+                        <iconify-icon icon="lucide:check-circle" width="18" class="text-stone-500 shrink-0"></iconify-icon>
+                        <span class="text-sm font-light text-stone-700">Build AI Agents from scratch</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-4 rounded-xl bg-white border border-stone-200/60">
+                        <iconify-icon icon="lucide:check-circle" width="18" class="text-stone-500 shrink-0"></iconify-icon>
+                        <span class="text-sm font-light text-stone-700">Create no-code AI automation workflows</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-4 rounded-xl bg-white border border-stone-200/60">
+                        <iconify-icon icon="lucide:check-circle" width="18" class="text-stone-500 shrink-0"></iconify-icon>
+                        <span class="text-sm font-light text-stone-700">Develop AI applications using Python</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-4 rounded-xl bg-white border border-stone-200/60">
+                        <iconify-icon icon="lucide:check-circle" width="18" class="text-stone-500 shrink-0"></iconify-icon>
+                        <span class="text-sm font-light text-stone-700">Work with OpenAI & Gemini APIs</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-4 rounded-xl bg-white border border-stone-200/60">
+                        <iconify-icon icon="lucide:check-circle" width="18" class="text-stone-500 shrink-0"></iconify-icon>
+                        <span class="text-sm font-light text-stone-700">Build RAG-based applications</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-4 rounded-xl bg-white border border-stone-200/60">
+                        <iconify-icon icon="lucide:check-circle" width="18" class="text-stone-500 shrink-0"></iconify-icon>
+                        <span class="text-sm font-light text-stone-700">Create Streamlit AI apps</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-4 rounded-xl bg-white border border-stone-200/60">
+                        <iconify-icon icon="lucide:check-circle" width="18" class="text-stone-500 shrink-0"></iconify-icon>
+                        <span class="text-sm font-light text-stone-700">Deploy AI projects online</span>
+                    </div>
+                    <div class="flex items-center gap-3 p-4 rounded-xl bg-white border border-stone-200/60">
+                        <iconify-icon icon="lucide:check-circle" width="18" class="text-stone-500 shrink-0"></iconify-icon>
+                        <span class="text-sm font-light text-stone-700">Build portfolio projects for your career</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- What You Receive -->
+        <section class="py-20 md:py-24 bg-white border-y border-stone-200/60">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="max-w-3xl mx-auto text-center mb-12">
+                    <span class="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-4 block">Included</span>
+                    <h2 class="font-serif text-4xl md:text-5xl tracking-tight leading-[1.1] mb-4">What You Receive</h2>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+                    <div class="text-center">
+                        <span class="text-3xl mb-3 block">📚</span>
+                        <h3 class="text-sm font-medium">Complete Course Materials</h3>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-3xl mb-3 block">🎓</span>
+                        <h3 class="text-sm font-medium">Certificate of Completion</h3>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-3xl mb-3 block">💻</span>
+                        <h3 class="text-sm font-medium">Source Code of Projects</h3>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-3xl mb-3 block">🤝</span>
+                        <h3 class="text-sm font-medium">Community Support</h3>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-3xl mb-3 block">👨‍🏫</span>
+                        <h3 class="text-sm font-medium">Project Guidance</h3>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-3xl mb-3 block">🚀</span>
+                        <h3 class="text-sm font-medium">Career & Portfolio Guidance</h3>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trainer Section -->
+        <section class="py-20 md:py-32">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="max-w-3xl mx-auto text-center mb-12">
+                    <span class="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-4 block">Your Instructor</span>
+                    <h2 class="font-serif text-4xl md:text-5xl tracking-tight leading-[1.1] mb-4">Meet Your Trainer</h2>
+                </div>
+
+                <div class="max-w-md mx-auto">
+                    <div class="bg-white rounded-2xl border border-stone-200 p-8 text-center card-hover">
+                        <div class="w-20 h-20 rounded-full bg-stone-200 flex items-center justify-center mx-auto mb-5">
+                            <iconify-icon icon="lucide:user" width="36" class="text-stone-400"></iconify-icon>
+                        </div>
+                        <h3 class="font-serif text-2xl font-medium mb-1">Vijay Sarathi R S</h3>
+                        <p class="text-xs text-stone-400 font-light mb-5">Agentic AI Developer · AI Engineer · Python Developer · Gen AI Trainer</p>
+
+                        <div class="space-y-2.5 text-left">
+                            <div class="flex items-center gap-2.5 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400 shrink-0"></iconify-icon>
+                                Ex-Cohort Trainer @ SNS iHub
+                            </div>
+                            <div class="flex items-center gap-2.5 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400 shrink-0"></iconify-icon>
+                                Trained 1500+ students
+                            </div>
+                            <div class="flex items-center gap-2.5 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400 shrink-0"></iconify-icon>
+                                Built real-world AI applications
+                            </div>
+                            <div class="flex items-center gap-2.5 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="14" class="text-stone-400 shrink-0"></iconify-icon>
+                                Developed Agentic AI systems
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section id="pricing" class="py-20 md:py-32 bg-white border-y border-stone-200/60">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="max-w-3xl mx-auto text-center mb-16">
+                    <span class="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-4 block">Pricing</span>
+                    <h2 class="font-serif text-4xl md:text-5xl tracking-tight leading-[1.1] mb-4">Course Pricing</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                    <!-- Certified Pro Plan -->
+                    <div class="bg-stone-50 rounded-2xl border-2 border-stone-900 p-8 relative">
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+                            <span class="bg-stone-900 text-white text-[10px] font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full">Recommended</span>
+                        </div>
+                        <h3 class="font-serif text-xl font-medium mt-2 mb-1">Certified Pro Plan</h3>
+                        <div class="flex items-baseline gap-2 mb-6">
+                            <span class="text-stone-400 line-through text-lg">₹1999</span>
+                            <span class="text-4xl font-serif font-medium">₹999</span>
+                        </div>
+                        <div class="space-y-3 mb-8">
+                            <div class="flex items-center gap-2.5 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="15" class="text-stone-900 shrink-0"></iconify-icon>
+                                Full WORKSHOP Access
+                            </div>
+                            <div class="flex items-center gap-2.5 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="15" class="text-stone-900 shrink-0"></iconify-icon>
+                                Certification
+                            </div>
+                            <div class="flex items-center gap-2.5 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="15" class="text-stone-900 shrink-0"></iconify-icon>
+                                Project Validation
+                            </div>
+                            <div class="flex items-center gap-2.5 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="15" class="text-stone-900 shrink-0"></iconify-icon>
+                                Community Support
+                            </div>
+                        </div>
+                        <a href="#register" class="block w-full bg-stone-900 text-white text-center text-sm font-medium py-3 rounded-full hover:bg-stone-800 transition-colors duration-150">
+                            Enroll Now
+                        </a>
+                    </div>
+
+                    <!-- Standard Plan -->
+                    <div class="bg-white rounded-2xl border border-stone-200 p-8">
+                        <h3 class="font-serif text-xl font-medium mb-1">Standard Plan</h3>
+                        <div class="flex items-baseline gap-2 mb-6">
+                            <span class="text-stone-400 line-through text-lg">₹999</span>
+                            <span class="text-4xl font-serif font-medium">₹499</span>
+                        </div>
+                        <div class="space-y-3 mb-8">
+                            <div class="flex items-center gap-2.5 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="15" class="text-stone-400 shrink-0"></iconify-icon>
+                                Course Materials
+                            </div>
+                            <div class="flex items-center gap-2.5 text-sm text-stone-600 font-light">
+                                <iconify-icon icon="lucide:check" width="15" class="text-stone-400 shrink-0"></iconify-icon>
+                                Project Validation
+                            </div>
+                        </div>
+                        <a href="#register" class="block w-full border border-stone-200 bg-white text-stone-700 text-center text-sm font-medium py-3 rounded-full hover:bg-stone-50 hover:border-stone-300 transition-all duration-150">
+                            Enroll Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Who Can Join -->
+        <section class="py-20 md:py-24">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="max-w-3xl mx-auto text-center mb-12">
+                    <span class="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-4 block">Eligibility</span>
+                    <h2 class="font-serif text-4xl md:text-5xl tracking-tight leading-[1.1] mb-4">Who Can Join?</h2>
+                    <p class="text-sm text-stone-400 font-light">No advanced AI background required.</p>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-4 max-w-2xl mx-auto">
+                    <div class="flex items-center gap-2.5 px-6 py-3 rounded-full bg-white border border-stone-200 card-hover">
+                        <span class="text-lg">🎓</span>
+                        <span class="text-sm font-medium text-stone-700">Students & Freshers</span>
+                    </div>
+                    <div class="flex items-center gap-2.5 px-6 py-3 rounded-full bg-white border border-stone-200 card-hover">
+                        <span class="text-lg">💼</span>
+                        <span class="text-sm font-medium text-stone-700">Working Professionals</span>
+                    </div>
+                    <div class="flex items-center gap-2.5 px-6 py-3 rounded-full bg-white border border-stone-200 card-hover">
+                        <span class="text-lg">🚀</span>
+                        <span class="text-sm font-medium text-stone-700">Developers</span>
+                    </div>
+                    <div class="flex items-center gap-2.5 px-6 py-3 rounded-full bg-white border border-stone-200 card-hover">
+                        <span class="text-lg">🤖</span>
+                        <span class="text-sm font-medium text-stone-700">AI Enthusiasts</span>
+                    </div>
+                    <div class="flex items-center gap-2.5 px-6 py-3 rounded-full bg-white border border-stone-200 card-hover">
+                        <span class="text-lg">📈</span>
+                        <span class="text-sm font-medium text-stone-700">Anyone interested in future technology</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Register / CTA Section -->
+        <section id="register" class="py-20 md:py-32 bg-stone-900 text-white relative overflow-hidden">
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-3xl"></div>
+
+            <div class="max-w-6xl mx-auto px-6 relative">
+                <div class="max-w-2xl mx-auto text-center">
+                    <span class="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-6 block">Start Your AI Journey Today 🚀</span>
+                    <h2 class="font-serif text-4xl md:text-5xl tracking-tight leading-[1.1] mb-6 text-white">Start Your AI Journey Today</h2>
+                    <p class="text-stone-400 font-light leading-relaxed mb-4">Join the FREE demo session first.</p>
+                    <p class="text-stone-500 font-light text-sm leading-relaxed mb-10">Experience Agentic AI. Build your first AI project. Decide your learning path.</p>
+
+                    <div class="inline-flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+                        <div class="flex items-center gap-2 text-stone-400 text-sm">
+                            <iconify-icon icon="lucide:calendar" width="16"></iconify-icon>
+                            <span>Demo: Sunday</span>
+                        </div>
+                        <div class="hidden sm:block w-1 h-1 rounded-full bg-stone-600"></div>
+                        <div class="flex items-center gap-2 text-stone-400 text-sm">
+                            <iconify-icon icon="lucide:clock" width="16"></iconify-icon>
+                            <span>Time: 10:00 AM IST</span>
+                        </div>
+                        <div class="hidden sm:block w-1 h-1 rounded-full bg-stone-600"></div>
+                        <div class="flex items-center gap-2 text-stone-400 text-sm">
+                            <iconify-icon icon="lucide:monitor" width="16"></iconify-icon>
+                            <span>Mode: Online (Google Meet)</span>
+                        </div>
+                    </div>
+
+                    <a href="https://forms.gle/" target="_blank" class="inline-flex items-center gap-2 bg-white text-stone-900 px-8 py-4 rounded-full text-sm font-medium hover:bg-stone-100 transition-colors duration-150 shadow-lg">
+                        Register Now
+                        <iconify-icon icon="lucide:arrow-right" width="16"></iconify-icon>
+                    </a>
+                    <p class="text-stone-600 text-xs mt-4">Free demo — no credit card required</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="py-12 border-t border-stone-200/60">
+            <div class="max-w-6xl mx-auto px-6 text-center">
+                <div class="flex items-center justify-center gap-2 mb-3">
+                    <iconify-icon icon="lucide:rocket" width="18" class="text-stone-400"></iconify-icon>
+                    <span class="font-serif text-lg font-medium text-stone-600">GrowthSteps</span>
+                </div>
+                <p class="text-sm text-stone-400 font-light">Empowering the next generation with AI skills.</p>
+            </div>
+        </footer>
+
+    </div><!-- End PDF Content -->
+
+    <!-- Download Loading Overlay -->
+    <div id="downloadOverlay" class="no-print fixed inset-0 z-[100] bg-stone-900/80 backdrop-blur-sm flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl p-8 text-center shadow-2xl max-w-sm mx-4">
+            <div class="w-12 h-12 border-2 border-stone-200 border-t-stone-900 rounded-full animate-spin mx-auto mb-4"></div>
+            <h3 class="font-serif text-lg font-medium mb-1">Generating PDF</h3>
+            <p class="text-sm text-stone-400 font-light">Please wait while we create your download...</p>
+        </div>
+    </div>
+
+    <script>
+        // Close mobile menu on link click
+        document.querySelectorAll('#mobileMenu a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('mobileMenu').classList.add('hidden');
+            });
+        });
+
+        function downloadPDF() {
+            const overlay = document.getElementById('downloadOverlay');
+            overlay.classList.remove('hidden');
+
+            const element = document.getElementById('pdfContent');
+
+            const opt = {
+                margin: [0, 0, 0, 0],
+                filename: 'Agentic-AI-WORKSHOP-GrowthSteps.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true,
+                    scrollY: 0,
+                    windowWidth: 1200
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait'
+                },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 500);
+            }).catch(() => {
+                overlay.classList.add('hidden');
+                alert('PDF generation failed. Please try using your browser\'s Print > Save as PDF instead.');
+            });
+        }
+
+        // Navbar scroll effect
+        const nav = document.querySelector('nav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 10) {
+                nav.classList.add('shadow-sm');
+            } else {
+                nav.classList.remove('shadow-sm');
+            }
+        });
+    </script>
+</body>
+</html>
