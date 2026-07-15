@@ -16,11 +16,10 @@
     <button id="closeSidebar" aria-label="Close navigation">✕</button>
   </div>
   <ul>
-    <li><a href="{{ url_for('home') }}">🏠 Home</a></li>
-    <li><a href="{{ url_for('courses') }}">📚 Courses</a></li>
-    <li><a href="{{ url_for('services') }}">🚀 Services</a></li>
+    
     <li><a href="{{ url_for('employee_dashboard') }}" class="active-page">📋 Dashboard</a></li>
     <li><a href="{{ url_for('employee_requests') }}">📝 My Requests</a></li>
+    <li><a href="{{ url_for('employee_sheets') }}">📊 Employee Sheets</a></li>
     <li><a href="{{ url_for('logout') }}">🚪 Logout</a></li>
   </ul>
 </div>
@@ -86,6 +85,17 @@
           <h4>🗂️ Active Projects</h4>
           <p>No active project assignments yet.</p>
         </article>
+        <article class="info-card reveal visible">
+    <h4>📊 Employee Sheets</h4>
+    <p>
+        Access and edit company spreadsheets directly from the dashboard.
+    </p>
+
+    <a href="{{ url_for('employee_sheets') }}"
+       class="btn btn-primary">
+        Open Sheets
+    </a>
+</article>
         <article class="info-card reveal visible">
           <h4>📝 Requests & Proposals</h4>
           <p>Submit a proposal or leave request and track admin responses.</p>

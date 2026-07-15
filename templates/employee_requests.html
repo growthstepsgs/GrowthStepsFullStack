@@ -16,11 +16,10 @@
     <button id="closeSidebar" aria-label="Close navigation">✕</button>
   </div>
   <ul>
-    <li><a href="{{ url_for('home') }}">🏠 Home</a></li>
-    <li><a href="{{ url_for('courses') }}">📚 Courses</a></li>
-    <li><a href="{{ url_for('services') }}">🚀 Services</a></li>
-    <li><a href="{{ url_for('employee_dashboard') }}">📋 Dashboard</a></li>
-    <li><a href="{{ url_for('employee_requests') }}" class="active-page">📝 My Requests</a></li>
+    
+    <li><a href="{{ url_for('employee_dashboard') }}" class="active-page">📋 Dashboard</a></li>
+    <li><a href="{{ url_for('employee_requests') }}">📝 My Requests</a></li>
+    <li><a href="{{ url_for('employee_sheets') }}">📊 Employee Sheets</a></li>
     <li><a href="{{ url_for('logout') }}">🚪 Logout</a></li>
   </ul>
 </div>
