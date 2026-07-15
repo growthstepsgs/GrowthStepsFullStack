@@ -356,6 +356,13 @@ def employee_requests():
         my_requests=my_requests,
     )
 
+@app.route("/dashboard/employee/sheets")
+@login_required
+def employee_sheets():
+    return render_template(
+        "employee_sheets.html",
+        email=session.get("user_email")
+    )
 
 @app.route("/dashboard/admin/requests")
 @admin_required
