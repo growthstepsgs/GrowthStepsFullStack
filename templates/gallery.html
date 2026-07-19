@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workshop Gallery | GS-Growth Steps</title>
+  <meta name="description" content="Photos from the Agentic AI workshop conducted ." />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+</head>
+<body>
+
+<!-- ☰ SIDEBAR TOGGLE -->
+<button class="menu-toggle" id="menuToggle" aria-label="Open navigation menu">☰</button>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar" aria-hidden="true">
+  <div class="sidebar-header">
+    <h3>GS-Growth Steps</h3>
+    <button id="closeSidebar" aria-label="Close navigation">✕</button>
+  </div>
+  <ul>
+    <li><a href="{{ url_for('home') }}">🏠 Home</a></li>
+    <li><a href="{{ url_for('courses') }}">📚 Courses</a></li>
+    <li><a href="{{ url_for('services') }}">🚀 Services</a></li>
+    <li><a href="{{ url_for('gallery') }}" class="active-page">🖼️ Gallery</a></li>
+<li><a href="{{ url_for('login') }}">🔐 Login</a></li>
+  </ul>
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay"></div>
+
+<!-- ═══ LOADING SCREEN ═══ -->
+<div id="gs-loader" aria-hidden="true">
+  <div class="loader-inner">
+    <div class="loader-logo">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 22C28 14 38 10 52 10C67 10 79 16 86 27" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        <path d="M18 48H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        <path d="M18 64H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        <path d="M54 23V86" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        <path d="M22 88H76C86 88 92 82 92 73C92 63 85 58 74 58H54" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="loader-wordmark">GS-Growth Steps</div>
+    <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+    <div class="loader-sub">Loading your experience…</div>
+  </div>
+</div>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="container nav">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 22C28 14 38 10 52 10C67 10 79 16 86 27" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <path d="M18 48H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <path d="M18 64H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <path d="M54 23V86" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <path d="M22 88H76C86 88 92 82 92 73C92 63 85 58 74 58H54" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="brand-copy">
+        <h1>GS-Growth Steps</h1>
+        <p>A place to Grow</p>
+      </div>
+    </div>
+    <div class="nav-row">
+      <nav aria-label="Gallery navigation">
+        <ul>
+          <li><a href="#gallery">Photos</a></li>
+          <li><a href="#about-workshop">About the Workshop</a></li>
+          <li><a href="{{ url_for('services') }}">Services</a></li>
+        </ul>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode" title="Toggle theme">
+        <span class="icon-sun"  aria-hidden="true">☀️</span>
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+
+  <!-- ═══ HERO ═══ -->
+  <section class="hero services-hero">
+    <div class="container">
+      <article class="hero-card hero-main reveal">
+        <div class="eyebrow">🖼️ Workshop Gallery</div>
+        <h2>Welcome to Growth Steps Gallery <span>Explore About us More here</span></h2>
+        
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#gallery">View Photos ↓</a>
+          <a class="btn btn-secondary" href="{{ url_for('courses') }}">See Upcoming Workshops</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><strong>120+</strong><span>Students Attended</span></div>
+          <div class="stat"><strong>1</strong><span>Full-Day Workshop</span></div>
+          <div class="stat"><strong>Live</strong><span>Hands-On Build Sessions</span></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  
+
+  <!-- ═══ PHOTO GALLERY ═══ -->
+  <!-- ═══ PHOTO GALLERY ═══ -->
+  <section class="section" id="gallery">
+    <div class="container">
+      <div class="section-title reveal">
+        <h2>Photos from the Day</h2>
+        <p>Click any photo to view it larger.</p>
+      </div>
+
+      <div class="gallery-masonry">
+        {% for photo in photos %}
+        <div class="gallery-card reveal gallery-tint-{{ loop.index0 % 5 }}"
+             onclick="openLightbox('{{ photo.image_url }}', '{{ photo.caption|e }}')">
+          <img src="{{ photo.image_url }}" alt="{{ photo.caption }}" loading="lazy" />
+          <div class="gallery-caption"><strong>{{ photo.caption }}</strong></div>
+        </div>
+        {% else %}
+        <div class="form-warning" style="grid-column: 1 / -1;">
+          Photos coming soon — check back shortly.
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ LIGHTBOX ═══ -->
+  <div class="gallery-lightbox" id="galleryLightbox" onclick="closeLightbox(event)">
+    <button class="gallery-lightbox-close" aria-label="Close" onclick="closeLightbox(event)">✕</button>
+    <img id="lightboxImg" src="" alt="" />
+    <div class="gallery-lightbox-caption" id="lightboxCaption"></div>
+  </div>
+
+  <!-- ═══ CTA ═══ -->
+<div class="container">
+<article class="contact-card reveal">
+  
+          <h4>Send a Mail If you need any Agentic AI awarness Program At you Campus Like this </h4>
+          <div class="form-warning">
+            Your message goes directly to <strong>rsvijaysarathi123@gmail.com</strong> — I reply within 24 hours.
+          </div>
+          <form id="contactForm" class="contact-form">
+            <div>
+              <label for="name">Your Name</label>
+              <input id="name" name="name" type="text" placeholder="Enter your name" required />
+            </div>
+            <div>
+              <label for="email">Your Email</label>
+              <input id="email" name="email" type="email" placeholder="Enter your email" required />
+            </div>
+            <div>
+              <label for="projectType">Session Requirement</label>
+              <select id="projectType" name="projectType"
+                style="width:100%;padding:13px 16px;border-radius:14px;border:1px solid var(--border);background:var(--form-input-bg);color:var(--text);font-family:inherit;font-size:1rem;transition:220ms ease;cursor:pointer;">
+                <option value="" disabled selected>Select a project type…</option>
+                <option value="Portfolio Website">Agentic AI Awareness Program</option>
+                <option value="Business Website">Chief Guest Lecture</option>
+                <option value="Landing Page">Workshop Session</option>
+                
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label for="message">Session Details</label>
+              <textarea id="message" name="message" rows="4"
+                placeholder="Describe your Session Requirements and timeline…"
+                required></textarea>
+            </div>
+            <button class="btn btn-primary" type="submit">Send Inquiry</button>
+          </form>
+        </article>
+</main>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="container footer-box">
+    <span>© 2026 GS-Growth Steps · Vijay Sarathi R S</span>
+    <div class="footer-links">
+      <a href="{{ url_for('home') }}">Home</a>
+      <a href="{{ url_for('courses') }}">Courses</a>
+      <a href="{{ url_for('services') }}">Services</a>
+      <a href="mailto:rsvijaysarathi123@gmail.com">Email</a>
+      <a href="https://wa.me/919952855157" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

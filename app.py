@@ -2,12 +2,15 @@
 GS-Growth Steps — Flask backend
 ────────────────────────────────
 Static site converted to a Flask app with a simple auth layer backed
-by Supabase (auth + `profiles` + `requests` tables).
+by Supabase (auth + `profiles` + `requests` + `gallery_photos` tables).
 
-Schema recap (see growth_steps_schema.sql + requests_schema.sql):
+Schema recap (see growth_steps_schema.sql + requests_schema.sql +
+gallery_schema.sql):
   profiles(id, full_name, role['admin'|'employee'|'student'], created_at)
   requests(id, employee_id, title, description, status, admin_note,
            created_at, updated_at)
+  gallery_photos(id, image_url, storage_path, caption, uploaded_by,
+                 created_at)
 
   A trigger auto-inserts a `profiles` row (role='student') whenever a
   new auth.users row is created — the app does NOT insert into
@@ -22,11 +25,17 @@ Roles:
 
 IMPORTANT: Flask's session and Supabase Auth's session are separate.
 This app never forwards the logged-in user's JWT to PostgREST, so all
-server-side reads/writes to `requests` and `profiles` go through the
-service-role client (supabase_admin), with ownership checks enforced
-in Python (e.g. .eq("employee_id", user_id)) rather than relying on
-RLS at request time. The RLS policies in requests_schema.sql still
-protect the table from anything hitting it directly with the anon key.
+server-side reads/writes to `requests`, `profiles`, and `gallery_photos`
+go through the service-role client (supabase_admin), with ownership
+checks enforced in Python (e.g. .eq("employee_id", user_id)) rather
+than relying on RLS at request time. The RLS policies in the *_schema.sql
+files still protect the tables from anything hitting them directly
+with the anon key.
+
+IMPORTANT (Storage): gallery uploads go to a Supabase Storage bucket.
+You must create a bucket named GALLERY_BUCKET (below) in the Supabase
+dashboard (Storage -> New bucket) and mark it Public, or
+get_public_url() will return URLs that 403 when loaded.
 
 Run:
   pip install -r requirements.txt
@@ -35,6 +44,7 @@ Run:
 """
 
 import os
+import uuid
 from functools import wraps
 from pathlib import Path
 
@@ -43,6 +53,7 @@ from flask import (
     Flask, render_template, request, redirect,
     url_for, session, flash
 )
+from werkzeug.utils import secure_filename
 from supabase import create_client, Client
 
 # Load .env from the SAME folder as this file, regardless of the
@@ -59,6 +70,19 @@ ADMIN_EMAIL    = "rsvijaysarathi123@gmail.com"
 ADMIN_PASSWORD = "v2v24123@v2v24123"
 
 VALID_STATUSES = {"pending", "in_review", "approved", "rejected"}
+
+# Gallery / Storage config
+GALLERY_BUCKET = "Gallery"  # must match the bucket name created in Supabase Storage (set Public)
+ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "gif"}
+
+
+def _allowed_image(filename: str) -> bool:
+    return (
+        bool(filename)
+        and "." in filename
+        and filename.rsplit(".", 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
+    )
+
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-me")
@@ -79,8 +103,8 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 if SUPABASE_URL and SUPABASE_KEY and not SUPABASE_SERVICE_KEY:
     print(
         "i  No SUPABASE_SERVICE_KEY set -- signup role-promotion, the admin "
-        "dashboard's employee list, and the requests feature will be limited "
-        "by RLS. Add the service_role key (Project Settings -> API -> "
+        "dashboard's employee list, and the requests/gallery features will be "
+        "limited by RLS. Add the service_role key (Project Settings -> API -> "
         "service_role) to .env to enable them fully."
     )
 
@@ -356,6 +380,7 @@ def employee_requests():
         my_requests=my_requests,
     )
 
+
 @app.route("/dashboard/employee/sheets")
 @login_required
 def employee_sheets():
@@ -364,6 +389,116 @@ def employee_sheets():
         email=session.get("user_email")
     )
 
+
+# ── PUBLIC GALLERY ───────────────────────────────────────────────────
+@app.route("/gallery")
+def gallery():
+    photos = []
+    client = supabase_admin or supabase
+    if client:
+        try:
+            res = (
+                client.table("gallery_photos")
+                .select("*")
+                .order("created_at", desc=True)
+                .execute()
+            )
+            photos = res.data or []
+        except Exception as exc:
+            print(f"gallery fetch failed: {exc}")
+            photos = []
+    return render_template("gallery.html", photos=photos)
+
+
+# ── ADMIN GALLERY MANAGEMENT ─────────────────────────────────────────
+@app.route("/admin/admin_gallery", methods=["GET", "POST"])
+@admin_required
+def admin_gallery():
+    client = supabase_admin or supabase
+
+    if request.method == "POST":
+        caption = request.form.get("caption", "").strip()
+        file = request.files.get("image")
+
+        if not file or file.filename == "":
+            flash("Please choose an image to upload.", "error")
+            return redirect(url_for("admin_gallery"))
+
+        if not _allowed_image(file.filename):
+            flash("Unsupported file type — use jpg, png, webp, or gif.", "error")
+            return redirect(url_for("admin_gallery"))
+
+        if not client:
+            flash("Supabase isn't configured on the server.", "error")
+            return redirect(url_for("admin_gallery"))
+
+        ext = secure_filename(file.filename).rsplit(".", 1)[1].lower()
+        storage_path = f"{uuid.uuid4().hex}.{ext}"
+
+        try:
+            file_bytes = file.read()
+            client.storage.from_(GALLERY_BUCKET).upload(
+                storage_path,
+                file_bytes,
+                {"content-type": file.mimetype},
+            )
+            public_url = client.storage.from_(GALLERY_BUCKET).get_public_url(storage_path)
+
+            client.table("gallery_photos").insert({
+                "image_url": public_url,
+                "storage_path": storage_path,
+                "caption": caption,
+            }).execute()
+
+            flash("Photo uploaded.", "success")
+        except Exception as exc:
+            flash(f"Upload failed: {exc}", "error")
+
+        return redirect(url_for("admin_gallery"))
+
+    photos = []
+    if client:
+        try:
+            res = (
+                client.table("gallery_photos")
+                .select("*")
+                .order("created_at", desc=True)
+                .execute()
+            )
+            photos = res.data or []
+        except Exception:
+            photos = []
+
+    return render_template("admin_gallery.html", photos=photos)
+
+
+@app.route("/dashboard/admin/gallery/<photo_id>/delete", methods=["POST"])
+@admin_required
+def admin_delete_gallery_photo(photo_id):
+    client = supabase_admin or supabase
+    if not client:
+        flash("Supabase isn't configured on the server.", "error")
+        return redirect(url_for("admin_gallery"))
+
+    try:
+        row = (
+            client.table("gallery_photos")
+            .select("storage_path")
+            .eq("id", photo_id)
+            .single()
+            .execute()
+        )
+        if row.data:
+            client.storage.from_(GALLERY_BUCKET).remove([row.data["storage_path"]])
+        client.table("gallery_photos").delete().eq("id", photo_id).execute()
+        flash("Photo deleted.", "success")
+    except Exception as exc:
+        flash(f"Could not delete photo: {exc}", "error")
+
+    return redirect(url_for("admin_gallery"))
+
+
+# ── ADMIN REQUESTS MANAGEMENT ────────────────────────────────────────
 @app.route("/dashboard/admin/requests")
 @admin_required
 def admin_requests():

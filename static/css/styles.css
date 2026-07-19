@@ -1160,3 +1160,84 @@ footer { padding: 28px 0 48px; color: var(--muted); }
     border-radius:12px;
     background:white;
 }
+
+/* ══════════════════════════════════════════
+   GALLERY (colorful masonry)
+══════════════════════════════════════════ */
+.gallery-masonry {
+  columns: 320px 4;
+  column-gap: 20px;
+  margin-top: 8px;
+}
+.gallery-card {
+  position: relative;
+  break-inside: avoid;
+  margin-bottom: 20px;
+  border-radius: 22px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.gallery-card img {
+  width: 100%;
+  display: block;
+  transition: transform .5s ease, filter .5s ease;
+}
+.gallery-card:hover img { transform: scale(1.06); }
+
+/* soft rotating color wash across cards, on top of the photo */
+.gallery-card::before {
+  content: "";
+  position: absolute; inset: 0;
+  opacity: .16;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  transition: opacity .35s ease;
+}
+.gallery-card:hover::before { opacity: .05; }
+.gallery-tint-0::before { background: linear-gradient(135deg, #F2CF1D, #FF7A59); }
+.gallery-tint-1::before { background: linear-gradient(135deg, #6366F1, #22D3EE); }
+.gallery-tint-2::before { background: linear-gradient(135deg, #F43F5E, #F2CF1D); }
+.gallery-tint-3::before { background: linear-gradient(135deg, #10B981, #6366F1); }
+.gallery-tint-4::before { background: linear-gradient(135deg, #F97316, #F43F5E); }
+
+.gallery-caption {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 18px 18px 14px;
+  background: linear-gradient(to top, rgba(0,0,0,.82), rgba(0,0,0,0));
+  color: #fff;
+  font-size: .9rem;
+  transform: translateY(6px);
+  opacity: 0;
+  transition: all .3s ease;
+}
+.gallery-card:hover .gallery-caption { transform: translateY(0); opacity: 1; }
+.gallery-caption strong { display: block; font-size: .96rem; }
+
+.gallery-lightbox {
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(0,0,0,.9);
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 40px 20px;
+}
+.gallery-lightbox.active { display: flex; }
+.gallery-lightbox img {
+  max-width: min(90vw, 900px); max-height: 82vh;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+}
+.gallery-lightbox-close {
+  position: absolute; top: 24px; right: 32px;
+  color: #fff; font-size: 2rem; line-height: 1;
+  cursor: pointer; background: none; border: none;
+}
+.gallery-lightbox-caption {
+  position: absolute; bottom: 30px; left: 0; right: 0;
+  text-align: center; color: #fff8d6; font-size: .95rem;
+}
+
+@media (max-width: 640px) {
+  .gallery-masonry { columns: 1; }
+}
