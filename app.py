@@ -409,6 +409,30 @@ def gallery():
             photos = []
     return render_template("gallery.html", photos=photos)
 
+@app.route("/admin/cleanup-orphaned-photos")
+@admin_required
+def cleanup_orphaned_photos():
+    client = supabase_admin or supabase
+    if not client:
+        flash("Supabase isn't configured.", "error")
+        return redirect(url_for("admin_gallery"))
+
+    deleted = 0
+    try:
+        res = client.table("gallery_photos").select("*").execute()
+        for p in (res.data or []):
+            try:
+                # HEAD-check the storage object; if missing, delete the row
+                client.storage.from_(GALLERY_BUCKET).download(p["storage_path"])
+            except Exception:
+                client.table("gallery_photos").delete().eq("id", p["id"]).execute()
+                deleted += 1
+    except Exception as exc:
+        flash(f"Cleanup failed: {exc}", "error")
+        return redirect(url_for("admin_gallery"))
+
+    flash(f"Cleanup done — removed {deleted} orphaned row(s).", "success")
+    return redirect(url_for("admin_gallery"))
 
 # ── ADMIN GALLERY MANAGEMENT ─────────────────────────────────────────
 @app.route("/admin/admin_gallery", methods=["GET", "POST"])
