@@ -20,18 +20,18 @@
       --text:              #1A1D2E;
       --muted:             #64748B;
       --border:            #E2E8F0;
-      
+
       /* Brand Colors (Hero/Footer) */
       --brand-bg:          #0F1729;       /* Deep Navy */
       --brand-bg-accent:   #1E2C4F;       /* Slightly lighter Navy */
       --brand-text:        #FFFFFF;
       --brand-text-muted:  rgba(255,255,255,0.7);
-      
+
       /* Action Colors */
       --primary:           #6366F1;       /* Indigo */
       --primary-hover:     #4F46E5;
       --primary-light:     #EEF0FE;
-      
+
       /* Utilities */
       --gold:              #F59E0B;
       --radius:            20px;
@@ -49,18 +49,18 @@
       --text:              #F1F5F9;       /* Bright White/Gray */
       --muted:             #94A3B8;
       --border:            #334155;       /* Lighter border for visibility */
-      
+
       /* Brand Colors (Hero/Footer) - Stay Dark */
       --brand-bg:          #020617;       /* Almost Black for Hero */
       --brand-bg-accent:   #0F1729;       /* Navy Accent */
       --brand-text:        #FFFFFF;
       --brand-text-muted:  rgba(255,255,255,0.75);
-      
+
       /* Action Colors in Dark */
       --primary:           #818CF8;       /* Lighter Indigo */
       --primary-hover:     #6366F1;
       --primary-light:     #1E1B4B;
-      
+
       /* Utilities */
       --nav:               rgba(11,15,30,0.9);
     }
@@ -179,6 +179,17 @@
       font-size: 1rem; font-weight: 800; color: var(--text);
       line-height: 1.2;
     }
+
+    .brand-logo {
+      height: auto;
+      width: auto;
+      max-width: 200px;
+      display: block;
+      animation: float 4s ease-in-out;
+    }
+    @keyframes float {
+    50%  { transform: translateY(-15px); }
+}
     .brand-tagline {
       font-size: 0.7rem; color: var(--muted); font-weight: 500;
       letter-spacing: 0.03em; text-transform: uppercase;
@@ -202,7 +213,7 @@
       font-size: 1rem; transition: background 0.2s; color: var(--text);
     }
     .theme-toggle:hover { background: var(--border); }
-    
+
     /* Icon Visibility Logic */
     [data-theme="light"] .icon-sun { display: none; }
     [data-theme="dark"] .icon-moon { display: none; }
@@ -380,15 +391,15 @@
       box-shadow: 0 4px 16px rgba(99,102,241,0.35);
     }
     .path-card.services .path-btn:hover { background: var(--primary-hover); }
-    
+
     /* Dark mode fix for course card button to match dark theme */
     .path-card.courses .path-btn {
-      background: #0F1729; 
+      background: #0F1729;
       color: #fff;
       box-shadow: 0 4px 16px rgba(15,23,41,0.2);
     }
     [data-theme="dark"] .path-card.courses .path-btn {
-      background: #1E293B; 
+      background: #1E293B;
       border: 1px solid #334155;
     }
     .path-card.courses .path-btn:hover { background: #334155; }
@@ -581,9 +592,8 @@
     <li><a href="#" class="active-page">🏠 About Us</a></li>
     <li><a href="{{ url_for('courses') }}">📚 Courses</a></li>
     <li><a href="{{ url_for('services') }}">🚀 Services</a></li>
-    <li><a href="{{ url_for('gallery') }}">🖼️ Gallery</a></li>
     <li><a href="{{ url_for('login') }}">🔐 Login</a></li>
-    
+    <li><a href="{{ url_for('gallery') }}">🖼️ Gallery</a></li>
   </ul>
 </div>
 
@@ -613,21 +623,9 @@
 <!-- HEADER -->
 <header>
   <div class="container nav">
-    <div class="brand">
-      <div class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20 22C28 14 38 10 52 10C67 10 79 16 86 27" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-          <path d="M18 48H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-          <path d="M18 64H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-          <path d="M54 23V86" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-          <path d="M22 88H76C86 88 92 82 92 73C92 63 85 58 74 58H54" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div class="brand-copy">
-        <h1>Growth Steps</h1>
-        <div class="brand-tagline">Web Dev &amp; Gen AI Training</div>
-      </div>
-    </div>
+    <a class="brand" href="#">
+      <img class="brand-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="Growth Steps" />
+    </a>
     <div class="nav-row">
       <nav aria-label="Primary">
         <ul>
@@ -638,9 +636,11 @@
           <li><a href="#contact">Contact</a></li>
           <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
           <li><a href="{{ url_for('login') }}">Login</a></li>
+
           <!-- <li><a href="{{ url_for('signup') }}">Register</a></li> -->
         </ul>
       </nav>
+      
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode">
         <span class="icon-sun" aria-hidden="true">☀️</span>
         <span class="icon-moon" aria-hidden="true">🌙</span>
