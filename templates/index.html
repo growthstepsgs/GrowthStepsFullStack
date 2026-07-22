@@ -101,7 +101,12 @@
       animation: loadprog 1.4s ease-in-out forwards;
     }
     @keyframes loadprog { from { width: 0 } to { width: 100% } }
-    .loader-sub { font-size: 0.8rem; opacity: 0.55; }
+    .loader-sub { 
+      font-size: 0.8rem;
+      opacity: 0.55;
+      font-family: 'Courier New', Courier, monospace;
+    
+    }
 
     /* ── SKIP LINK ────────────────────────────────────── */
     .skip-link {
@@ -185,7 +190,7 @@
       width: auto;
       max-width: 200px;
       display: block;
-      animation: float 4s ease-in-out;
+      animation: float 3s ease-in-out;
     }
     @keyframes float {
     50%  { transform: translateY(-15px); }
@@ -256,7 +261,7 @@
     .hero-eyebrow span { width: 6px; height: 6px; background: #6366F1; border-radius: 50%; display: block; }
 
     .hero h2 {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family:Georgia, 'Times New Roman', Times, serif;
       font-size: clamp(2.2rem, 5vw, 3.8rem);
       font-weight: 800; line-height: 1.1;
       color: var(--brand-text); max-width: 760px;
@@ -603,16 +608,11 @@
 <!-- LOADER -->
 <div id="gs-loader" aria-hidden="true">
   <div class="loader-inner">
-    <div class="loader-logo">
-      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20 22C28 14 38 10 52 10C67 10 79 16 86 27" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-        <path d="M18 48H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-        <path d="M18 64H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-        <path d="M54 23V86" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-        <path d="M22 88H76C86 88 92 82 92 73C92 63 85 58 74 58H54" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <div class="loader-wordmark">Growth Steps</div>
+    <div class="container nav">
+    <a class="brand" href="#">
+      <img class="brand-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="Growth Steps" />
+    </a></div>
+    
     <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
     <div class="loader-sub">Loading your experience…</div>
   </div>
