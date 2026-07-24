@@ -3,9 +3,437 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Workshop Gallery | GS-Growth Steps</title>
-  <meta name="description" content="Photos from the Agentic AI workshop conducted ." />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+  <title>Workshop Gallery | Growth Steps</title>
+  <meta name="description" content="Photos from the Agentic AI workshop conducted by Growth Steps." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Product+Sans:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── RESET & BASE ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:                #ffffff;
+      --bg-secondary:      #f8f9fa;
+      --surface:           #ffffff;
+      --surface-hover:     #f1f3f4;
+      --surface-active:    #e8eaed;
+      --text:              #202124;
+      --text-secondary:    #5f6368;
+      --text-tertiary:     #80868b;
+      --border:            #dadce0;
+      --border-light:      #e8eaed;
+
+      --blue:              #1a73e8;
+      --blue-hover:        #1765cc;
+      --blue-light:        #e8f0fe;
+      --blue-text:         #1967d2;
+
+      --green:             #137333;
+      --green-light:       #e6f4ea;
+      --yellow:            #b06000;
+      --yellow-light:      #fef7e0;
+      --red:               #c5221f;
+      --red-light:         #fce8e6;
+
+      --radius:            8px;
+      --radius-lg:         16px;
+      --radius-xl:         24px;
+      --shadow-1:          0 1px 2px rgba(60,64,67,0.1), 0 1px 3px rgba(60,64,67,0.08);
+      --shadow-2:          0 1px 3px rgba(60,64,67,0.15), 0 4px 8px rgba(60,64,67,0.1);
+      --shadow-3:          0 2px 6px rgba(60,64,67,0.15), 0 8px 24px rgba(60,64,67,0.1);
+      --nav-bg:            rgba(255,255,255,0.95);
+      --footer-bg:         #f8f9fa;
+      --footer-border:     #dadce0;
+      --form-input-bg:     #ffffff;
+    }
+
+    [data-theme="dark"] {
+      --bg:                #202124;
+      --bg-secondary:      #171717;
+      --surface:           #292a2d;
+      --surface-hover:     #3c4043;
+      --surface-active:    #4a4d51;
+      --text:              #e8eaed;
+      --text-secondary:    #9aa0a6;
+      --text-tertiary:     #80868b;
+      --border:            #3c4043;
+      --border-light:      #35363a;
+
+      --blue:              #8ab4f8;
+      --blue-hover:        #aecbfa;
+      --blue-light:        #1a3352;
+      --blue-text:         #8ab4f8;
+
+      --green:             #81c995;
+      --green-light:       #1b3626;
+      --yellow:            #fdd663;
+      --yellow-light:      #3e2723;
+      --red:               #f28b82;
+      --red-light:         #3c2021;
+
+      --shadow-1:          0 1px 2px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.15);
+      --shadow-2:          0 1px 3px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.2);
+      --shadow-3:          0 2px 6px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.25);
+      --nav-bg:            rgba(32,33,36,0.95);
+      --footer-bg:         #171717;
+      --footer-border:     #3c4043;
+      --form-input-bg:     #292a2d;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    /* ── LOADER ───────────────────────────────────────── */
+    #gs-loader {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.4s ease;
+    }
+    #gs-loader.hidden { opacity: 0; pointer-events: none; }
+    .loader-inner { text-align: center; }
+    .loader-logo-wrap { margin-bottom: 24px; }
+    .loader-logo-wrap img {
+      height: 40px; width: auto; display: block; margin: 0 auto;
+      opacity: 0; animation: loaderFadeIn 0.6s 0.2s ease forwards;
+    }
+    @keyframes loaderFadeIn { to { opacity: 1; } }
+    .loader-dots { display: flex; justify-content: center; gap: 6px; margin-top: 20px; }
+    .loader-dots span {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--blue); opacity: 0.3;
+      animation: dotPulse 1.2s ease-in-out infinite;
+    }
+    .loader-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .loader-dots span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes dotPulse {
+      0%, 80%, 100% { opacity: 0.3; transform: scale(1); }
+      40% { opacity: 1; transform: scale(1.15); }
+    }
+
+    /* ── SKIP LINK ────────────────────────────────────── */
+    .skip-link {
+      position: absolute; top: -40px; left: 16px;
+      background: var(--blue); color: #fff;
+      padding: 8px 16px; border-radius: var(--radius); font-size: 14px;
+      transition: top 0.2s; z-index: 10000; text-decoration: none;
+    }
+    .skip-link:focus { top: 8px; }
+
+    /* ── SIDEBAR (MOBILE) ─────────────────────────────── */
+    .menu-toggle {
+      position: fixed; top: 12px; left: 12px; z-index: 1100;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); border-radius: 50%;
+      width: 40px; height: 40px; font-size: 18px;
+      cursor: pointer; display: none; align-items: center; justify-content: center;
+      box-shadow: var(--shadow-1);
+      transition: background 0.15s;
+    }
+    .menu-toggle:hover { background: var(--surface-hover); }
+    @media (max-width: 860px) { .menu-toggle { display: flex; } }
+
+    .sidebar {
+      position: fixed; top: 0; left: -280px; width: 256px; height: 100%;
+      background: var(--surface); z-index: 1200;
+      transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 16px 0; box-shadow: var(--shadow-3);
+    }
+    .sidebar.open { left: 0; }
+    .sidebar-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 16px 20px;
+    }
+    .sidebar-header h3 { font-size: 18px; font-weight: 500; color: var(--text); }
+    .sidebar-header button {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-secondary); font-size: 20px; padding: 8px;
+      border-radius: 50%; transition: background 0.15s;
+    }
+    .sidebar-header button:hover { background: var(--surface-hover); }
+    .sidebar ul { list-style: none; }
+    .sidebar ul li a {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 24px; color: var(--text-secondary);
+      text-decoration: none; font-size: 14px; font-weight: 500;
+      transition: background 0.15s;
+    }
+    .sidebar ul li a:hover { background: var(--surface-hover); color: var(--text); }
+    .sidebar ul li a.active-page {
+      background: var(--blue-light); color: var(--blue-text); font-weight: 600;
+    }
+
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      z-index: 1100; opacity: 0; pointer-events: none; transition: opacity 0.25s;
+    }
+    .overlay.active { opacity: 1; pointer-events: all; }
+
+    /* ── HEADER ───────────────────────────────────────── */
+    header {
+      position: sticky; top: 0; z-index: 900;
+      background: var(--nav-bg);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; gap: 16px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+    .brand-logo { height: 30px; width: auto; display: block; }
+
+    .nav-row { display: flex; align-items: center; gap: 8px; }
+    nav ul { list-style: none; display: flex; gap: 2px; }
+    nav ul li a {
+      padding: 8px 14px; border-radius: var(--radius);
+      color: var(--text-secondary); font-size: 14px; font-weight: 500;
+      text-decoration: none; transition: color 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+    nav ul li a:hover { color: var(--text); background: var(--surface-hover); }
+    nav ul li a.active { color: var(--blue-text); background: var(--blue-light); }
+
+    @media (max-width: 860px) { nav { display: none; } }
+
+    .theme-toggle {
+      background: none; border: none; border-radius: 50%;
+      cursor: pointer; padding: 8px; font-size: 18px;
+      transition: background 0.15s; color: var(--text-secondary);
+      line-height: 1;
+    }
+    .theme-toggle:hover { background: var(--surface-hover); }
+    [data-theme="light"] .icon-sun { display: none; }
+    [data-theme="dark"] .icon-moon { display: none; }
+
+    /* ── HERO ─────────────────────────────────────────── */
+    .hero {
+      padding: 72px 0 56px;
+      background: var(--bg);
+      text-align: center;
+    }
+    .hero-inner {
+      max-width: 680px; margin: 0 auto;
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--blue-light); color: var(--blue-text);
+      font-size: 12px; font-weight: 600;
+      padding: 6px 14px; border-radius: 99px;
+      letter-spacing: 0.02em;
+    }
+    .hero-eyebrow .dot { width: 6px; height: 6px; background: var(--blue); border-radius: 50%; }
+    .hero h2 {
+      font-family: 'Google Sans', 'Inter', sans-serif;
+      font-size: clamp(26px, 5vw, 40px);
+      font-weight: 400; line-height: 1.25;
+      color: var(--text);
+    }
+    .hero h2 strong { font-weight: 700; }
+    .hero-sub { font-size: 15px; color: var(--text-secondary); line-height: 1.7; max-width: 480px; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px 24px; border-radius: var(--radius);
+      font-family: 'Google Sans', 'Inter', sans-serif;
+      font-size: 14px; font-weight: 500;
+      text-decoration: none; cursor: pointer; border: none;
+      transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+      min-height: 40px;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-filled { background: var(--blue); color: #fff; box-shadow: var(--shadow-1); }
+    .btn-filled:hover { background: var(--blue-hover); box-shadow: var(--shadow-2); }
+    .btn-outlined { background: var(--surface); color: var(--blue-text); border: 1px solid var(--border); }
+    .btn-outlined:hover { background: var(--blue-light); border-color: transparent; }
+
+    .hero-cta-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
+
+    .hero-stats {
+      display: flex; gap: 32px; flex-wrap: wrap; justify-content: center;
+      padding-top: 24px; margin-top: 8px;
+      border-top: 1px solid var(--border-light);
+    }
+    .stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .stat strong {
+      font-family: 'Google Sans', 'Inter', sans-serif;
+      font-size: 22px; font-weight: 700; color: var(--text);
+    }
+    .stat span { font-size: 12px; color: var(--text-tertiary); }
+
+    /* ── SECTION COMMON ───────────────────────────────── */
+    .section { padding: 56px 0; }
+    .section-title { text-align: center; margin-bottom: 36px; }
+    .section-title h2 {
+      font-family: 'Google Sans', 'Inter', sans-serif;
+      font-size: clamp(22px, 3vw, 28px); font-weight: 400; color: var(--text);
+    }
+    .section-title p { margin-top: 8px; font-size: 14px; color: var(--text-secondary); }
+
+    /* ── GALLERY MASONRY ──────────────────────────────── */
+    .gallery-masonry {
+      columns: 3 220px;
+      column-gap: 16px;
+    }
+    @media (max-width: 700px) { .gallery-masonry { columns: 2 160px; } }
+
+    .gallery-card {
+      break-inside: avoid;
+      margin-bottom: 16px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      cursor: pointer;
+      box-shadow: var(--shadow-1);
+      transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+      position: relative;
+    }
+    .gallery-card:hover {
+      box-shadow: var(--shadow-3);
+      transform: translateY(-3px);
+      border-color: var(--border);
+    }
+    .gallery-card img { width: 100%; display: block; }
+    .gallery-caption {
+      padding: 12px 14px;
+      font-size: 13px; font-weight: 500; color: var(--text);
+      border-top: 1px solid var(--border-light);
+      background: var(--surface);
+    }
+
+    /* subtle top accent per tint, echoing the Google 4-color palette */
+    .gallery-tint-0::before,
+    .gallery-tint-1::before,
+    .gallery-tint-2::before,
+    .gallery-tint-3::before,
+    .gallery-tint-4::before {
+      content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; z-index: 1;
+    }
+    .gallery-tint-0::before { background: var(--blue); }
+    .gallery-tint-1::before { background: var(--green); }
+    .gallery-tint-2::before { background: var(--yellow); }
+    .gallery-tint-3::before { background: var(--red); }
+    .gallery-tint-4::before { background: var(--blue-text); }
+
+    .form-warning {
+      text-align: center; padding: 40px 20px;
+      color: var(--text-secondary); font-size: 14px;
+      background: var(--bg-secondary); border-radius: var(--radius-lg);
+      border: 1px dashed var(--border);
+    }
+
+    /* ── LIGHTBOX ─────────────────────────────────────── */
+    .gallery-lightbox {
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,0.85);
+      display: none; align-items: center; justify-content: center;
+      flex-direction: column; padding: 32px;
+      backdrop-filter: blur(4px);
+    }
+    .gallery-lightbox.active { display: flex; }
+    .gallery-lightbox img {
+      max-width: 90vw; max-height: 78vh;
+      border-radius: var(--radius); box-shadow: var(--shadow-3);
+    }
+    .gallery-lightbox-caption {
+      margin-top: 16px; color: #fff; font-size: 14px;
+      max-width: 600px; text-align: center;
+    }
+    .gallery-lightbox-close {
+      position: absolute; top: 20px; right: 24px;
+      background: rgba(255,255,255,0.12); border: none; color: #fff;
+      width: 40px; height: 40px; border-radius: 50%;
+      font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .gallery-lightbox-close:hover { background: rgba(255,255,255,0.24); }
+
+    /* ── CONTACT / CTA CARD ───────────────────────────── */
+    .contact-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 36px 32px;
+      max-width: 640px;
+      margin: 0 auto;
+      box-shadow: var(--shadow-1);
+    }
+    .contact-card h4 {
+      font-family: 'Google Sans', 'Inter', sans-serif;
+      font-size: 18px; font-weight: 500; color: var(--text);
+      margin-bottom: 20px; line-height: 1.4; text-align: center;
+    }
+    .contact-form { display: flex; flex-direction: column; gap: 16px; }
+    .contact-form label {
+      display: block; font-size: 13px; font-weight: 500;
+      color: var(--text-secondary); margin-bottom: 6px;
+    }
+    .contact-form input,
+    .contact-form select,
+    .contact-form textarea {
+      width: 100%; padding: 13px 16px; border-radius: 14px;
+      border: 1px solid var(--border); background: var(--form-input-bg);
+      color: var(--text); font-family: inherit; font-size: 14px;
+      transition: 220ms ease;
+    }
+    .contact-form input:focus,
+    .contact-form select:focus,
+    .contact-form textarea:focus {
+      outline: none; border-color: var(--blue);
+      box-shadow: 0 0 0 3px var(--blue-light);
+    }
+    .contact-form textarea { resize: vertical; min-height: 90px; }
+    .contact-form button { margin-top: 4px; width: 100%; }
+
+    /* ── FOOTER ───────────────────────────────────────── */
+    footer {
+      background: var(--footer-bg);
+      border-top: 1px solid var(--footer-border);
+      padding: 20px 0;
+    }
+    .footer-box {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .footer-box span { font-size: 13px; color: var(--text-tertiary); }
+    .footer-links { display: flex; gap: 4px; flex-wrap: wrap; }
+    .footer-links a {
+      padding: 6px 12px; border-radius: var(--radius);
+      color: var(--text-secondary); font-size: 13px;
+      text-decoration: none; transition: background 0.15s, color 0.15s;
+    }
+    .footer-links a:hover { color: var(--text); background: var(--surface-hover); }
+
+    /* ── REVEAL ANIMATIONS ────────────────────────────── */
+    .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    @media (max-width: 600px) {
+      .hero { padding: 48px 0 40px; }
+      .section { padding: 40px 0; }
+      .contact-card { padding: 28px 20px; }
+      .nav { height: 56px; }
+    }
+  </style>
 </head>
 <body>
 
@@ -15,7 +443,7 @@
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar" aria-hidden="true">
   <div class="sidebar-header">
-    <h3>GS-Growth Steps</h3>
+    <h3>Growth Steps</h3>
     <button id="closeSidebar" aria-label="Close navigation">✕</button>
   </div>
   <ul>
@@ -23,7 +451,7 @@
     <li><a href="{{ url_for('courses') }}">📚 Courses</a></li>
     <li><a href="{{ url_for('services') }}">🚀 Services</a></li>
     <li><a href="{{ url_for('gallery') }}" class="active-page">🖼️ Gallery</a></li>
-<li><a href="{{ url_for('login') }}">🔐 Login</a></li>
+    <li><a href="{{ url_for('login') }}">🔐 Login</a></li>
   </ul>
 </div>
 
@@ -33,18 +461,10 @@
 <!-- ═══ LOADING SCREEN ═══ -->
 <div id="gs-loader" aria-hidden="true">
   <div class="loader-inner">
-    <div class="loader-logo">
-      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20 22C28 14 38 10 52 10C67 10 79 16 86 27" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-        <path d="M18 48H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-        <path d="M18 64H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-        <path d="M54 23V86" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-        <path d="M22 88H76C86 88 92 82 92 73C92 63 85 58 74 58H54" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-      </svg>
+    <div class="loader-logo-wrap">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Growth Steps" />
     </div>
-    <div class="loader-wordmark">GS-Growth Steps</div>
-    <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
-    <div class="loader-sub">Loading your experience…</div>
+    <div class="loader-dots"><span></span><span></span><span></span></div>
   </div>
 </div>
 
@@ -53,31 +473,20 @@
 <!-- ═══ HEADER ═══ -->
 <header>
   <div class="container nav">
-    <div class="brand">
-      <div class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20 22C28 14 38 10 52 10C67 10 79 16 86 27" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-          <path d="M18 48H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-          <path d="M18 64H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-          <path d="M54 23V86" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-          <path d="M22 88H76C86 88 92 82 92 73C92 63 85 58 74 58H54" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div class="brand-copy">
-        <h1>GS-Growth Steps</h1>
-        <p>A place to Grow</p>
-      </div>
-    </div>
+    <a class="brand" href="{{ url_for('home') }}">
+      <img class="brand-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="Growth Steps" />
+    </a>
     <div class="nav-row">
       <nav aria-label="Gallery navigation">
         <ul>
-          <li><a href="#gallery">Photos</a></li>
-          <li><a href="#about-workshop">About the Workshop</a></li>
+          <li><a href="#gallery" class="active">Photos</a></li>
+          <li><a href="{{ url_for('courses') }}">Courses</a></li>
           <li><a href="{{ url_for('services') }}">Services</a></li>
+          <li><a href="#contact">Contact</a></li>
         </ul>
       </nav>
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode" title="Toggle theme">
-        <span class="icon-sun"  aria-hidden="true">☀️</span>
+        <span class="icon-sun" aria-hidden="true">☀️</span>
         <span class="icon-moon" aria-hidden="true">🌙</span>
       </button>
     </div>
@@ -86,30 +495,29 @@
 
 <main id="main">
 
-
   <!-- ═══ HERO ═══ -->
-  <section class="hero services-hero">
+  <section class="hero">
     <div class="container">
-      <article class="hero-card hero-main reveal">
-        <div class="eyebrow">🖼️ Workshop Gallery</div>
-        <h2>Welcome to Growth Steps Gallery <span>Explore About us More here</span></h2>
-        
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="#gallery">View Photos ↓</a>
-          <a class="btn btn-secondary" href="{{ url_for('courses') }}">See Upcoming Workshops</a>
+      <div class="hero-inner reveal">
+        <div class="hero-eyebrow">
+          <span class="dot"></span>
+          Workshop Gallery
+        </div>
+        <h2>A look inside our <strong>Agentic AI Workshop</strong></h2>
+        <p class="hero-sub">Explore moments from our hands-on Agentic AI session — real builds, real learning, real energy.</p>
+        <div class="hero-cta-row">
+          <a class="btn btn-filled" href="#gallery">View Photos ↓</a>
+          <a class="btn btn-outlined" href="{{ url_for('courses') }}">See Upcoming Workshops</a>
         </div>
         <div class="hero-stats">
           <div class="stat"><strong>120+</strong><span>Students Attended</span></div>
           <div class="stat"><strong>1</strong><span>Workshop</span></div>
           <div class="stat"><strong>Live</strong><span>Hands-On Build Sessions</span></div>
         </div>
-      </article>
+      </div>
     </div>
   </section>
 
-  
-
-  <!-- ═══ PHOTO GALLERY ═══ -->
   <!-- ═══ PHOTO GALLERY ═══ -->
   <section class="section" id="gallery">
     <div class="container">
@@ -142,48 +550,46 @@
   </div>
 
   <!-- ═══ CTA ═══ -->
-<div class="container">
-<article class="contact-card reveal">
-  
-          <h4>Send a Mail If you need any Agentic AI awarness Program At you Campus Like this </h4>
-          
-          <form id="contactForm" class="contact-form">
-            <div>
-              <label for="name">Your Name</label>
-              <input id="name" name="name" type="text" placeholder="Enter your name" required />
-            </div>
-            <div>
-              <label for="email">Your Email</label>
-              <input id="email" name="email" type="email" placeholder="Enter your email" required />
-            </div>
-            <div>
-              <label for="projectType">Session Requirement</label>
-              <select id="projectType" name="projectType"
-                style="width:100%;padding:13px 16px;border-radius:14px;border:1px solid var(--border);background:var(--form-input-bg);color:var(--text);font-family:inherit;font-size:1rem;transition:220ms ease;cursor:pointer;">
-                <option value="" disabled selected>Select a project type…</option>
-                <option value="Portfolio Website">Agentic AI Awareness Program</option>
-                <option value="Business Website">Chief Guest Lecture</option>
-                <option value="Landing Page">Workshop Session</option>
-                
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label for="message">Session Details</label>
-              <textarea id="message" name="message" rows="4"
-                placeholder="Describe your Session Requirements and timeline…"
-                required></textarea>
-            </div>
-            <button class="btn btn-primary" type="submit">Send Inquiry</button>
-          </form>
-        </article>
+  <section class="section section-alt" id="contact">
+    <div class="container">
+      <article class="contact-card reveal">
+        <h4>Send a mail if you need an Agentic AI awareness program at your campus, like this one.</h4>
+
+        <form id="contactForm" class="contact-form">
+          <div>
+            <label for="name">Your Name</label>
+            <input id="name" name="name" type="text" placeholder="Enter your name" required />
+          </div>
+          <div>
+            <label for="email">Your Email</label>
+            <input id="email" name="email" type="email" placeholder="Enter your email" required />
+          </div>
+          <div>
+            <label for="projectType">Session Requirement</label>
+            <select id="projectType" name="projectType">
+              <option value="" disabled selected>Select a project type…</option>
+              <option value="Portfolio Website">Agentic AI Awareness Program</option>
+              <option value="Business Website">Chief Guest Lecture</option>
+              <option value="Landing Page">Workshop Session</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="message">Session Details</label>
+            <textarea id="message" name="message" rows="4" placeholder="Describe your session requirements and timeline…" required></textarea>
+          </div>
+          <button class="btn btn-filled" type="submit">Send Inquiry</button>
+        </form>
+      </article>
+    </div>
+  </section>
+
 </main>
-</div>
 
 <!-- ═══ FOOTER ═══ -->
 <footer>
   <div class="container footer-box">
-    <span>© 2026 GS-Growth Steps · Vijay Sarathi R S</span>
+    <span>© 2026 Growth Steps · Vijay Sarathi R S</span>
     <div class="footer-links">
       <a href="{{ url_for('home') }}">Home</a>
       <a href="{{ url_for('courses') }}">Courses</a>
@@ -195,6 +601,99 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script>
+  // ── THEME INITIALIZATION ──
+  const savedTheme = localStorage.getItem('gs-theme');
+  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', initialTheme);
+
+  // ── LOADER ──
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      const loader = document.getElementById('gs-loader');
+      if (loader) {
+        loader.classList.add('hidden');
+        setTimeout(() => loader.remove(), 500);
+      }
+    }, 1000);
+  });
+
+  // ── SIDEBAR ──
+  const menuToggle   = document.getElementById('menuToggle');
+  const sidebar      = document.getElementById('sidebar');
+  const closeSidebar = document.getElementById('closeSidebar');
+  const overlay      = document.getElementById('overlay');
+
+  function openSidebar() {
+    sidebar.classList.add('open');
+    overlay.classList.add('active');
+    sidebar.setAttribute('aria-hidden', 'false');
+  }
+  function closeSidebarFn() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+    sidebar.setAttribute('aria-hidden', 'true');
+  }
+  if (menuToggle)   menuToggle.addEventListener('click', openSidebar);
+  if (closeSidebar) closeSidebar.addEventListener('click', closeSidebarFn);
+  if (overlay)      overlay.addEventListener('click', closeSidebarFn);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sidebar.classList.contains('open')) closeSidebarFn();
+  });
+
+  // ── THEME TOGGLE ──
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next    = current === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('gs-theme', next);
+    });
+  }
+
+  // ── REVEAL ON SCROLL ──
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(
+    (entries) => entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    }),
+    { threshold: 0.1 }
+  );
+  reveals.forEach(el => observer.observe(el));
+
+  // ── SMOOTH SCROLL FOR ANCHOR LINKS ──
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      const targetId = this.getAttribute('href');
+      if (targetId === '#') return;
+      const target = document.querySelector(targetId);
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // ── LIGHTBOX ──
+  function openLightbox(src, caption) {
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightboxCaption').textContent = caption;
+    document.getElementById('galleryLightbox').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox(e) {
+    if (e.target.id === 'galleryLightbox' || e.target.classList.contains('gallery-lightbox-close')) {
+      document.getElementById('galleryLightbox').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  }
+</script>
+
 </body>
 </html>
