@@ -1,119 +1,219 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="light">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign Up | GS-Growth Steps</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
-</head>
-<body>
+{% extends 'base.html' %}
 
-<button class="menu-toggle" id="menuToggle" aria-label="Open navigation menu">☰</button>
+{% block title %}Sign Up | Growth Steps{% endblock %}
+{% block description %}Create your Growth Steps employee account.{% endblock %}
 
-<div class="sidebar" id="sidebar" aria-hidden="true">
-  <div class="sidebar-header">
-    <h3>GS-Growth Steps</h3>
-    <button id="closeSidebar" aria-label="Close navigation">✕</button>
-  </div>
-  <ul>
-    <li><a href="{{ url_for('home') }}">🏠 Home</a></li>
-    <li><a href="{{ url_for('courses') }}">📚 Courses</a></li>
-    <li><a href="{{ url_for('services') }}">🚀 Services</a></li>
-    <li><a href="{{ url_for('signup') }}" class="active-page">📝 Sign Up</a></li>
-  </ul>
-</div>
-<div class="overlay" id="overlay"></div>
+{% block styles %}
+<style>
+  /* ── SIGNUP PAGE
+     Paste these into static/css/styles.css, then delete this block */
 
-<a class="skip-link" href="#main">Skip to content</a>
+  .auth-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 72px - 64px);
+    padding: var(--space-8) var(--space-4);
+  }
 
-<header>
-  <div class="container nav">
-    <div class="brand">
-      <div class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20 22C28 14 38 10 52 10C67 10 79 16 86 27" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-          <path d="M18 48H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-          <path d="M18 64H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-          <path d="M54 23V86" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-          <path d="M22 88H76C86 88 92 82 92 73C92 63 85 58 74 58H54" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div class="brand-copy">
-        <h1>GS-Growth Steps</h1>
-        <p>Freelance Web Development</p>
-      </div>
-    </div>
-    <div class="nav-row">
-      <nav aria-label="Main navigation">
-        <ul>
-          <li><a href="{{ url_for('home') }}">Home</a></li>
-          <li><a href="{{ url_for('courses') }}">Courses</a></li>
-          <li><a href="{{ url_for('services') }}">Services</a></li>
-        </ul>
-      </nav>
-      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode" title="Toggle theme">
-        <span class="icon-sun" aria-hidden="true">☀️</span>
-        <span class="icon-moon" aria-hidden="true">🌙</span>
-      </button>
-    </div>
-  </div>
-</header>
+  .auth-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+    width: 100%;
+    max-width: 460px;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+  }
 
-<main id="main">
-  <section class="section" style="padding-top:60px;">
-    <div class="container" style="max-width:520px;">
+  .auth-card:hover {
+    box-shadow: var(--shadow-lg);
+  }
 
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          {% for category, msg in messages %}
-            <div class="form-warning reveal visible" style="margin-bottom:18px; {{ 'border-color:#c0392b;color:#c0392b;' if category=='error' else '' }}">
-              {{ msg }}
-            </div>
-          {% endfor %}
-        {% endif %}
-      {% endwith %}
+  .auth-header {
+    text-align: center;
+    margin-bottom: var(--space-6);
+  }
 
-      <article class="contact-card reveal visible">
-        <h2>Create Your Account</h2>
-        <p> ! For Now create a profile not everyone can login. there is no permission</p>
-        <p>New accounts are registered as employees.</p>
+  .auth-header h1 {
+    font-size: var(--text-2xl);
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: var(--space-2);
+  }
 
-        <form class="contact-form" method="POST" action="{{ url_for('signup') }}">
-          <div>
+  .auth-header .note {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    background: var(--warning-bg);
+    color: var(--warning);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    margin-bottom: var(--space-3);
+  }
+
+  .auth-header p {
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+  }
+
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  .auth-form .form-group {
+    margin: 0;
+  }
+
+  .auth-form label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: var(--space-2);
+  }
+
+  .auth-form input {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-family: inherit;
+    font-size: var(--text-base);
+    transition: all var(--transition-fast);
+    outline: none;
+  }
+
+  .auth-form input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+
+  .auth-form input::placeholder {
+    color: var(--text-subtle);
+  }
+
+  .auth-form .btn {
+    width: 100%;
+    justify-content: center;
+    margin-top: var(--space-2);
+  }
+
+  .auth-footer {
+    text-align: center;
+    margin-top: var(--space-6);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--border-light);
+  }
+
+  .auth-footer p {
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .auth-footer a {
+    color: var(--primary-text);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color var(--transition-fast);
+  }
+
+  .auth-footer a:hover {
+    color: var(--primary);
+  }
+
+  .alert {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius);
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-5);
+    border: 1px solid transparent;
+  }
+
+  .alert-error {
+    background: var(--red-light);
+    color: var(--red);
+    border-color: var(--red-light);
+  }
+
+  .alert-success {
+    background: var(--success-bg);
+    color: var(--success);
+    border-color: var(--success-bg);
+  }
+
+  @media (max-width: 640px) {
+    .auth-card {
+      padding: var(--space-6);
+      border: none;
+      box-shadow: none;
+      background: transparent;
+    }
+    .auth-page {
+      padding: var(--space-4);
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+  <div class="auth-page">
+    <div class="container" style="display: flex; justify-content: center;">
+      
+      <article class="auth-card reveal">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, msg in messages %}
+              <div class="alert alert-{{ category }} reveal visible">
+                {{ msg }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="auth-header">
+          <h1>Create Your Account</h1>
+          <span class="note">
+            <span aria-hidden="true">⚠️</span>
+            For now, profile creation is restricted
+          </span>
+          <p>New accounts are registered as employees.</p>
+        </div>
+
+        <form class="auth-form" method="POST" action="{{ url_for('signup') }}">
+          <div class="form-group">
             <label for="name">Full Name</label>
-            <input id="name" name="name" type="text" placeholder="Your name" required />
+            <input id="name" name="name" type="text" placeholder="Your name" required autocomplete="name" />
           </div>
-          <div>
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" placeholder="you@example.com" required />
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input id="email" name="email" type="email" placeholder="you@example.com" required autocomplete="email" />
           </div>
-          <div>
+          <div class="form-group">
             <label for="password">Password</label>
-            <input id="password" name="password" type="password" placeholder="••••••••" minlength="6" required />
+            <input id="password" name="password" type="password" placeholder="••••••••" minlength="6" required autocomplete="new-password" />
           </div>
           <button class="btn btn-primary" type="submit">Sign Up</button>
         </form>
 
-        <div class="form-warning" style="margin-top:20px;">
-          Already have an account? <a href="{{ url_for('login') }}" style="text-decoration:underline;">Log in</a>.
+        <div class="auth-footer">
+          <p>Already have an account? <a href="{{ url_for('login') }}">Log in</a>.</p>
         </div>
       </article>
 
     </div>
-  </section>
-</main>
-
-<footer>
-  <div class="container footer-box">
-    <span>© 2026 GS-Growth Steps · Vijay Sarathi R S</span>
-    <div class="footer-links">
-      <a href="{{ url_for('home') }}">Home</a>
-      <a href="{{ url_for('courses') }}">Courses</a>
-      <a href="{{ url_for('services') }}">Services</a>
-    </div>
   </div>
-</footer>
 
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
-</body>
-</html>
+{% endblock %}
