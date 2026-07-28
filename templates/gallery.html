@@ -1,184 +1,189 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="light">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Workshop Gallery | GS-Growth Steps</title>
-  <meta name="description" content="Photos from the Agentic AI workshop conducted ." />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
-</head>
-<body>
+{% extends 'base.html' %}
 
-<!-- ☰ SIDEBAR TOGGLE -->
-<button class="menu-toggle" id="menuToggle" aria-label="Open navigation menu">☰</button>
+{% block title %}Workshop Gallery | Growth Steps{% endblock %}
+{% block description %}Photos from the Agentic AI workshop conducted by Growth Steps. Explore moments from our live hands-on build sessions.{% endblock %}
 
-<!-- SIDEBAR -->
-<div class="sidebar" id="sidebar" aria-hidden="true">
-  <div class="sidebar-header">
-    <h3>GS-Growth Steps</h3>
-    <button id="closeSidebar" aria-label="Close navigation">✕</button>
-  </div>
-  <ul>
-    <li><a href="{{ url_for('home') }}">🏠 Home</a></li>
-    <li><a href="{{ url_for('courses') }}">📚 Courses</a></li>
-    <li><a href="{{ url_for('services') }}">🚀 Services</a></li>
-    <li><a href="{{ url_for('gallery') }}" class="active-page">🖼️ Gallery</a></li>
-<li><a href="{{ url_for('login') }}">🔐 Login</a></li>
-  </ul>
-</div>
+{% block content %}
 
-<!-- OVERLAY -->
-<div class="overlay" id="overlay"></div>
-
-<!-- ═══ LOADING SCREEN ═══ -->
-<div id="gs-loader" aria-hidden="true">
-  <div class="loader-inner">
-    <div class="container nav">
-    <a class="brand" href="#">
-      <img class="brand-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="Growth Steps" />
-    </a></div>
-    
-    <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
-    <div class="loader-sub">Loading your experience…</div>
-  </div>
-</div>
-
-<a class="skip-link" href="#main">Skip to content</a>
-
-<!-- ═══ HEADER ═══ -->
-<header>
-<div class="container nav">
-    <a class="brand" href="#">
-      <img class="brand-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="Growth Steps" />
-    </a>
-</div>
-    <div class="nav-row">
-      <nav aria-label="Gallery navigation">
-        <ul>
-          <li><a href="#gallery">Photos</a></li>
-          <li><a href="#about-workshop">About the Workshop</a></li>
-          <li><a href="{{ url_for('services') }}">Services</a></li>
-        </ul>
-      </nav>
-      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode" title="Toggle theme">
-        <span class="icon-sun"  aria-hidden="true">☀️</span>
-        <span class="icon-moon" aria-hidden="true">🌙</span>
-      </button>
-    </div>
-  </div>
-</header>
-
-<main id="main">
-
-
-  <!-- ═══ HERO ═══ -->
-  <section class="hero services-hero">
+  <!-- Gallery Hero -->
+  <section class="hero" style="padding-bottom: var(--space-8);" aria-labelledby="gallery-hero-heading">
     <div class="container">
-      <article class="hero-card hero-main reveal">
-        <div class="eyebrow">🖼️ Workshop Gallery</div>
-        <h2>Welcome to Growth Steps Gallery <span>Explore About us More here</span></h2>
-        
+      <div class="hero-inner reveal">
+        <div class="eyebrow">
+          <span class="eyebrow-dot" aria-hidden="true"></span>
+          Workshop Gallery
+        </div>
+        <h1 id="gallery-hero-heading" class="heading-hero">
+          Moments from our <br><strong>Agentic AI Workshop</strong>
+        </h1>
+        <p class="body-large">
+          A visual journey through our live sessions — students building, learning, and deploying real AI applications together.
+        </p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="#gallery">View Photos ↓</a>
-          <a class="btn btn-secondary" href="{{ url_for('courses') }}">See Upcoming Workshops</a>
+          <a class="btn btn-primary" href="#gallery">View Photos</a>
+          <a class="btn btn-secondary" href="{{ url_for('available_courses') }}">Upcoming Workshops</a>
         </div>
-        <div class="hero-stats">
-          <div class="stat"><strong>120+</strong><span>Students Attended</span></div>
-          <div class="stat"><strong>1</strong><span>Workshop</span></div>
-          <div class="stat"><strong>Live</strong><span>Hands-On Build Sessions</span></div>
+
+        <div class="hero-badges" style="border-top: none; padding-top: var(--space-4);">
+          <div class="hero-badge">
+            <strong>120+</strong>
+            <span>Students Attended</span>
+          </div>
+          <div class="hero-badge">
+            <strong>1</strong>
+            <span>Workshop Conducted</span>
+          </div>
+          <div class="hero-badge">
+            <strong>Live</strong>
+            <span>Hands-On Sessions</span>
+          </div>
         </div>
-      </article>
+      </div>
     </div>
   </section>
 
-  
-
-  <!-- ═══ PHOTO GALLERY ═══ -->
-  <!-- ═══ PHOTO GALLERY ═══ -->
-  <section class="section" id="gallery">
+  <!-- Photo Gallery -->
+  <section class="section section-alt" id="gallery" aria-labelledby="photos-heading">
     <div class="container">
-      <div class="section-title reveal">
-        <h2>Photos from the Day</h2>
-        <p>Click any photo to view it larger.</p>
+      <div class="section-header reveal">
+        <span class="eyebrow">The Experience</span>
+        <h2 id="photos-heading" class="heading-section">Photos from the Day</h2>
+        <p>Click any photograph to open the lightbox and view it in full detail.</p>
       </div>
 
-      <div class="gallery-masonry">
-        {% for photo in photos %}
-        <div class="gallery-card reveal gallery-tint-{{ loop.index0 % 5 }}"
-             onclick="openLightbox('{{ photo.image_url }}', '{{ photo.caption|e }}')">
-          <img src="{{ photo.image_url }}" alt="{{ photo.caption }}" loading="lazy" />
-          <div class="gallery-caption"><strong>{{ photo.caption }}</strong></div>
+      {% if photos %}
+        <div class="gallery-masonry">
+          {% for photo in photos %}
+            <figure class="gallery-card reveal gallery-tint-{{ loop.index0 % 5 }}"
+                    onclick="openLightbox('{{ photo.image_url }}', '{{ photo.caption|e }}')"
+                    tabindex="0"
+                    role="button"
+                    aria-label="View enlarged photo: {{ photo.caption }}"
+                    onkeydown="if(event.key==='Enter') openLightbox('{{ photo.image_url }}', '{{ photo.caption|e }}')">
+              <img src="{{ photo.image_url }}" alt="{{ photo.caption }}" loading="lazy" />
+              <figcaption class="gallery-caption">
+                <strong>{{ photo.caption }}</strong>
+              </figcaption>
+            </figure>
+          {% endfor %}
         </div>
-        {% else %}
-        <div class="form-warning" style="grid-column: 1 / -1;">
-          Photos coming soon — check back shortly.
+      {% else %}
+        <div class="empty-state reveal" style="text-align: center; padding: var(--space-12) 0;">
+          <div style="font-size: 3rem; margin-bottom: var(--space-4);" aria-hidden="true">📷</div>
+          <h3 class="heading-card" style="margin-bottom: var(--space-2);">Photos coming soon</h3>
+          <p class="body">Check back shortly — we are curating the best moments from our workshops.</p>
         </div>
-        {% endfor %}
-      </div>
+      {% endif %}
     </div>
   </section>
 
-  <!-- ═══ LIGHTBOX ═══ -->
-  <div class="gallery-lightbox" id="galleryLightbox" onclick="closeLightbox(event)">
-    <button class="gallery-lightbox-close" aria-label="Close" onclick="closeLightbox(event)">✕</button>
+  <!-- Lightbox -->
+  <div class="gallery-lightbox" id="galleryLightbox" role="dialog" aria-modal="true" aria-label="Image lightbox" onclick="closeLightbox(event)">
+    <button class="gallery-lightbox-close" aria-label="Close lightbox" onclick="closeLightbox(event)">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
     <img id="lightboxImg" src="" alt="" />
     <div class="gallery-lightbox-caption" id="lightboxCaption"></div>
   </div>
 
-  <!-- ═══ CTA ═══ -->
-<div class="container">
-<article class="contact-card reveal">
-  
-          <h4>Send a Mail If you need any Agentic AI awarness Program At you Campus Like this </h4>
-          
-          <form id="contactForm" class="contact-form">
-            <div>
-              <label for="name">Your Name</label>
-              <input id="name" name="name" type="text" placeholder="Enter your name" required />
-            </div>
-            <div>
-              <label for="email">Your Email</label>
-              <input id="email" name="email" type="email" placeholder="Enter your email" required />
-            </div>
-            <div>
-              <label for="projectType">Session Requirement</label>
-              <select id="projectType" name="projectType"
-                style="width:100%;padding:13px 16px;border-radius:14px;border:1px solid var(--border);background:var(--form-input-bg);color:var(--text);font-family:inherit;font-size:1rem;transition:220ms ease;cursor:pointer;">
-                <option value="" disabled selected>Select a project type…</option>
-                <option value="Portfolio Website">Agentic AI Awareness Program</option>
-                <option value="Business Website">Chief Guest Lecture</option>
-                <option value="Landing Page">Workshop Session</option>
-                
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label for="message">Session Details</label>
-              <textarea id="message" name="message" rows="4"
-                placeholder="Describe your Session Requirements and timeline…"
-                required></textarea>
-            </div>
-            <button class="btn btn-primary" type="submit">Send Inquiry</button>
-          </form>
-        </article>
-</main>
-</div>
+  <!-- Inquiry Section -->
+  <section class="section" id="inquiry" aria-labelledby="inquiry-heading">
+    <div class="container">
+      <div class="about-inner reveal" style="align-items: center;">
+        
+        <div class="about-text">
+          <span class="eyebrow">Host at Your Campus</span>
+          <h2 id="inquiry-heading" class="heading-section">Bring this experience <br>to your institution</h2>
+          <p class="body">
+            Interested in hosting an Agentic AI awareness program, chief guest lecture, or hands-on workshop at your college or organization? We would love to hear from you.
+          </p>
+          <ul class="path-feature-list" style="margin-top: var(--space-2);">
+            <li><span class="check" aria-hidden="true">✓</span> Live interactive sessions</li>
+            <li><span class="check" aria-hidden="true">✓</span> Customized curriculum for your audience</li>
+            <li><span class="check" aria-hidden="true">✓</span> Certificates for all participants</li>
+            <li><span class="check" aria-hidden="true">✓</span> Post-event resources & support</li>
+          </ul>
+        </div>
 
-<!-- ═══ FOOTER ═══ -->
-<footer>
-  <div class="container footer-box">
-    <span>© 2026 GS-Growth Steps · Vijay Sarathi R S</span>
-    <div class="footer-links">
-      <a href="{{ url_for('home') }}">Home</a>
-      <a href="{{ url_for('courses') }}">Courses</a>
-      <a href="{{ url_for('services') }}">Services</a>
-      <a href="mailto:rsvijaysarathi123@gmail.com">Email</a>
-      <a href="https://wa.me/919952855157" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+        <div class="card" style="padding: 0; overflow: hidden;">
+          <div style="padding: var(--space-6); border-bottom: 1px solid var(--border); background: var(--bg-muted);">
+            <h3 class="heading-card" style="margin: 0;">Session Inquiry</h3>
+            <p class="body" style="margin: var(--space-2) 0 0; font-size: var(--text-sm);">We typically respond within 24 hours.</p>
+          </div>
+          <div style="padding: var(--space-6);">
+            <form id="contactForm" class="contact-form">
+              <div class="form-group">
+                <label for="name">Your Name</label>
+                <input id="name" name="name" type="text" placeholder="Full name" required />
+              </div>
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input id="email" name="email" type="email" placeholder="you@example.com" required />
+              </div>
+              <div class="form-group">
+                <label for="projectType">Session Type</label>
+                <select id="projectType" name="projectType" required>
+                  <option value="" disabled selected>Select a session type…</option>
+                  <option value="Agentic AI Awareness Program">Agentic AI Awareness Program</option>
+                  <option value="Chief Guest Lecture">Chief Guest Lecture</option>
+                  <option value="Workshop Session">Workshop Session</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="message">Session Details</label>
+                <textarea id="message" name="message" rows="4" placeholder="Tell us about your institution, expected audience size, and preferred dates…" required></textarea>
+              </div>
+              <button class="btn btn-primary" type="submit" style="width: 100%;">Send Inquiry</button>
+            </form>
+          </div>
+        </div>
+
+      </div>
     </div>
-  </div>
-</footer>
+  </section>
 
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
-</body>
-</html>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  /* ── Gallery Lightbox ── */
+  (function() {
+    'use strict';
+
+    const lightbox = document.getElementById('galleryLightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxCaption = document.getElementById('lightboxCaption');
+
+    window.openLightbox = function(src, caption) {
+      if (!lightbox || !lightboxImg) return;
+      lightboxImg.src = src;
+      lightboxImg.alt = caption || '';
+      lightboxCaption.textContent = caption || '';
+      lightbox.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      lightbox.querySelector('button').focus();
+    };
+
+    window.closeLightbox = function(e) {
+      if (e && e.target !== lightbox && !e.target.closest('.gallery-lightbox-close')) return;
+      if (!lightbox) return;
+      lightbox.classList.remove('active');
+      document.body.style.overflow = '';
+      lightboxImg.src = '';
+      lightboxImg.alt = '';
+      lightboxCaption.textContent = '';
+    };
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && lightbox?.classList.contains('active')) {
+        closeLightbox();
+      }
+    });
+  })();
+</script>
+{% endblock %}

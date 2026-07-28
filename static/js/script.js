@@ -1,145 +1,177 @@
 /* ═══════════════════════════════════════════════
-   GS-Growth Steps | script.js
-   Works across index.html, courses.html, services.html
+   Growth Steps | Clean Interaction Layer
 ═══════════════════════════════════════════════ */
 
-/* ── LOADING SCREEN ── */
 (function () {
-  const loader = document.getElementById('gs-loader');
-  if (!loader) return;
+  'use strict';
 
-  const MIN_DISPLAY = 1800;
-  const start = Date.now();
+  /* ── CONFIG ── */
+  const CONFIG = {
+    loaderMinDisplay: 1400,
+    revealThreshold: 0.1,
+    themeKey: 'gs-theme',
+  };
 
-  function hideLoader() {
-    const elapsed = Date.now() - start;
-    const delay   = Math.max(0, MIN_DISPLAY - elapsed);
-    setTimeout(function () {
-      loader.classList.add('gs-loader--hidden');
-      loader.addEventListener('transitionend', function () {
-        loader.remove();
-      }, { once: true });
-    }, delay);
-  }
+  /* ── UTILITIES ── */
+  const $ = (sel, ctx = document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
 
-  if (document.readyState === 'complete') {
-    hideLoader();
-  } else {
-    window.addEventListener('load', hideLoader);
-  }
-})();
+  /* ── LOADING SCREEN ── */
+  const initLoader = () => {
+    const loader = $('#gs-loader');
+    if (!loader) return;
 
-/* ── THEME TOGGLE ── */
-const html     = document.documentElement;
-const themeBtn = document.getElementById('themeToggle');
-
-// Apply saved preference immediately to avoid flash
-const saved = localStorage.getItem('gs-theme');
-if (saved) html.setAttribute('data-theme', saved);
-
-if (themeBtn) {
-  themeBtn.addEventListener('click', () => {
-    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', next);
-    localStorage.setItem('gs-theme', next);
-  });
-}
-
-/* ── SIDEBAR TOGGLE (null-safe, works on all pages) ── */
-document.addEventListener('DOMContentLoaded', function () {
-  const menuToggle   = document.getElementById('menuToggle');
-  const sidebar      = document.getElementById('sidebar');
-  const closeSidebar = document.getElementById('closeSidebar');
-  const overlay      = document.getElementById('overlay');
-
-  if (!menuToggle || !sidebar) return;
-
-  function openSidebar() {
-    sidebar.classList.add('active');
-    if (overlay) overlay.classList.add('active');
-    sidebar.setAttribute('aria-hidden', 'false');
-  }
-
-  function closeSidebarFn() {
-    sidebar.classList.remove('active');
-    if (overlay) overlay.classList.remove('active');
-    sidebar.setAttribute('aria-hidden', 'true');
-  }
-
-  menuToggle.addEventListener('click', openSidebar);
-  if (closeSidebar) closeSidebar.addEventListener('click', closeSidebarFn);
-  if (overlay) overlay.addEventListener('click', closeSidebarFn);
-
-  // Close on any sidebar link click (smooth for same-page anchors)
-  sidebar.querySelectorAll('a').forEach(function (link) {
-    link.addEventListener('click', closeSidebarFn);
-  });
-});
-
-/* ── SCROLL REVEAL ── */
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) entry.target.classList.add('visible');
-  });
-}, { threshold: 0.12 });
-
-document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
-
-/* ── EMAILJS CONTACT FORM ── */
-/* Handles any page that has <form id="contactForm"> with
-   id="name", id="email", id="message" fields.
-   On services.html an optional id="projectType" select is
-   prepended to the message so it arrives in the same template. */
-(function () {
-  if (typeof emailjs === 'undefined') return;
-
-  emailjs.init('mCuzsR0T2pAiUHHyP');
-
-  const contactForm = document.getElementById('contactForm');
-  if (!contactForm) return;
-
-  contactForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const submitBtn = contactForm.querySelector('button[type="submit"]');
-    if (submitBtn) {
-      submitBtn.disabled    = true;
-      submitBtn.textContent = 'Sending…';
-    }
-
-    // Gather fields
-    const nameEl    = document.getElementById('name');
-    const emailEl   = document.getElementById('email');
-    const messageEl = document.getElementById('message');
-    const typeEl    = document.getElementById('projectType'); // optional
-
-    let messageText = messageEl ? messageEl.value : '';
-    if (typeEl && typeEl.value) {
-      messageText = 'Project Type: ' + typeEl.value + '\n\n' + messageText;
-    }
-
-    const templateParams = {
-      name    : nameEl    ? nameEl.value    : '',
-      email   : emailEl   ? emailEl.value   : '',
-      message : messageText,
+    const start = performance.now();
+    const hide = () => {
+      const elapsed = performance.now() - start;
+      const delay = Math.max(0, CONFIG.loaderMinDisplay - elapsed);
+      setTimeout(() => {
+        loader.classList.add('hidden');
+        loader.addEventListener('transitionend', () => loader.remove(), { once: true });
+      }, delay);
     };
 
-    emailjs.send('service_kegm0bo', 'template_4j439oo', templateParams)
-      .then(function () {
-        alert('Message sent successfully! I\'ll get back to you within 24 hours.');
-        contactForm.reset();
-        if (submitBtn) {
-          submitBtn.disabled    = false;
-          submitBtn.textContent = 'Send Message';
-        }
-      })
-      .catch(function (err) {
-        console.error(err);
-        alert('Failed to send. Please try WhatsApp or email directly.');
-        if (submitBtn) {
-          submitBtn.disabled    = false;
-          submitBtn.textContent = 'Send Message';
+    if (document.readyState === 'complete') {
+      hide();
+    } else {
+      window.addEventListener('load', hide);
+    }
+  };
+
+  /* ── THEME TOGGLE ── */
+  const initTheme = () => {
+    const html = document.documentElement;
+    const btn = $('#themeToggle');
+    const saved = localStorage.getItem(CONFIG.themeKey);
+
+    // Apply saved theme immediately to prevent flash
+    if (saved) html.setAttribute('data-theme', saved);
+
+    if (!btn) return;
+
+    btn.addEventListener('click', () => {
+      const current = html.getAttribute('data-theme') || 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem(CONFIG.themeKey, next);
+    });
+  };
+
+  /* ── SIDEBAR ── */
+  const initSidebar = () => {
+    const toggle = $('#menuToggle');
+    const sidebar = $('#sidebar');
+    const closeBtn = $('#closeSidebar');
+    const overlay = $('#overlay');
+
+    if (!toggle || !sidebar) return;
+
+    const open = () => {
+      sidebar.classList.add('open');
+      overlay?.classList.add('active');
+      sidebar.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    };
+
+    const close = () => {
+      sidebar.classList.remove('open');
+      overlay?.classList.remove('active');
+      sidebar.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    };
+
+    toggle.addEventListener('click', open);
+    closeBtn?.addEventListener('click', close);
+    overlay?.addEventListener('click', close);
+
+    // Close on link click
+    sidebar.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', close);
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && sidebar.classList.contains('open')) close();
+    });
+  };
+
+  /* ── SCROLL REVEAL ── */
+  const initReveal = () => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      $$('.reveal').forEach(el => el.classList.add('visible'));
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
         }
       });
+    }, { threshold: CONFIG.revealThreshold });
+
+    $$('.reveal').forEach(el => observer.observe(el));
+  };
+
+  /* ── EMAILJS CONTACT FORM ── */
+  const initContactForm = () => {
+    if (typeof emailjs === 'undefined') return;
+
+    emailjs.init('mCuzsR0T2pAiUHHyP');
+
+    const form = $('#contactForm');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn?.textContent || 'Send';
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending…';
+      }
+
+      const nameEl = $('#name', form);
+      const emailEl = $('#email', form);
+      const messageEl = $('#message', form);
+      const typeEl = $('#projectType', form);
+
+      let messageText = messageEl?.value?.trim() || '';
+      if (typeEl?.value) {
+        messageText = `Project Type: ${typeEl.value}\n\n${messageText}`;
+      }
+
+      const params = {
+        name: nameEl?.value?.trim() || '',
+        email: emailEl?.value?.trim() || '',
+        message: messageText,
+      };
+
+      try {
+        await emailjs.send('service_kegm0bo', 'template_4j439oo', params);
+        alert('Message sent successfully! I\'ll get back to you within 24 hours.');
+        form.reset();
+      } catch (err) {
+        console.error('EmailJS error:', err);
+        alert('Failed to send. Please try WhatsApp or email directly.');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+        }
+      }
+    });
+  };
+
+  /* ── INITIALIZE ── */
+  document.addEventListener('DOMContentLoaded', () => {
+    initLoader();
+    initTheme();
+    initSidebar();
+    initReveal();
+    initContactForm();
   });
 })();

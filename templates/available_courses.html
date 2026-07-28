@@ -1,569 +1,139 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="light">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Available Courses | Growth Steps</title>
-  <meta name="description" content="Browse all live courses from Growth Steps — including the Agentic AI Sunday Workshop covering AI Agents, No-Code Automation with n8n, and Code Development." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=Forum&display=swap" rel="stylesheet" />
+{% extends 'base.html' %}
 
-  <style>
-    /* ── RESET & BASE ─────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+{% block title %}Available Courses | Growth Steps{% endblock %}
+{% block description %}Browse all live courses from Growth Steps — including the Agentic AI Sunday Workshop covering AI Agents, No-Code Automation with n8n, and Code Development.{% endblock %}
 
-    :root {
-      --bg:                #ffffff;
-      --bg-secondary:      #f8f9fa;
-      --surface:           #ffffff;
-      --surface-hover:     #f1f3f4;
-      --surface-active:    #e8eaed;
-      --text:              #202124;
-      --text-secondary:    #5f6368;
-      --text-tertiary:     #80868b;
-      --border:            #dadce0;
-      --border-light:      #e8eaed;
+{% block content %}
 
-      --blue:              #1a73e8;
-      --blue-hover:        #1765cc;
-      --blue-light:        #e8f0fe;
-      --blue-text:         #1967d2;
-
-      --green:             #137333;
-      --green-light:       #e6f4ea;
-      --yellow:            #b06000;
-      --yellow-light:      #fef7e0;
-      --red:               #c5221f;
-      --red-light:         #fce8e6;
-
-      --radius:            8px;
-      --radius-lg:         16px;
-      --radius-xl:         24px;
-      --shadow-1:          0 1px 2px rgba(60,64,67,0.1), 0 1px 3px rgba(60,64,67,0.08);
-      --shadow-2:          0 1px 3px rgba(60,64,67,0.15), 0 4px 8px rgba(60,64,67,0.1);
-      --shadow-3:          0 2px 6px rgba(60,64,67,0.15), 0 8px 24px rgba(60,64,67,0.1);
-      --nav-bg:            rgba(255,255,255,0.95);
-      --footer-bg:         #f8f9fa;
-      --footer-border:     #dadce0;
-
-      --brand-bg:          #0F1729;
-      --brand-bg-accent:   #1E2C4F;
-      --brand-text:        #FFFFFF;
-      --brand-text-muted:  rgba(255,255,255,0.72);
-    }
-
-    [data-theme="dark"] {
-      --bg:                #202124;
-      --bg-secondary:      #171717;
-      --surface:           #292a2d;
-      --surface-hover:     #3c4043;
-      --surface-active:    #4a4d51;
-      --text:              #e8eaed;
-      --text-secondary:    #9aa0a6;
-      --text-tertiary:     #80868b;
-      --border:            #3c4043;
-      --border-light:      #35363a;
-
-      --blue:              #8ab4f8;
-      --blue-hover:        #aecbfa;
-      --blue-light:        #1a3352;
-      --blue-text:         #8ab4f8;
-
-      --green:             #81c995;
-      --green-light:       #1b3626;
-      --yellow:            #fdd663;
-      --yellow-light:      #3e2723;
-      --red:               #f28b82;
-      --red-light:         #3c2021;
-
-      --shadow-1:          0 1px 2px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.15);
-      --shadow-2:          0 1px 3px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.2);
-      --shadow-3:          0 2px 6px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.25);
-      --nav-bg:            rgba(32,33,36,0.95);
-      --footer-bg:         #171717;
-      --footer-border:     #3c4043;
-
-      --brand-bg:          #020617;
-      --brand-bg-accent:   #0F1729;
-      --brand-text:        #FFFFFF;
-      --brand-text-muted:  rgba(255,255,255,0.75);
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'Inter', 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      min-height: 100vh;
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      transition: background 0.2s ease, color 0.2s ease;
-    }
-
-    /* ── COMMON ───────────────────────────────────────── */
-    .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
-    .section { padding: 64px 0; }
-    .section-title { text-align: center; margin-bottom: 44px; max-width: 700px; margin-inline: auto; }
-    .section-title h2 { font-size: 1.9rem; margin-bottom: 12px; line-height: 1.4; }
-    .section-title p { color: var(--text-secondary); font-size: 15px; line-height: 1.65; }
-    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.45s ease, transform 0.45s ease; }
-    .reveal.visible { opacity: 1; transform: none; }
-
-    /* ── BUTTONS ──────────────────────────────────────── */
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 10px 24px; border-radius: var(--radius);
-      font-family: 'Google Sans', 'Inter', sans-serif;
-      font-size: 14px; font-weight: 500;
-      text-decoration: none; cursor: pointer; border: none;
-      transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
-      min-height: 40px;
-    }
-    .btn:active { transform: scale(0.98); }
-    .btn-primary { background: var(--blue); color: #fff; box-shadow: var(--shadow-1); }
-    .btn-primary:hover { background: var(--blue-hover); box-shadow: var(--shadow-2); }
-    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: var(--surface-hover); }
-
-    /* ── SIDEBAR / HEADER ──────────────────────────────── */
-    .menu-toggle {
-      position: fixed; top: 12px; left: 12px; z-index: 1100;
-      background: var(--surface); border: 1px solid var(--border);
-      color: var(--text); border-radius: 50%;
-      width: 40px; height: 40px; font-size: 18px;
-      cursor: pointer; display: none; align-items: center; justify-content: center;
-      box-shadow: var(--shadow-1);
-      transition: background 0.15s;
-    }
-    .menu-toggle:hover { background: var(--surface-hover); }
-    @media (max-width: 860px) { .menu-toggle { display: flex; } }
-
-    .sidebar {
-      position: fixed; top: 0; left: -280px; width: 256px; height: 100%;
-      background: var(--surface); z-index: 1200;
-      transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      padding: 16px 0; box-shadow: var(--shadow-3);
-    }
-    .sidebar.open { left: 0; }
-    .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px 20px; }
-    .sidebar-header h3 { font-size: 18px; font-weight: 500; color: var(--text); }
-    .sidebar-header button {
-      background: none; border: none; cursor: pointer;
-      color: var(--text-secondary); font-size: 20px; padding: 8px;
-      border-radius: 50%; transition: background 0.15s;
-    }
-    .sidebar-header button:hover { background: var(--surface-hover); }
-    .sidebar ul { list-style: none; }
-    .sidebar ul li a {
-      display: flex; align-items: center; gap: 14px;
-      padding: 12px 24px; color: var(--text-secondary);
-      text-decoration: none; font-size: 14px; font-weight: 500;
-      transition: background 0.15s;
-    }
-    .sidebar ul li a:hover { background: var(--surface-hover); color: var(--text); }
-    .sidebar ul li a.active-page { background: var(--blue-light); color: var(--blue-text); font-weight: 600; }
-    .sidebar ul li a .nav-icon { font-size: 18px; width: 24px; text-align: center; }
-
-    .overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-      z-index: 1100; opacity: 0; pointer-events: none; transition: opacity 0.25s;
-    }
-    .overlay.active { opacity: 1; pointer-events: all; }
-
-    header {
-      position: sticky; top: 0; z-index: 900;
-      background: var(--nav-bg);
-      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-      border-bottom: 1px solid var(--border-light);
-    }
-    .nav { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 16px; }
-    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
-    .brand-logo { height: 30px; width: auto; display: block; }
-
-    .nav-row { display: flex; align-items: center; gap: 8px; }
-    nav ul { list-style: none; display: flex; gap: 2px; }
-    nav ul li a {
-      padding: 8px 14px; border-radius: var(--radius);
-      color: var(--text-secondary); font-size: 14px; font-weight: 500;
-      text-decoration: none; transition: color 0.15s, background 0.15s;
-      white-space: nowrap;
-    }
-    nav ul li a:hover { color: var(--text); background: var(--surface-hover); }
-    nav ul li a.active { color: var(--blue-text); background: var(--blue-light); }
-    @media (max-width: 860px) { nav { display: none; } }
-
-    .theme-toggle {
-      background: none; border: none; border-radius: 50%;
-      cursor: pointer; padding: 8px; font-size: 18px;
-      transition: background 0.15s; color: var(--text-secondary);
-      line-height: 1;
-    }
-    .theme-toggle:hover { background: var(--surface-hover); }
-    [data-theme="light"] .icon-sun { display: none; }
-    [data-theme="dark"] .icon-moon { display: none; }
-
-    /* ── SKIP LINK ────────────────────────────────────── */
-    .skip-link {
-      position: absolute; top: -40px; left: 16px;
-      background: var(--blue); color: #fff;
-      padding: 8px 16px; border-radius: var(--radius); font-size: 14px;
-      transition: top 0.2s; z-index: 10000; text-decoration: none;
-    }
-    .skip-link:focus { top: 8px; }
-
-    /* ── LOADER (matches index.html logo-based loader) ─── */
-    #gs-loader {
-      position: fixed; inset: 0; z-index: 9999;
-      background: var(--bg);
-      display: flex; align-items: center; justify-content: center;
-      transition: opacity 0.4s ease;
-    }
-    #gs-loader.hidden { opacity: 0; pointer-events: none; }
-    .loader-inner { text-align: center; }
-    .loader-logo-wrap { margin-bottom: 24px; }
-    .loader-logo-wrap img {
-      height: 40px; width: auto; display: block; margin: 0 auto;
-      opacity: 0; animation: loaderFadeIn 0.6s 0.2s ease forwards;
-    }
-    @keyframes loaderFadeIn { to { opacity: 1; } }
-    .loader-dots { display: flex; justify-content: center; gap: 6px; margin-top: 20px; }
-    .loader-dots span {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--blue); opacity: 0.3;
-      animation: dotPulse 1.2s ease-in-out infinite;
-    }
-    .loader-dots span:nth-child(2) { animation-delay: 0.15s; }
-    .loader-dots span:nth-child(3) { animation-delay: 0.3s; }
-    @keyframes dotPulse {
-      0%, 80%, 100% { opacity: 0.3; transform: scale(1); }
-      40% { opacity: 1; transform: scale(1.15); }
-    }
-
-    /* ── HERO ─────────────────────────────────────────── */
-    .hero {
-      padding: 56px 0 72px;
-      background: linear-gradient(155deg, var(--brand-bg-accent) 0%, var(--brand-bg) 100%);
-      color: var(--brand-text);
-    }
-    .hero-card {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: var(--radius-xl);
-      padding: 40px;
-      backdrop-filter: blur(10px);
-    }
-    .demo-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(239,68,68,0.16); color: #FCA5A5;
-      border: 1px solid rgba(239,68,68,0.35); padding: 6px 16px; border-radius: 99px;
-      font-size: 12px; font-weight: 600; margin-bottom: 20px;
-    }
-    .hero h2 { font-size: clamp(24px, 4.5vw, 38px); line-height: 1.3; margin-bottom: 18px; }
-    .hero h2 span { color: #f4d58d; }
-    .hero p { font-size: 16px; color: var(--brand-text-muted); margin-bottom: 28px; max-width: 600px; line-height: 1.7; font-family: 'Inter', sans-serif; text-transform: none; letter-spacing: normal; }
-    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
-
-    /* ── COURSES GRID ─────────────────────────────────── */
-    .courses-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 24px;
-    }
-    @media (max-width: 768px) {
-      .courses-grid { grid-template-columns: 1fr; }
-    }
-
-    .course-card {
-      background: var(--surface);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-lg);
-      padding: 30px;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-    }
-    .course-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-3);
-      border-color: var(--border);
-    }
-    .course-card::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 4px;
-      background: linear-gradient(90deg, var(--blue), var(--blue-text));
-    }
-    .course-card.is-coming-soon { opacity: 0.85; }
-    .course-card.is-coming-soon::before { background: var(--border); }
-
-    .course-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
-    .course-card-badge {
-      display: inline-block;
-      background: var(--blue-light);
-      color: var(--blue-text);
-      padding: 5px 14px;
-      border-radius: 99px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-    .course-card-badge.soon { background: var(--bg-secondary); color: var(--text-tertiary); }
-    .course-card-price { font-family: 'Google Sans', sans-serif; font-weight: 700; color: var(--blue-text); font-size: 17px; white-space: nowrap; }
-    .course-card-price del { color: var(--text-tertiary); font-weight: 500; font-size: 13px; margin-right: 6px; }
-
-    .course-card h3 { font-size: 1.15rem; color: var(--text); margin-bottom: 10px; }
-    .course-card p.course-desc { color: var(--text-secondary); font-size: 14px; line-height: 1.7; margin-bottom: 20px; }
-
-    .course-meta-row {
-      display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;
-      padding-bottom: 20px; border-bottom: 1px solid var(--border-light);
-    }
-    .course-meta-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); }
-    .course-meta-item strong { color: var(--text); font-weight: 600; }
-
-    .skill-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
-    .tag {
-      background: var(--bg-secondary); padding: 5px 12px; border-radius: var(--radius); font-size: 12px;
-      color: var(--text); border: 1px solid var(--border-light);
-    }
-
-    .course-card .btn { width: 100%; margin-top: auto; }
-
-    /* ── FOOTER ───────────────────────────────────────── */
-    footer { background: var(--footer-bg); border-top: 1px solid var(--footer-border); padding: 20px 0; }
-    .footer-box { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-    .footer-box span { font-size: 13px; color: var(--text-tertiary); }
-    .footer-links { display: flex; gap: 4px; flex-wrap: wrap; }
-    .footer-links a { padding: 6px 12px; border-radius: var(--radius); color: var(--text-secondary); font-size: 13px; text-decoration: none; transition: background 0.15s, color 0.15s; }
-    .footer-links a:hover { color: var(--text); background: var(--surface-hover); }
-
-    @media (max-width: 600px) {
-      .hero { padding: 44px 0 56px; }
-      .hero-card { padding: 26px 20px; }
-      .section { padding: 44px 0; }
-      .nav { height: 56px; }
-    }
-  </style>
-</head>
-<body>
-
-<!-- ☰ SIDEBAR TOGGLE -->
-<button class="menu-toggle" id="menuToggle" aria-label="Open navigation menu">☰</button>
-
-<!-- SIDEBAR -->
-<div class="sidebar" id="sidebar" aria-hidden="true">
-  <div class="sidebar-header">
-    <h3>Growth Steps</h3>
-    <button id="closeSidebar" aria-label="Close navigation">✕</button>
-  </div>
-  <ul>
-    <li><a href="{{ url_for('home') }}"><span class="nav-icon">🏠</span> Home</a></li>
-    <li><a href="{{ url_for('available_courses') }}" class="active-page"><span class="nav-icon">📚</span> Courses</a></li>
-    <li><a href="{{ url_for('services') }}"><span class="nav-icon">🚀</span> Services</a></li>
-    <li><a href="{{ url_for('gallery') }}"><span class="nav-icon">🖼️</span> Gallery</a></li>
-    <li><a href="{{ url_for('login') }}"><span class="nav-icon">🔐</span> Login</a></li>
-  </ul>
-</div>
-
-<!-- OVERLAY -->
-<div class="overlay" id="overlay"></div>
-
-<!-- ═══ LOADING SCREEN ═══ -->
-<div id="gs-loader" aria-hidden="true">
-  <div class="loader-inner">
-    <div class="loader-logo-wrap">
-      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Growth Steps" />
-    </div>
-    <div class="loader-dots">
-      <span></span><span></span><span></span>
-    </div>
-  </div>
-</div>
-
-<a class="skip-link" href="#main">Skip to content</a>
-
-<!-- ═══ HEADER ═══ -->
-<header>
-  <div class="container nav">
-    <a class="brand" href="{{ url_for('home') }}">
-      <img class="brand-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="Growth Steps" />
-    </a>
-    <div class="nav-row">
-      <nav aria-label="Site navigation">
-        <ul>
-          <li><a href="{{ url_for('home') }}">Home</a></li>
-          <li><a href="{{ url_for('available_courses') }}" class="active">Courses</a></li>
-          <li><a href="{{ url_for('services') }}">Web Services</a></li>
-          <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
-        </ul>
-      </nav>
-      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode" title="Toggle theme">
-        <span class="icon-sun" aria-hidden="true">☀️</span>
-        <span class="icon-moon" aria-hidden="true">🌙</span>
-      </button>
-    </div>
-  </div>
-</header>
-
-<main id="main">
-
-  <!-- ═══ SECTION: COURSES — 2-COLUMN GRID ═══ -->
-  <section class="section" id="courses">
+  <!-- Hero -->
+  <section class="hero" style="padding-bottom: var(--space-8);" aria-labelledby="courses-hero-heading">
     <div class="container">
-      <div class="section-title reveal">
-        <h2  style="font-family: 'Cinzel Decorative', 'Cinzel', 'Forum', serif; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #695e3d;">Our Courses</h2>
-        <p>Side-by-side comparison of every program we currently offer.</p>
+      <div class="hero-inner reveal">
+        <div class="eyebrow">
+          <span class="eyebrow-dot" aria-hidden="true"></span>
+          Learning Programs
+        </div>
+        <h1 id="courses-hero-heading" class="heading-hero">
+          Explore our <strong>courses</strong>
+        </h1>
+        <p class="body-large">
+          Hands-on, live programs designed to take you from beginner to builder. Enroll in what fits your goals today.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Courses Grid -->
+  <section class="section section-alt" id="courses" aria-labelledby="catalog-heading">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="eyebrow">Current Offerings</span>
+        <h2 id="catalog-heading" class="heading-section">Choose your <strong>program</strong></h2>
+        <p>Side-by-side comparison of every course we currently offer.</p>
       </div>
 
-      <div class="courses-grid reveal">
+      <div class="courses-grid">
 
-        <!-- COURSE CARD 1 — Live course, links to courses.html -->
+        <!-- Live Course -->
         <article class="course-card reveal">
-          <div class="course-card-top">
-            <span class="course-card-badge">🔴 Live · Enrolling Now</span>
-            <span class="course-card-price"><del>₹1999</del>₹999</span>
+          <div class="course-card-eyebrow">
+            <span class="badge-live">
+              <span class="pulse" aria-hidden="true"></span>
+              Live · Enrolling Now
+            </span>
+            <span class="course-price">
+              <del>₹1999</del> ₹999
+            </span>
           </div>
-          <h3>Agentic AI Sunday Workshop</h3>
-          <p class="course-desc">A 4-week, Sunday-only live program covering AI Agent foundations, no-code agent building with n8n, and code-based agent development — finishing with deployed, portfolio-ready projects.</p>
-          <div class="course-meta-row">
-            <span class="course-meta-item">📅 <strong>4 Sundays</strong></span>
-            <span class="course-meta-item">⏰ <strong>2 hrs/session</strong></span>
-            <span class="course-meta-item">💻 <strong>Online</strong></span>
+
+          <h3 class="heading-card" style="font-size: var(--text-xl); margin-bottom: var(--space-3);">
+            Agentic AI Sunday Workshop
+          </h3>
+          <p class="body" style="font-size: var(--text-sm); margin-bottom: var(--space-5);">
+            A 4-week, Sunday-only live program covering AI Agent foundations, no-code agent building with n8n, and code-based agent development — finishing with deployed, portfolio-ready projects.
+          </p>
+
+          <div class="course-meta">
+            <div class="meta-item">
+              <span class="meta-icon" aria-hidden="true">📅</span>
+              <span><strong>4 Sundays</strong></span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon" aria-hidden="true">⏰</span>
+              <span><strong>2 hrs/session</strong></span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon" aria-hidden="true">💻</span>
+              <span><strong>Online</strong></span>
+            </div>
           </div>
-          <div class="skill-tags">
+
+          <div class="skill-tags" style="margin-bottom: var(--space-6);">
             <span class="tag">Agentic AI</span>
             <span class="tag">n8n</span>
             <span class="tag">Python</span>
             <span class="tag">AI APIs</span>
           </div>
-          <a class="btn btn-primary" href="{{ url_for('courses') }}">View Course Details →</a>
+
+          <a class="btn btn-primary" href="{{ url_for('courses') }}" style="width: 100%; justify-content: center;">
+            View Course Details →
+          </a>
         </article>
 
-        <!-- COURSE CARD 2 — Placeholder for your next course. Duplicate this
-             block and edit the text to add more courses to the grid. -->
-        <article class="course-card is-coming-soon reveal">
-          <div class="course-card-top">
-            <span class="course-card-badge soon">🚀 Coming Soon</span>
+        <!-- Coming Soon -->
+        <article class="course-card reveal" style="opacity: 0.9;">
+          <div class="course-card-eyebrow">
+            <span class="badge-soon">Coming Soon</span>
+            <span class="course-price" style="color: var(--text-subtle); font-weight: 500;">TBA</span>
           </div>
-          <h3>New Course Launching Soon</h3>
-          <p class="course-desc">We're building the next program for our learners. Join our community to be the first to know when enrollment opens and grab early-bird pricing.</p>
-          <div class="course-meta-row">
-            <span class="course-meta-item">📅 <strong>TBA</strong></span>
-            <span class="course-meta-item">⏰ <strong>TBA</strong></span>
-            <span class="course-meta-item">💻 <strong>Online</strong></span>
+
+          <h3 class="heading-card" style="font-size: var(--text-xl); margin-bottom: var(--space-3);">
+            New Course Launching Soon
+          </h3>
+          <p class="body" style="font-size: var(--text-sm); margin-bottom: var(--space-5);">
+            We're building the next program for our learners. Join our community to be the first to know when enrollment opens and grab early-bird pricing.
+          </p>
+
+          <div class="course-meta">
+            <div class="meta-item">
+              <span class="meta-icon" aria-hidden="true">📅</span>
+              <span><strong>TBA</strong></span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon" aria-hidden="true">⏰</span>
+              <span><strong>TBA</strong></span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon" aria-hidden="true">💻</span>
+              <span><strong>Online</strong></span>
+            </div>
           </div>
-          <div class="skill-tags">
+
+          <div class="skill-tags" style="margin-bottom: var(--space-6);">
             <span class="tag">Stay Tuned</span>
           </div>
-          <a class="btn btn-secondary" href="https://wa.me/919952855157" target="_blank" rel="noopener noreferrer">Notify Me on WhatsApp</a>
+
+          <a class="btn btn-secondary" href="https://wa.me/919952855157" target="_blank" rel="noopener noreferrer" style="width: 100%; justify-content: center;">
+            Notify Me on WhatsApp
+          </a>
         </article>
 
       </div>
     </div>
   </section>
 
-</main>
-
-<!-- ═══ FOOTER ═══ -->
-<footer>
-  <div class="container footer-box">
-    <span>© 2026 Growth Steps</span>
-    <div class="footer-links">
-      <a href="{{ url_for('home') }}">Home</a>
-      <a href="{{ url_for('courses') }}">Courses</a>
-      <a href="{{ url_for('services') }}">Services</a>
-      <a href="mailto:rsvijaysarathi123@gmail.com">Email</a>
-      <a href="https://wa.me/919952855157" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+  <!-- CTA -->
+  <section class="final-cta" aria-labelledby="courses-cta-heading">
+    <div class="container">
+      <div class="reveal">
+        <h2 id="courses-cta-heading" class="heading-section">Not sure which one to pick?</h2>
+        <p>Talk to us directly and we'll help you find the right fit based on where you are right now.</p>
+        <div class="final-cta-btns">
+          <a class="btn btn-primary" href="https://wa.me/919952855157" target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a>
+          <a class="btn btn-secondary" href="mailto:rsvijaysarathi123@gmail.com">Send an Email</a>
+        </div>
+      </div>
     </div>
-  </div>
-</footer>
+  </section>
 
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
-
-<!-- ═══ UI LOGIC ═══ -->
-<script>
-  // ── THEME INITIALIZATION ──
-  const savedTheme = localStorage.getItem('gs-theme');
-  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
-  document.documentElement.setAttribute('data-theme', initialTheme);
-
-  // ── LOADER ──
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      const loader = document.getElementById('gs-loader');
-      if (loader) {
-        loader.classList.add('hidden');
-        setTimeout(() => loader.remove(), 500);
-      }
-    }, 1000);
-  });
-
-  document.addEventListener('DOMContentLoaded', () => {
-
-    // ── SIDEBAR ──
-    const menuToggle   = document.getElementById('menuToggle');
-    const sidebar      = document.getElementById('sidebar');
-    const closeSidebar = document.getElementById('closeSidebar');
-    const overlay      = document.getElementById('overlay');
-
-    function openSidebar() {
-      sidebar.classList.add('open');
-      overlay.classList.add('active');
-      sidebar.setAttribute('aria-hidden', 'false');
-    }
-    function closeSidebarFn() {
-      sidebar.classList.remove('open');
-      overlay.classList.remove('active');
-      sidebar.setAttribute('aria-hidden', 'true');
-    }
-    if (menuToggle)   menuToggle.addEventListener('click', openSidebar);
-    if (closeSidebar) closeSidebar.addEventListener('click', closeSidebarFn);
-    if (overlay)      overlay.addEventListener('click', closeSidebarFn);
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && sidebar.classList.contains('open')) closeSidebarFn();
-    });
-
-    // ── THEME TOGGLE ──
-    const themeToggle = document.getElementById('themeToggle');
-    if (themeToggle) {
-      themeToggle.addEventListener('click', () => {
-        const current = document.documentElement.getAttribute('data-theme');
-        const next    = current === 'light' ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('gs-theme', next);
-      });
-    }
-
-    // ── REVEAL ON SCROLL ──
-    const reveals = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver(
-      (entries) => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } }),
-      { threshold: 0.12 }
-    );
-    reveals.forEach(el => observer.observe(el));
-
-    // ── SMOOTH SCROLL FOR ANCHOR LINKS ──
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function (e) {
-        const targetId = this.getAttribute('href');
-        if (targetId === '#') return;
-        const target = document.querySelector(targetId);
-        if (target) {
-          e.preventDefault();
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    });
-  });
-</script>
-</body>
-</html>
+{% endblock %}
