@@ -153,7 +153,21 @@ def courses():
 
 @app.route("/available-courses")
 def available_courses():
-    return render_template("available_courses.html")
+    courses = []
+    client = supabase_admin or supabase
+    if client:
+        try:
+            res = (
+                client.table("courses")
+                .select("*")
+                .eq("is_active", True)
+                .order("created_at", desc=True)
+                .execute()
+            )
+            courses = res.data or []
+        except Exception as exc:
+            print(f"courses fetch failed: {exc}")
+    return render_template("available_courses.html", courses=courses)
 
 
 @app.route("/services")
@@ -495,6 +509,73 @@ def admin_gallery():
 
     return render_template("admin_gallery.html", photos=photos)
 
+@app.route("/admin/courses", methods=["GET", "POST"])
+@admin_required
+def admin_courses():
+    client = supabase_admin or supabase
+
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip()
+        price = request.form.get("price", "0").strip()
+        original_price = request.form.get("original_price", "").strip()
+        duration = request.form.get("duration", "").strip()
+        schedule = request.form.get("schedule", "").strip()
+        mode = request.form.get("mode", "").strip()
+        status = request.form.get("status", "coming_soon")
+        tags_raw = request.form.get("tags", "").strip()
+        cta_link = request.form.get("cta_link", "").strip()
+        cta_label = request.form.get("cta_label", "View Course Details").strip()
+
+        if not title:
+            flash("Course title is required.", "error")
+            return redirect(url_for("admin_courses"))
+
+        try:
+            payload = {
+                "title": title,
+                "description": description,
+                "price": int(price) if price else 0,
+                "duration": duration,
+                "schedule": schedule,
+                "mode": mode,
+                "status": status,
+                "tags": [t.strip() for t in tags_raw.split(",") if t.strip()] if tags_raw else [],
+                "cta_link": cta_link,
+                "cta_label": cta_label,
+            }
+            if original_price:
+                payload["original_price"] = int(original_price)
+
+            client.table("courses").insert(payload).execute()
+            flash("Course published successfully.", "success")
+        except Exception as exc:
+            flash(f"Failed to publish course: {exc}", "error")
+        return redirect(url_for("admin_courses"))
+
+    courses = []
+    if client:
+        try:
+            res = client.table("courses").select("*").order("created_at", desc=True).execute()
+            courses = res.data or []
+        except Exception:
+            courses = []
+    return render_template("admin_courses.html", courses=courses)
+
+
+@app.route("/admin/courses/<course_id>/delete", methods=["POST"])
+@admin_required
+def admin_delete_course(course_id):
+    client = supabase_admin or supabase
+    if not client:
+        flash("Supabase isn't configured.", "error")
+        return redirect(url_for("admin_courses"))
+    try:
+        client.table("courses").delete().eq("id", course_id).execute()
+        flash("Course deleted.", "success")
+    except Exception as exc:
+        flash(f"Could not delete course: {exc}", "error")
+    return redirect(url_for("admin_courses"))
 
 @app.route("/dashboard/admin/gallery/<photo_id>/delete", methods=["POST"])
 @admin_required

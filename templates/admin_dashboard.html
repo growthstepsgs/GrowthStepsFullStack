@@ -211,6 +211,10 @@
             <strong>Supabase</strong>
             <span>Data Backend</span>
           </div>
+          <div class="admin-stat">
+            <strong>{{ course_count }}</strong>
+            <span>Courses</span>
+          </div>
         </div>
       </div>
     </div>
@@ -235,6 +239,11 @@
           <h3><span aria-hidden="true">🖼️</span> Gallery Manager</h3>
           <p>Add, remove, or update workshop photos displayed on the public gallery page.</p>
           <a class="btn btn-secondary" href="{{ url_for('admin_gallery') }}">Manage Gallery</a>
+        </article>
+        <article class="action-card">
+          <h3><span aria-hidden="true">📚</span> Course Manager</h3>
+          <p>Publish new courses, edit pricing, and manage what appears on the public catalog.</p>
+          <a class="btn btn-secondary" href="{{ url_for('admin_courses') }}">Manage Courses</a>
         </article>
       </div>
     </div>

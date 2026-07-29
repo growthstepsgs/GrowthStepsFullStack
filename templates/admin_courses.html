@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Course Manager | Growth Steps{% endblock %}
+{% block description %}Admin course management dashboard.{% endblock %}
+
+{% block content %}
+
+  <!-- Hero -->
+  <section class="admin-hero" aria-labelledby="course-manager-heading">
+    <div class="container">
+      <div class="admin-hero-inner reveal">
+        <div class="eyebrow">
+          <span class="eyebrow-dot" aria-hidden="true"></span>
+          Course Manager
+        </div>
+        <h1 id="course-manager-heading">Publish & Manage <span>Courses</span></h1>
+        <p class="body">Add new programs to the public catalog or remove outdated ones.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Add Course Form -->
+  <section class="section" style="padding-bottom: var(--space-6);">
+    <div class="container" style="max-width: 720px;">
+      <div class="section-header reveal" style="margin-bottom: var(--space-6);">
+        <span class="eyebrow">New Course</span>
+        <h2 class="heading-section">Add a <strong>Course</strong></h2>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div class="alert alert-{{ category }} reveal visible" style="margin-bottom: var(--space-5);">
+              {{ msg }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="card reveal" style="padding: 0; overflow: hidden;">
+        <div style="padding: var(--space-6); border-bottom: 1px solid var(--border); background: var(--bg-muted);">
+          <h3 class="heading-card" style="margin: 0;">Course Details</h3>
+        </div>
+        <div style="padding: var(--space-6);">
+          <form class="contact-form" method="POST" action="{{ url_for('admin_courses') }}">
+            <div class="form-group">
+              <label for="title">Course Title</label>
+              <input id="title" name="title" type="text" placeholder="e.g. Advanced Python Workshop" required />
+            </div>
+            <div class="form-group">
+              <label for="description">Description</label>
+              <textarea id="description" name="description" rows="3" placeholder="Short overview of what students will learn..." required></textarea>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+              <div class="form-group">
+                <label for="price">Current Price (₹)</label>
+                <input id="price" name="price" type="number" placeholder="999" required />
+              </div>
+              <div class="form-group">
+                <label for="original_price">Original Price (₹) <small style="color: var(--text-subtle);">optional</small></label>
+                <input id="original_price" name="original_price" type="number" placeholder="1999" />
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4);">
+              <div class="form-group">
+                <label for="duration">Duration</label>
+                <input id="duration" name="duration" type="text" placeholder="4 Sundays" />
+              </div>
+              <div class="form-group">
+                <label for="schedule">Schedule</label>
+                <input id="schedule" name="schedule" type="text" placeholder="2 hrs/session" />
+              </div>
+              <div class="form-group">
+                <label for="mode">Mode</label>
+                <input id="mode" name="mode" type="text" placeholder="Online" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="tags">Tags <small style="color: var(--text-subtle);">comma separated</small></label>
+              <input id="tags" name="tags" type="text" placeholder="Python, AI, APIs" />
+            </div>
+            <div class="form-group">
+              <label for="cta_link">CTA Link</label>
+              <input id="cta_link" name="cta_link" type="url" placeholder="https://forms.gle/..." />
+            </div>
+            <div class="form-group">
+              <label for="cta_label">Button Label</label>
+              <input id="cta_label" name="cta_label" type="text" value="View Course Details" />
+            </div>
+            <div class="form-group">
+              <label for="status">Status</label>
+              <select id="status" name="status" required>
+                <option value="coming_soon">Coming Soon</option>
+                <option value="live">Live · Enrolling Now</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" type="submit" style="width: 100%;">Publish Course</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Existing Courses -->
+  <section class="section section-alt" aria-labelledby="existing-heading">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="eyebrow">Catalog</span>
+        <h2 id="existing-heading" class="heading-section">Existing <strong>Courses</strong></h2>
+        <p>{{ courses|length }} course(s) in the database.</p>
+      </div>
+
+      {% if courses %}
+        <div class="employee-grid">
+          {% for c in courses %}
+            <article class="employee-card reveal" style="flex-direction: column; align-items: stretch;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-3);">
+                <h4 style="font-size: var(--text-base); font-weight: 700; color: var(--text);">{{ c.title }}</h4>
+                <span class="badge-role" style="{% if c.status == 'live' %}background: var(--success-bg); color: var(--success);{% endif %}">
+                  {{ c.status }}
+                </span>
+              </div>
+              <p style="font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-3);">
+                {{ c.description[:80] }}{% if c.description|length > 80 %}...{% endif %}
+              </p>
+              <div style="display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-4);">
+                {% for tag in c.tags %}
+                  <span class="tag">{{ tag }}</span>
+                {% endfor %}
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 700; color: var(--primary-text);">₹{{ c.price }}</span>
+                <form method="POST" action="{{ url_for('admin_delete_course', course_id=c.id) }}"
+                      onsubmit="return confirm('Delete this course?');">
+                  <button class="btn btn-ghost" type="submit" style="color: var(--red);">Delete</button>
+                </form>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state reveal">
+          <p>No courses published yet.</p>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+{% endblock %}
