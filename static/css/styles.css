@@ -458,7 +458,9 @@ nav a.active {
 }
 
 @media (max-width: 860px) {
-  nav { display: none; }
+  header .nav-row > nav {
+    display: none;
+  }
 }
 
 .nav-divider {
