@@ -451,6 +451,11 @@ def sitemap():
     lines.append("</urlset>")
     return Response("\n".join(lines), mimetype="application/xml")
 
+#======================robot.txt====================
+@app.route("/robots.txt")
+def robots():
+    return send_from_directory("static", "robots.txt")
+
 @app.route("/admin/cleanup-orphaned-photos")
 @admin_required
 def cleanup_orphaned_photos():
