@@ -51,7 +51,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from flask import (
     Flask, render_template, request, redirect,
-    url_for, session, flash
+    url_for, session, flash, Response
 )
 from werkzeug.utils import secure_filename
 from supabase import create_client, Client
@@ -422,6 +422,34 @@ def gallery():
             print(f"gallery fetch failed: {exc}")
             photos = []
     return render_template("gallery.html", photos=photos)
+
+#===================site map feature and xml =====================
+@app.route("/sitemap.xml")
+def sitemap():
+    """Dynamic sitemap for search engines."""
+    pages = [
+        (url_for("home", _external=True), "weekly", "1.0"),
+        (url_for("available_courses", _external=True), "weekly", "0.9"),
+        (url_for("services", _external=True), "monthly", "0.9"),
+        (url_for("gallery", _external=True), "weekly", "0.8"),
+        (url_for("courses", _external=True), "monthly", "0.8"),
+        (url_for("workshop", _external=True), "monthly", "0.7"),
+        (url_for("login", _external=True), "yearly", "0.3"),
+        (url_for("signup", _external=True), "yearly", "0.3"),
+    ]
+
+    lines = ['<?xml version="1.0" encoding="UTF-8"?>']
+    lines.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+
+    for loc, changefreq, priority in pages:
+        lines.append("  <url>")
+        lines.append(f"    <loc>{loc}</loc>")
+        lines.append(f"    <changefreq>{changefreq}</changefreq>")
+        lines.append(f"    <priority>{priority}</priority>")
+        lines.append("  </url>")
+
+    lines.append("</urlset>")
+    return Response("\n".join(lines), mimetype="application/xml")
 
 @app.route("/admin/cleanup-orphaned-photos")
 @admin_required
