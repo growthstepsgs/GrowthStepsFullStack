@@ -55,6 +55,7 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 from supabase import create_client, Client
+from flask import send_from_directory
 
 # Load .env from the SAME folder as this file, regardless of the
 # directory you launch `flask run` / `python app.py` from.
@@ -452,7 +453,9 @@ def sitemap():
     return Response("\n".join(lines), mimetype="application/xml")
 
 #======================robot.txt====================
-
+@app.route("/robots.txt")
+def robots():
+    return send_from_directory(app.static_folder, "robots.txt", mimetype="text/plain")
 
 @app.route("/admin/cleanup-orphaned-photos")
 @admin_required
