@@ -424,51 +424,7 @@ def gallery():
     return render_template("gallery.html", photos=photos)
 
 
-# ── SEO: SITEMAP & ROBOTS.TXT ───────────────────────────────────────
-@app.route("/sitemap.xml")
-def sitemap():
-    """Dynamic XML sitemap of all public, indexable pages."""
-    pages = [
-        {"loc": url_for("home", _external=True),              "priority": "1.0",  "changefreq": "weekly"},
-        {"loc": url_for("courses", _external=True),           "priority": "0.8",  "changefreq": "weekly"},
-        {"loc": url_for("available_courses", _external=True), "priority": "0.8",  "changefreq": "weekly"},
-        {"loc": url_for("services", _external=True),          "priority": "0.8",  "changefreq": "monthly"},
-        {"loc": url_for("workshop", _external=True),          "priority": "0.7",  "changefreq": "monthly"},
-        {"loc": url_for("gallery", _external=True),           "priority": "0.7",  "changefreq": "weekly"},
-        {"loc": url_for("login", _external=True),             "priority": "0.5",  "changefreq": "yearly"},
-        {"loc": url_for("signup", _external=True),            "priority": "0.5",  "changefreq": "yearly"},
-    ]
 
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    xml_lines = ['<?xml version="1.0" encoding="UTF-8"?>']
-    xml_lines.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
-    for p in pages:
-        xml_lines.append("  <url>")
-        xml_lines.append(f"    <loc>{p['loc']}</loc>")
-        xml_lines.append(f"    <lastmod>{now}</lastmod>")
-        xml_lines.append(f"    <changefreq>{p['changefreq']}</changefreq>")
-        xml_lines.append(f"    <priority>{p['priority']}</priority>")
-        xml_lines.append("  </url>")
-    xml_lines.append("</urlset>")
-
-    return "\n".join(xml_lines), 200, {"Content-Type": "application/xml"}
-
-
-@app.route("/robots.txt")
-def robots():
-    """Tell crawlers what they may index and where the sitemap lives."""
-    base = request.url_root.rstrip("/")
-    lines = [
-        "User-agent: *",
-        "Disallow: /dashboard/",
-        "Disallow: /admin/",
-        "Disallow: /login",
-        "Disallow: /signup",
-        "",
-        f"Sitemap: {base}/sitemap.xml",
-        "",
-    ]
-    return "\n".join(lines), 200, {"Content-Type": "text/plain"}
 
 @app.route("/admin/cleanup-orphaned-photos")
 @admin_required
