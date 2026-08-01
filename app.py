@@ -42,7 +42,7 @@ Run:
   cp .env.example .env      # fill in your Supabase project URL + keys
   flask --app app run --debug
 """
-
+from datetime import datetime, timezone
 import os
 import uuid
 from functools import wraps
@@ -51,11 +51,10 @@ from pathlib import Path
 from dotenv import load_dotenv
 from flask import (
     Flask, render_template, request, redirect,
-    url_for, session, flash, Response
+    url_for, session, flash
 )
 from werkzeug.utils import secure_filename
 from supabase import create_client, Client
-from flask import send_from_directory
 
 # Load .env from the SAME folder as this file, regardless of the
 # directory you launch `flask run` / `python app.py` from.
@@ -424,38 +423,52 @@ def gallery():
             photos = []
     return render_template("gallery.html", photos=photos)
 
-#===================site map feature and xml =====================
+
+# ── SEO: SITEMAP & ROBOTS.TXT ───────────────────────────────────────
 @app.route("/sitemap.xml")
 def sitemap():
-    """Dynamic sitemap for search engines."""
+    """Dynamic XML sitemap of all public, indexable pages."""
     pages = [
-        (url_for("home", _external=True), "weekly", "1.0"),
-        (url_for("available_courses", _external=True), "weekly", "0.9"),
-        (url_for("services", _external=True), "monthly", "0.9"),
-        (url_for("gallery", _external=True), "weekly", "0.8"),
-        (url_for("courses", _external=True), "monthly", "0.8"),
-        (url_for("workshop", _external=True), "monthly", "0.7"),
-        (url_for("login", _external=True), "yearly", "0.3"),
-        (url_for("signup", _external=True), "yearly", "0.3"),
+        {"loc": url_for("home", _external=True),              "priority": "1.0",  "changefreq": "weekly"},
+        {"loc": url_for("courses", _external=True),           "priority": "0.8",  "changefreq": "weekly"},
+        {"loc": url_for("available_courses", _external=True), "priority": "0.8",  "changefreq": "weekly"},
+        {"loc": url_for("services", _external=True),          "priority": "0.8",  "changefreq": "monthly"},
+        {"loc": url_for("workshop", _external=True),          "priority": "0.7",  "changefreq": "monthly"},
+        {"loc": url_for("gallery", _external=True),           "priority": "0.7",  "changefreq": "weekly"},
+        {"loc": url_for("login", _external=True),             "priority": "0.5",  "changefreq": "yearly"},
+        {"loc": url_for("signup", _external=True),            "priority": "0.5",  "changefreq": "yearly"},
     ]
 
-    lines = ['<?xml version="1.0" encoding="UTF-8"?>']
-    lines.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    xml_lines = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml_lines.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    for p in pages:
+        xml_lines.append("  <url>")
+        xml_lines.append(f"    <loc>{p['loc']}</loc>")
+        xml_lines.append(f"    <lastmod>{now}</lastmod>")
+        xml_lines.append(f"    <changefreq>{p['changefreq']}</changefreq>")
+        xml_lines.append(f"    <priority>{p['priority']}</priority>")
+        xml_lines.append("  </url>")
+    xml_lines.append("</urlset>")
 
-    for loc, changefreq, priority in pages:
-        lines.append("  <url>")
-        lines.append(f"    <loc>{loc}</loc>")
-        lines.append(f"    <changefreq>{changefreq}</changefreq>")
-        lines.append(f"    <priority>{priority}</priority>")
-        lines.append("  </url>")
+    return "\n".join(xml_lines), 200, {"Content-Type": "application/xml"}
 
-    lines.append("</urlset>")
-    return Response("\n".join(lines), mimetype="application/xml")
 
-#======================robot.txt====================
 @app.route("/robots.txt")
 def robots():
-    return send_from_directory(app.static_folder, "robots.txt", mimetype="text/plain")
+    """Tell crawlers what they may index and where the sitemap lives."""
+    base = request.url_root.rstrip("/")
+    lines = [
+        "User-agent: *",
+        "Disallow: /dashboard/",
+        "Disallow: /admin/",
+        "Disallow: /login",
+        "Disallow: /signup",
+        "",
+        f"Sitemap: {base}/sitemap.xml",
+        "",
+    ]
+    return "\n".join(lines), 200, {"Content-Type": "text/plain"}
 
 @app.route("/admin/cleanup-orphaned-photos")
 @admin_required
