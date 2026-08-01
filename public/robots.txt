@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /login
+Disallow: /signup
+
+Sitemap: https://growth-steps-full-stack.vercel.app/sitemap.xml
