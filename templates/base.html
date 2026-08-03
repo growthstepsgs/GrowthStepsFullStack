@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="google-site-verification" content="gps6H3gmPsf4hyHRdxYpPztaWbtK2pjE9jh82aLbybg" />
   <title>{% block title %}Growth Steps{% endblock %}</title>
   <meta name="description" content="{% block description %}Growth Steps provides web development services and live Gen AI training.{% endblock %}" />
 
@@ -72,6 +71,12 @@
           <li><a href="{{ url_for('employee_sheets') }}">Employee Sheets</a></li>
           <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
           <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        
+        {% elif session.get('role') == 'student' %}
+          <li><a href="{{ url_for('student_dashboard') }}">Dashboard</a></li>
+          <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
+          <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        
 
         {% else %}
           <li><a href="{{ url_for('home') }}">Home</a></li>

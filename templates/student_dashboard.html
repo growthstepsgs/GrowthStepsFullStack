@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Dashboard | Growth Steps{% endblock %}
+{% block description %}Your Growth Steps student dashboard.{% endblock %}
+
+{% block styles %}
+<style>
+  .student-hero {
+    padding: var(--space-12) 0 var(--space-8);
+    background: var(--bg-muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .student-hero-inner { max-width: 720px; }
+  .student-hero h1 {
+    font-size: clamp(var(--text-2xl), 4vw, var(--text-4xl));
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: var(--space-2);
+  }
+  .student-hero h1 span { color: var(--primary-text); }
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    background: var(--warning-bg);
+    color: var(--warning);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    margin-top: var(--space-4);
+  }
+  .info-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    max-width: 600px;
+  }
+  .info-card h3 {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: var(--space-3);
+  }
+  .info-card p {
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    line-height: 1.65;
+  }
+  .info-card ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+  .info-card li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+  }
+  .info-card li::before {
+    content: '◆';
+    color: var(--primary);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+  <section class="student-hero" aria-labelledby="student-heading">
+    <div class="container">
+      <div class="student-hero-inner reveal">
+        <div class="eyebrow">
+          <span class="eyebrow-dot" aria-hidden="true"></span>
+          Student Dashboard
+        </div>
+        <h1 id="student-heading">Welcome, <span>{{ email.split('@')[0] if email else 'Learner' }}</span></h1>
+        <p class="body">
+          Signed in as {{ email }}. You currently have <strong>student</strong> access.
+        </p>
+        <div class="status-badge">
+          <span aria-hidden="true">⏳</span>
+          Awaiting role assignment
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="info-heading">
+    <div class="container">
+      <div class="info-card reveal">
+        <h3>What happens next?</h3>
+        <p>
+          Your account is active, but an admin needs to assign your role before you can access employee features like submitting requests or viewing employee sheets.
+        </p>
+        <ul>
+          <li>If you are a <strong>workshop participant</strong>, you will remain as a student and can browse courses.</li>
+          <li>If you are a <strong>team member</strong>, an admin will upgrade you to employee shortly.</li>
+          <li>Once your role is updated, log out and log back in to see your new dashboard.</li>
+        </ul>
+        <div style="margin-top: var(--space-6);">
+          <a class="btn btn-primary" href="{{ url_for('available_courses') }}">Browse Courses</a>
+          <a class="btn btn-ghost" href="{{ url_for('logout') }}" style="margin-left: var(--space-3);">Log Out</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+{% endblock %}
