@@ -704,7 +704,7 @@ def course_content(course_id, content_id):
             pass
 
     if not content:
-        abort(404)
+        os.abort(404)
 
     if content.get("url"):
         return redirect(content["url"])
