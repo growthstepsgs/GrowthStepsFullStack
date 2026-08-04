@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+
+{% block title %}Growth Steps | Reviews{% endblock %}
+{% block description %}See what students and clients say about Growth Steps. Read authentic reviews and share your experience.{% endblock %}
+
+{% block content %}
+
+<section class="section" aria-labelledby="reviews-heading">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="eyebrow">Testimonials</span>
+      <h2 id="reviews-heading" class="heading-section">What people <strong>say about us</strong></h2>
+      <p>Real feedback from real people who have worked with us or taken our courses.</p>
+    </div>
+
+    {% if reviews %}
+    <div class="reviews-summary reveal">
+      <div class="avg-rating-box">
+        <span class="avg-number">{{ avg_rating }}</span>
+        <div class="avg-stars" aria-label="Average rating {{ avg_rating }} out of 5">
+          {% for i in range(1, 6) %}
+          <span class="star {% if i <= avg_rating|int %}filled{% endif %}" aria-hidden="true">★</span>
+          {% endfor %}
+        </div>
+        <span class="avg-count">{{ reviews|length }} review{{ 's' if reviews|length != 1 else '' }}</span>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if session.get('user_id') %}
+    <div class="review-form-wrap reveal">
+      <h3 class="heading-card">Write a Review</h3>
+      <form method="POST" action="{{ url_for('reviews') }}" class="review-form">
+        <div class="form-group">
+          <label>Rating</label>
+          <!-- 
+            CRITICAL: inputs must be siblings of labels (not children) 
+            so CSS ~ selector works. DOM order is 5→1; row-reverse 
+            makes visual order 1→5.
+          -->
+          <div class="star-input" role="radiogroup" aria-label="Rate 1 to 5 stars">
+            {% for i in range(5, 0, -1) %}
+            <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" {% if i == 5 %}checked{% endif %}>
+            <label for="star{{ i }}" class="star-label" title="{{ i }} star{{ 's' if i != 1 else '' }}">
+              <span class="star" aria-hidden="true">★</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="review-content">Your Review</label>
+          <textarea id="review-content" name="content" rows="4" placeholder="Share your experience with Growth Steps..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit Review</button>
+      </form>
+    </div>
+    {% else %}
+    <div class="review-login-cta reveal">
+      <p><a href="{{ url_for('login') }}" class="btn btn-primary">Log in</a> to share your experience.</p>
+    </div>
+    {% endif %}
+
+    <div class="reviews-list">
+      {% for review in reviews %}
+      <article class="review-card {% if review.is_pinned %}review-pinned{% endif %} reveal">
+        {% if review.is_pinned %}
+        <div class="pin-badge" aria-label="Pinned review">📌 Pinned</div>
+        {% endif %}
+
+        <div class="review-header">
+          <div class="review-meta">
+            <strong class="review-author">{{ review.user_name or 'Anonymous' }}</strong>
+            <time class="review-date" datetime="{{ review.created_at }}">
+              {{ review.created_at[:10] if review.created_at else '' }}
+            </time>
+          </div>
+          <div class="review-rating" aria-label="Rated {{ review.rating }} out of 5">
+            {% for i in range(1, 6) %}
+            <span class="star {% if i <= review.rating %}filled{% endif %}" aria-hidden="true">★</span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <p class="review-content">{{ review.content }}</p>
+
+        {% if session.get('role') == 'admin' %}
+        <div class="review-admin-actions">
+          <form method="POST" action="{{ url_for('admin_pin_review', review_id=review.id) }}" class="inline-form">
+            <input type="hidden" name="is_pinned" value="{{ 'false' if review.is_pinned else 'true' }}">
+            <button type="submit" class="btn btn-ghost btn-sm">
+              {% if review.is_pinned %}Unpin{% else %}Pin to top{% endif %}
+            </button>
+          </form>
+          <form method="POST" action="{{ url_for('admin_delete_review', review_id=review.id) }}" class="inline-form" onsubmit="return confirm('Delete this review permanently?');">
+            <button type="submit" class="btn btn-ghost btn-sm delete-btn">Delete</button>
+          </form>
+        </div>
+        {% endif %}
+      </article>
+      {% else %}
+      <div class="empty-state reveal">
+        <p>No reviews yet. Be the first to share your experience!</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<style>
+/* ── Summary ── */
+.reviews-summary {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.avg-rating-box {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 20px 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+.avg-number {
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text);
+}
+.avg-stars {
+  font-size: 22px;
+  line-height: 1;
+}
+.avg-count {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ── Form ── */
+.review-form-wrap {
+  max-width: 640px;
+  margin: 0 auto 48px;
+  padding: 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+.review-form .form-group {
+  margin-bottom: 20px;
+}
+.review-form label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  font-size: 14px;
+}
+.review-form textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  resize: vertical;
+}
+
+/* ── Star Rating Input ── */
+.star-input {
+  display: inline-flex;
+  flex-direction: row-reverse;
+  gap: 6px;
+  font-size: 36px;
+  line-height: 1;
+}
+.star-input input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.star-input .star-label {
+  cursor: pointer;
+  user-select: none;
+  padding: 2px 4px;
+  transition: transform .1s ease;
+}
+.star-input .star-label:hover {
+  transform: scale(1.15);
+}
+.star-input .star {
+  color: #d1d5db;
+  transition: color .15s ease;
+}
+/* Hover: current + all stars to the left (visually) */
+.star-input .star-label:hover .star,
+.star-input .star-label:hover ~ .star-label .star {
+  color: #f59e0b;
+}
+/* Checked: current + all stars to the left */
+.star-input input:checked ~ .star-label .star {
+  color: #f59e0b;
+}
+/* Focus ring for keyboard users */
+.star-input input:focus + .star-label {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.review-login-cta {
+  text-align: center;
+  margin-bottom: 40px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+}
+
+/* ── Review Cards ── */
+.reviews-list {
+  display: grid;
+  gap: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.review-card {
+  position: relative;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.review-pinned {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(180,83,9,0.04) 100%);
+}
+.pin-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  background: rgba(180,83,9,0.08);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.review-author { font-size: 15px; }
+.review-date {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.review-rating {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.review-rating .star { color: #e5e7eb; }
+.review-rating .star.filled { color: #f59e0b; }
+.review-content {
+  font-size: 15px;
+  line-height: 1.65;
+  margin: 0;
+  color: var(--text);
+}
+.review-admin-actions {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.inline-form { display: inline; }
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 13px;
+}
+.delete-btn { color: #dc2626; }
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--muted);
+}
+</style>
+
+{% endblock %}

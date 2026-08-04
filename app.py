@@ -774,6 +774,123 @@ def admin_update_enrollment(enrollment_id):
         flash(f"Could not update enrollment: {exc}", "error")
 
     return redirect(url_for("admin_enrollments"))
+
+
+# ── PUBLIC REVIEWS ─────────────────────────────────────────────────
+@app.route("/reviews", methods=["GET", "POST"])
+def reviews():
+    client = supabase_admin or supabase
+
+    if request.method == "POST":
+        user_id = session.get("user_id")
+        if not user_id:
+            flash("Please log in to submit a review.", "error")
+            return redirect(url_for("login"))
+
+        rating = request.form.get("rating", "5")
+        content = request.form.get("content", "").strip()
+
+        if not content:
+            flash("Review content is required.", "error")
+            return redirect(url_for("reviews"))
+
+        try:
+            rating = int(rating)
+            if not (1 <= rating <= 5):
+                rating = 5
+        except ValueError:
+            rating = 5
+
+        # Resolve display name from profiles
+        user_name = session.get("user_email", "Anonymous")
+        if client:
+            try:
+                prof = (
+                    client.table("profiles")
+                    .select("full_name")
+                    .eq("id", user_id)
+                    .single()
+                    .execute()
+                )
+                if prof.data and prof.data.get("full_name"):
+                    user_name = prof.data["full_name"]
+            except Exception:
+                pass
+
+        try:
+            client.table("reviews").insert({
+                "user_id": user_id,
+                "user_name": user_name,
+                "rating": rating,
+                "content": content,
+            }).execute()
+            flash("Thank you! Your review has been submitted.", "success")
+        except Exception as exc:
+            flash(f"Could not submit review: {exc}", "error")
+
+        return redirect(url_for("reviews"))
+
+    all_reviews = []
+    avg_rating = 0.0
+    if client:
+        try:
+            res = (
+                client.table("reviews")
+                .select("*")
+                .order("is_pinned", desc=True)
+                .order("created_at", desc=True)
+                .execute()
+            )
+            all_reviews = res.data or []
+            if all_reviews:
+                avg_rating = round(
+                    sum(r["rating"] for r in all_reviews) / len(all_reviews), 1
+                )
+        except Exception as exc:
+            print(f"reviews fetch failed: {exc}")
+
+    return render_template(
+        "reviewpage.html",
+        reviews=all_reviews,
+        avg_rating=avg_rating,
+    )
+
+
+@app.route("/reviews/<review_id>/pin", methods=["POST"])
+@admin_required
+def admin_pin_review(review_id):
+    client = supabase_admin or supabase
+    if not client:
+        flash("Supabase isn't configured.", "error")
+        return redirect(url_for("reviews"))
+
+    is_pinned = request.form.get("is_pinned") == "true"
+    try:
+        client.table("reviews").update({
+            "is_pinned": is_pinned
+        }).eq("id", review_id).execute()
+        flash("Review updated.", "success")
+    except Exception as exc:
+        flash(f"Could not update review: {exc}", "error")
+
+    return redirect(url_for("reviews"))
+
+
+@app.route("/reviews/<review_id>/delete", methods=["POST"])
+@admin_required
+def admin_delete_review(review_id):
+    client = supabase_admin or supabase
+    if not client:
+        flash("Supabase isn't configured.", "error")
+        return redirect(url_for("reviews"))
+
+    try:
+        client.table("reviews").delete().eq("id", review_id).execute()
+        flash("Review deleted.", "success")
+    except Exception as exc:
+        flash(f"Could not delete review: {exc}", "error")
+
+    return redirect(url_for("reviews"))
 # ── SEO: SITEMAP & ROBOTS.TXT ───────────────────────────────────────
 @app.route("/sitemap.xml")
 def sitemap():
