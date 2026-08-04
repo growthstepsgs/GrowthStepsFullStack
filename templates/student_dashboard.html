@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}Student Dashboard | Growth Steps{% endblock %}
-{% block description %}Your Growth Steps student dashboard.{% endblock %}
+{% block description %}Your learning dashboard.{% endblock %}
 
 {% block styles %}
 <style>
@@ -18,96 +18,178 @@
     margin-bottom: var(--space-2);
   }
   .student-hero h1 span { color: var(--primary-text); }
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    background: var(--warning-bg);
-    color: var(--warning);
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-full);
-    font-size: var(--text-sm);
-    font-weight: 700;
-    margin-top: var(--space-4);
-  }
-  .info-card {
+
+  .dash-section {
     background: var(--bg-elevated);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-xl);
     padding: var(--space-6);
-    max-width: 600px;
+    margin-bottom: var(--space-8);
   }
-  .info-card h3 {
-    font-size: var(--text-lg);
+  .dash-section h2 {
+    font-size: var(--text-xl);
     font-weight: 700;
     color: var(--text);
-    margin-bottom: var(--space-3);
-  }
-  .info-card p {
-    color: var(--text-muted);
-    font-size: var(--text-sm);
-    line-height: 1.65;
-  }
-  .info-card ul {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    margin-top: var(--space-4);
-  }
-  .info-card li {
+    margin-bottom: var(--space-4);
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    color: var(--text-muted);
-    font-size: var(--text-sm);
   }
-  .info-card li::before {
-    content: '◆';
-    color: var(--primary);
+
+  .course-list { display: flex; flex-direction: column; gap: var(--space-4); }
+  .course-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-4);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-fast);
   }
+  .course-row:hover { border-color: var(--border-strong); }
+  .course-row h4 { font-size: var(--text-base); font-weight: 600; color: var(--text); margin-bottom: var(--space-1); }
+  .course-row p { font-size: var(--text-sm); color: var(--text-muted); }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .badge-pending { background: var(--warning-bg); color: var(--warning); }
+  .badge-approved { background: var(--success-bg); color: var(--success); }
+  .badge-rejected { background: var(--red-light); color: var(--red); }
+
+  .content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+    margin-left: var(--space-4);
+  }
+  .content-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    transition: all var(--transition-fast);
+  }
+  .content-card:hover { border-color: var(--primary); box-shadow: var(--shadow-sm); }
+  .content-card .type-icon { font-size: var(--text-2xl); margin-bottom: var(--space-2); }
+  .content-card h5 { font-size: var(--text-sm); font-weight: 600; color: var(--text); margin-bottom: var(--space-2); }
+  .content-card a { font-size: var(--text-xs); color: var(--primary-text); font-weight: 600; text-decoration: none; }
+  .content-card a:hover { text-decoration: underline; }
+
+  .locked { opacity: 0.6; }
+  .empty-note { color: var(--text-subtle); font-size: var(--text-sm); text-align: center; padding: var(--space-6); }
 </style>
 {% endblock %}
 
 {% block content %}
 
-  <section class="student-hero" aria-labelledby="student-heading">
-    <div class="container">
-      <div class="student-hero-inner reveal">
-        <div class="eyebrow">
-          <span class="eyebrow-dot" aria-hidden="true"></span>
-          Student Dashboard
-        </div>
-        <h1 id="student-heading">Welcome, <span>{{ email.split('@')[0] if email else 'Learner' }}</span></h1>
-        <p class="body">
-          Signed in as {{ email }}. You currently have <strong>student</strong> access.
-        </p>
-        <div class="status-badge">
-          <span aria-hidden="true">⏳</span>
-          Awaiting role assignment
-        </div>
-      </div>
+<section class="student-hero" aria-labelledby="student-heading">
+  <div class="container">
+    <div class="student-hero-inner reveal">
+      <div class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Student Dashboard</div>
+      <h1 id="student-heading">Welcome, <span>{{ email.split('@')[0] if email else 'Learner' }}</span></h1>
+      <p class="body">Manage your courses, track enrollments, and access learning materials.</p>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="section" aria-labelledby="info-heading">
-    <div class="container">
-      <div class="info-card reveal">
-        <h3>What happens next?</h3>
-        <p>
-          Your account is active, but an admin needs to assign your role before you can access employee features like submitting requests or viewing employee sheets.
-        </p>
-        <ul>
-          <li>If you are a <strong>workshop participant</strong>, you will remain as a student and can browse courses.</li>
-          <li>If you are a <strong>team member</strong>, an admin will upgrade you to employee shortly.</li>
-          <li>Once your role is updated, log out and log back in to see your new dashboard.</li>
-        </ul>
-        <div style="margin-top: var(--space-6);">
-          <a class="btn btn-primary" href="{{ url_for('available_courses') }}">Browse Courses</a>
-          <a class="btn btn-ghost" href="{{ url_for('logout') }}" style="margin-left: var(--space-3);">Log Out</a>
+<section class="section" aria-labelledby="learning-heading">
+  <div class="container">
+
+    <!-- Approved -->
+    <div class="dash-section reveal">
+      <h2><span aria-hidden="true">✅</span> My Learning</h2>
+      {% if approved_enrollments %}
+        <div class="course-list">
+          {% for e in approved_enrollments %}
+            {% if e.course %}
+              <div class="course-row">
+                <div>
+                  <h4>{{ e.course.title }}</h4>
+                  <p>Enrolled {{ e.created_at[:10] if e.created_at else '' }}</p>
+                </div>
+                <span class="badge badge-approved">Approved</span>
+              </div>
+              {% set contents = course_contents.get(e.course_id, []) %}
+              {% if contents %}
+                <div class="content-grid">
+                  {% for item in contents %}
+                    <div class="content-card">
+                      <div class="type-icon" aria-hidden="true">
+                        {% if item.type == 'video' %}▶️{% elif item.type == 'ppt' %}📄{% elif item.type == 'assignment' %}📝{% else %}📦{% endif %}
+                      </div>
+                      <h5>{{ item.title }}</h5>
+                      <a href="{{ url_for('course_content', course_id=e.course_id, content_id=item.id) }}">
+                        {% if item.type == 'video' %}Watch Video →{% elif item.type == 'ppt' %}Download PPT →{% else %}Open →{% endif %}
+                      </a>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <p class="empty-note" style="margin-left: var(--space-4);">No content uploaded yet.</p>
+              {% endif %}
+            {% endif %}
+          {% endfor %}
         </div>
-      </div>
+      {% else %}
+        <p class="empty-note">No approved courses yet. Enroll below and wait for admin approval.</p>
+      {% endif %}
     </div>
-  </section>
+
+    <!-- Pending -->
+    <div class="dash-section reveal">
+      <h2><span aria-hidden="true">⏳</span> Pending Approval</h2>
+      {% if pending_enrollments %}
+        <div class="course-list">
+          {% for e in pending_enrollments %}
+            {% if e.course %}
+              <div class="course-row locked">
+                <div>
+                  <h4>{{ e.course.title }}</h4>
+                  <p>Requested {{ e.created_at[:10] if e.created_at else '' }}</p>
+                </div>
+                <span class="badge badge-pending">Pending</span>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="empty-note">No pending enrollments.</p>
+      {% endif %}
+    </div>
+
+    <!-- Available -->
+    <div class="dash-section reveal">
+      <h2><span aria-hidden="true">📚</span> Available Courses</h2>
+      {% if available_courses %}
+        <div class="course-list">
+          {% for course in available_courses %}
+            <div class="course-row">
+              <div>
+                <h4>{{ course.title }}</h4>
+                <p>{{ course.description[:80] }}{% if course.description|length > 80 %}...{% endif %}</p>
+              </div>
+              <form method="POST" action="{{ url_for('enroll_course', course_id=course.id) }}">
+                <button class="btn btn-primary" type="submit">Enroll</button>
+              </form>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="empty-note">You are enrolled in all available courses.</p>
+      {% endif %}
+    </div>
+
+  </div>
+</section>
 
 {% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Enrollment Approvals | Growth Steps{% endblock %}
+{% block description %}Approve or reject student course enrollments.{% endblock %}
+
+{% block styles %}
+<style>
+  .admin-hero { padding: var(--space-12) 0 var(--space-8); background: var(--bg-muted); border-bottom: 1px solid var(--border); }
+  .admin-hero-inner { max-width: 720px; }
+  .admin-hero h1 { font-size: clamp(var(--text-2xl), 4vw, var(--text-4xl)); font-weight: 800; color: var(--text); margin-bottom: var(--space-2); }
+  .enroll-table-wrap { overflow-x: auto; }
+  .enroll-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+  .enroll-table th { text-align: left; padding: var(--space-3) var(--space-4); background: var(--bg-muted); color: var(--text-subtle); font-weight: 600; text-transform: uppercase; font-size: var(--text-xs); letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+  .enroll-table td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--border-light); color: var(--text); vertical-align: middle; }
+  .enroll-table tr:hover td { background: var(--bg-muted); }
+  .badge { display: inline-flex; padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; }
+  .badge-pending { background: var(--warning-bg); color: var(--warning); }
+  .badge-approved { background: var(--success-bg); color: var(--success); }
+  .badge-rejected { background: var(--red-light); color: var(--red); }
+  .action-form { display: flex; gap: var(--space-2); }
+  .action-form select { padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: var(--text-xs); }
+  .action-form .btn { padding: var(--space-1) var(--space-3); font-size: var(--text-xs); margin: 0; }
+  .empty-state { text-align: center; padding: var(--space-12) var(--space-6); background: var(--bg-elevated); border: 2px dashed var(--border); border-radius: var(--radius-xl); }
+  .empty-state p { color: var(--text-subtle); font-size: var(--text-base); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="admin-hero" aria-labelledby="page-heading">
+  <div class="container">
+    <div class="admin-hero-inner reveal">
+      <div class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Admin</div>
+      <h1 id="page-heading">Enrollment <strong>Approvals</strong></h1>
+      <p class="body">Review and manage student course enrollments.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="list-heading">
+  <div class="container">
+    <div class="section-header reveal" style="margin-bottom: var(--space-6);">
+      <span class="eyebrow">Requests</span>
+      <h2 id="list-heading" class="heading-section">All <strong>Enrollments</strong></h2>
+    </div>
+
+    {% if enrollments %}
+      <div class="enroll-table-wrap reveal">
+        <table class="enroll-table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Course</th>
+              <th>Requested</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in enrollments %}
+            <tr>
+              <td>
+                <strong>{{ e.student_name or 'Unknown' }}</strong><br>
+                <span style="font-size: var(--text-xs); color: var(--text-subtle);">{{ e.student_id[:8] }}…</span>
+              </td>
+              <td>{{ e.course_title or 'Unknown' }}</td>
+              <td>{{ e.created_at[:10] if e.created_at else '—' }}</td>
+              <td>
+                <span class="badge badge-{{ e.status }}">{{ e.status }}</span>
+              </td>
+              <td>
+                <form class="action-form" method="POST" action="{{ url_for('admin_update_enrollment', enrollment_id=e.id) }}">
+                  <select name="status" required>
+                    <option value="pending" {% if e.status == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="approved" {% if e.status == 'approved' %}selected{% endif %}>Approve</option>
+                    <option value="rejected" {% if e.status == 'rejected' %}selected{% endif %}>Reject</option>
+                  </select>
+                  <button class="btn btn-primary" type="submit">Update</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state reveal">
+        <p>No enrollment requests yet.</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

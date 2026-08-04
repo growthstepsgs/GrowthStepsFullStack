@@ -526,7 +526,58 @@ def student_dashboard():
         return redirect(url_for("admin_dashboard"))
     if role == "employee":
         return redirect(url_for("employee_dashboard"))
-    return render_template("student_dashboard.html", email=session.get("user_email"))
+
+    user_id = session.get("user_id")
+    client = supabase_admin or supabase
+
+    all_courses = []
+    enrollments = []
+    course_contents = {}
+
+    if client:
+        try:
+            res = client.table("courses").select("*").eq("is_active", True).order("created_at", desc=True).execute()
+            all_courses = res.data or []
+        except Exception:
+            pass
+
+        try:
+            res = client.table("enrollments").select("*").eq("student_id", user_id).execute()
+            enrollments = res.data or []
+        except Exception:
+            pass
+
+        approved_ids = [e["course_id"] for e in enrollments if e.get("status") == "approved"]
+        if approved_ids:
+            try:
+                res = client.table("course_contents").select("*").in_("course_id", approved_ids).order("sort_order").execute()
+                for item in (res.data or []):
+                    cid = item["course_id"]
+                    if cid not in course_contents:
+                        course_contents[cid] = []
+                    course_contents[cid].append(item)
+            except Exception:
+                pass
+
+    enrolled_ids = {e["course_id"] for e in enrollments}
+    available_courses = [c for c in all_courses if c["id"] not in enrolled_ids]
+    approved_enrollments = [e for e in enrollments if e.get("status") == "approved"]
+    pending_enrollments = [e for e in enrollments if e.get("status") == "pending"]
+
+    course_by_id = {c["id"]: c for c in all_courses}
+    for e in approved_enrollments:
+        e["course"] = course_by_id.get(e["course_id"])
+    for e in pending_enrollments:
+        e["course"] = course_by_id.get(e["course_id"])
+
+    return render_template(
+        "student_dashboard.html",
+        email=session.get("user_email"),
+        approved_enrollments=approved_enrollments,
+        pending_enrollments=pending_enrollments,
+        available_courses=available_courses,
+        course_contents=course_contents,
+    )
 
 
 @app.route("/dashboard/admin")
@@ -582,6 +633,147 @@ def admin_update_role(user_id):
         flash(f"Could not update role: {exc}", "error")
 
     return redirect(url_for("admin_dashboard"))
+
+# ── STUDENT ENROLLMENT ─────────────────────────────────────────────
+@app.route("/enroll/<course_id>", methods=["POST"])
+@login_required
+def enroll_course(course_id):
+    user_id = session.get("user_id")
+    role = session.get("role")
+
+    if role != "student":
+        flash("Only students can enroll in courses.", "error")
+        return redirect(url_for("available_courses"))
+
+    client = supabase_admin or supabase
+    if not client or not user_id:
+        flash("Could not process enrollment.", "error")
+        return redirect(url_for("available_courses"))
+
+    try:
+        existing = client.table("enrollments").select("*").eq("student_id", user_id).eq("course_id", course_id).execute()
+        if existing.data:
+            flash("You are already enrolled in this course.", "info")
+            return redirect(url_for("student_dashboard"))
+
+        client.table("enrollments").insert({
+            "student_id": user_id,
+            "course_id": course_id,
+            "status": "pending",
+        }).execute()
+        flash("Enrollment request submitted! Waiting for admin approval.", "success")
+    except Exception as exc:
+        flash(f"Enrollment failed: {exc}", "error")
+
+    return redirect(url_for("student_dashboard"))
+
+
+# ── PROTECTED COURSE CONTENT ───────────────────────────────────────
+@app.route("/course/<course_id>/content/<content_id>")
+@login_required
+def course_content(course_id, content_id):
+    user_id = session.get("user_id")
+    role = session.get("role")
+
+    if role != "admin":
+        client = supabase_admin or supabase
+        if client:
+            try:
+                res = client.table("enrollments").select("*") \
+                    .eq("student_id", user_id) \
+                    .eq("course_id", course_id) \
+                    .eq("status", "approved") \
+                    .execute()
+                if not res.data:
+                    flash("You are not enrolled in this course.", "error")
+                    return redirect(url_for("student_dashboard"))
+            except Exception:
+                flash("Could not verify enrollment.", "error")
+                return redirect(url_for("student_dashboard"))
+
+    client = supabase_admin or supabase
+    content = None
+    if client:
+        try:
+            res = client.table("course_contents").select("*") \
+                .eq("id", content_id) \
+                .eq("course_id", course_id) \
+                .single().execute()
+            content = res.data
+        except Exception:
+            pass
+
+    if not content:
+        abort(404)
+
+    if content.get("url"):
+        return redirect(content["url"])
+
+    return render_template("course_content.html", content=content)
+
+
+# ── ADMIN ENROLLMENT MANAGEMENT ────────────────────────────────────
+@app.route("/dashboard/admin/enrollments")
+@admin_required
+def admin_enrollments():
+    client = supabase_admin or supabase
+    enrollments = []
+    if client:
+        try:
+            res = client.table("enrollments").select("*").order("created_at", desc=True).execute()
+            enrollments = res.data or []
+
+            student_ids = list({e["student_id"] for e in enrollments if e.get("student_id")})
+            course_ids = list({e["course_id"] for e in enrollments if e.get("course_id")})
+
+            names = {}
+            if student_ids:
+                r = client.table("profiles").select("id, full_name, email").in_("id", student_ids).execute()
+                for p in (r.data or []):
+                    names[p["id"]] = p.get("full_name") or p.get("email") or "Unknown"
+
+            courses = {}
+            if course_ids:
+                r = client.table("courses").select("id, title").in_("id", course_ids).execute()
+                for c in (r.data or []):
+                    courses[c["id"]] = c.get("title") or "Untitled"
+
+            for e in enrollments:
+                e["student_name"] = names.get(e.get("student_id"), "Unknown")
+                e["course_title"] = courses.get(e.get("course_id"), "Unknown")
+        except Exception as exc:
+            print(f"admin_enrollments failed: {exc}")
+
+    return render_template(
+        "admin_enrollments.html",
+        email=session.get("user_email"),
+        enrollments=enrollments,
+    )
+
+
+@app.route("/dashboard/admin/enrollments/<enrollment_id>/update", methods=["POST"])
+@admin_required
+def admin_update_enrollment(enrollment_id):
+    status = request.form.get("status", "").strip()
+    if status not in ("pending", "approved", "rejected"):
+        flash("Invalid status.", "error")
+        return redirect(url_for("admin_enrollments"))
+
+    client = supabase_admin or supabase
+    if not client:
+        flash("Supabase isn't configured.", "error")
+        return redirect(url_for("admin_enrollments"))
+
+    try:
+        update_data = {"status": status}
+        if status == "approved":
+            update_data["approved_at"] = datetime.now(timezone.utc).isoformat()
+        client.table("enrollments").update(update_data).eq("id", enrollment_id).execute()
+        flash(f"Enrollment {status}.", "success")
+    except Exception as exc:
+        flash(f"Could not update enrollment: {exc}", "error")
+
+    return redirect(url_for("admin_enrollments"))
 # ── SEO: SITEMAP & ROBOTS.TXT ───────────────────────────────────────
 @app.route("/sitemap.xml")
 def sitemap():
@@ -880,7 +1072,79 @@ def admin_update_request(request_id):
         flash(f"Could not update request: {exc}", "error")
 
     return redirect(url_for("admin_requests"))
+# ── ADMIN COURSE CONTENT MANAGEMENT ────────────────────────────────
+@app.route("/admin/course-contents", methods=["GET", "POST"])
+@admin_required
+def admin_course_contents():
+    client = supabase_admin or supabase
+    courses = []
+    contents = []
 
+    if client:
+        try:
+            res = client.table("courses").select("id, title").order("title").execute()
+            courses = res.data or []
+        except Exception:
+            pass
+
+        try:
+            res = client.table("course_contents").select("*, courses(title)").order("sort_order").execute()
+            contents = res.data or []
+        except Exception:
+            pass
+
+    if request.method == "POST":
+        course_id = request.form.get("course_id", "").strip()
+        title = request.form.get("title", "").strip()
+        content_type = request.form.get("type", "").strip()
+        url = request.form.get("url", "").strip()
+        sort_order = request.form.get("sort_order", "0").strip()
+
+        if not course_id or not title or not content_type or not url:
+            flash("Please fill in all fields.", "error")
+            return redirect(url_for("admin_course_contents"))
+
+        if content_type not in ("video", "ppt", "assignment", "certificate"):
+            flash("Invalid content type.", "error")
+            return redirect(url_for("admin_course_contents"))
+
+        try:
+            client.table("course_contents").insert({
+                "course_id": course_id,
+                "title": title,
+                "type": content_type,
+                "url": url,
+                "sort_order": int(sort_order) if sort_order else 0,
+            }).execute()
+            flash("Content added successfully.", "success")
+        except Exception as exc:
+            flash(f"Failed to add content: {exc}", "error")
+
+        return redirect(url_for("admin_course_contents"))
+
+    return render_template(
+        "admin_course_contents.html",
+        email=session.get("user_email"),
+        courses=courses,
+        contents=contents,
+    )
+
+
+@app.route("/admin/course-contents/<content_id>/delete", methods=["POST"])
+@admin_required
+def admin_delete_content(content_id):
+    client = supabase_admin or supabase
+    if not client:
+        flash("Supabase isn't configured.", "error")
+        return redirect(url_for("admin_course_contents"))
+
+    try:
+        client.table("course_contents").delete().eq("id", content_id).execute()
+        flash("Content deleted.", "success")
+    except Exception as exc:
+        flash(f"Could not delete content: {exc}", "error")
+
+    return redirect(url_for("admin_course_contents"))
 
 # ── CONTACT FORM (optional server-side handling; front-end already
 #    uses EmailJS directly, this endpoint is available if you want to
