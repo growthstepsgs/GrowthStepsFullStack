@@ -923,19 +923,27 @@ def sitemap():
 
 @app.route("/robots.txt")
 def robots():
-    """Tell crawlers what they may index and where the sitemap lives."""
-    base = request.url_root.rstrip("/")
-    lines = [
-        "User-agent: *",
-        "Disallow: /dashboard/",
-        "Disallow: /admin/",
-        "Disallow: /login",
-        "Disallow: /signup",
-        "",
-        f"Sitemap: {base}/sitemap.xml",
-        "",
-    ]
-    return "\n".join(lines), 200, {"Content-Type": "text/plain"}
+    """Serve robots.txt for search engine crawlers."""
+    robots_txt = """User-agent: Googlebot
+Disallow:
+
+User-agent: googlebot-mobile
+Disallow:
+
+User-agent: *
+Disallow:
+Crawl-delay: 5
+
+Disallow: /cgi-bin/
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /login
+Disallow: /signup
+
+Sitemap: https://growth-steps-full-stack.vercel.app/sitemap.xml
+"""
+
+    return robots_txt, 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 @app.route("/admin/cleanup-orphaned-photos")
 @admin_required
