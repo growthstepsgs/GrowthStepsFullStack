@@ -6,27 +6,90 @@
 {% block styles %}
 <style>
   /* ══════════════════════════════════════════
-     SERVICES PAGE
+     SERVICES PAGE - PREMIUM ANIMATED UI
   ══════════════════════════════════════════ */
+
+  :root {
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-hover: rgba(255, 255, 255, 0.06);
+    --neon-glow: 0 0 20px rgba(99, 102, 241, 0.4), 0 0 40px rgba(99, 102, 241, 0.2);
+  }
+
+  [data-theme="light"] {
+    --glass-bg: rgba(0, 0, 0, 0.02);
+    --glass-border: rgba(0, 0, 0, 0.05);
+    --glass-hover: rgba(0, 0, 0, 0.04);
+  }
+
+  /* Animations */
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  @keyframes floatOrbs {
+    0% { transform: translateY(0px) scale(1); opacity: 0.6; }
+    50% { transform: translateY(-30px) scale(1.1); opacity: 0.8; }
+    100% { transform: translateY(0px) scale(1); opacity: 0.6; }
+  }
+
+  @keyframes pulseGlow {
+    0% { box-shadow: 0 0 15px rgba(99,102,241,0.2); }
+    50% { box-shadow: 0 0 25px rgba(99,102,241,0.5); }
+    100% { box-shadow: 0 0 15px rgba(99,102,241,0.2); }
+  }
+
+  /* Reveal Animation Classes */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
 
   /* Hero */
   .services-hero {
     padding: var(--space-16) 0 var(--space-12);
-    background: linear-gradient(160deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    background: linear-gradient(-45deg, #0b1120, #172554, #0f172a, #1e1b4b);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
     position: relative;
     overflow: hidden;
     color: #fff;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
   }
 
-  .services-hero::before {
-    content: '';
+  .hero-orb-1, .hero-orb-2 {
     position: absolute;
-    top: -40%;
-    right: -10%;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(80px);
     pointer-events: none;
+    z-index: 0;
+    animation: floatOrbs 8s ease-in-out infinite;
+  }
+
+  .hero-orb-1 {
+    width: 400px;
+    height: 400px;
+    background: rgba(99, 102, 241, 0.3);
+    top: -10%;
+    right: -5%;
+  }
+
+  .hero-orb-2 {
+    width: 300px;
+    height: 300px;
+    background: rgba(236, 72, 153, 0.2);
+    bottom: -10%;
+    left: 10%;
+    animation-delay: -4s;
   }
 
   .services-hero .container {
@@ -37,59 +100,88 @@
   .services-hero .eyebrow {
     background: rgba(99,102,241,0.15);
     color: #a5b4fc;
-    border: 1px solid rgba(99,102,241,0.25);
+    border: 1px solid rgba(99,102,241,0.3);
+    backdrop-filter: blur(10px);
+    display: inline-flex;
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 24px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
   }
 
   .services-hero .heading-hero {
     color: #fff;
-    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    line-height: 1.1;
+    font-weight: 900;
+    margin-bottom: 24px;
+    text-shadow: 0 10px 30px rgba(0,0,0,0.5);
   }
 
   .services-hero .heading-hero span {
-    color: #818cf8;
+    background: linear-gradient(to right, #818cf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   .services-hero .body-large {
-    color: rgba(255,255,255,0.75);
+    color: rgba(255,255,255,0.85);
     max-width: 600px;
+    font-size: 1.125rem;
+    line-height: 1.8;
+    margin-bottom: 40px;
   }
 
   .hero-actions {
     display: flex;
-    gap: var(--space-3);
+    gap: var(--space-4);
     flex-wrap: wrap;
-    margin-top: var(--space-2);
   }
 
   .btn-glow {
-    background: var(--primary);
+    background: #4f46e5;
     color: #fff;
-    box-shadow: 0 4px 24px rgba(99,102,241,0.4);
+    border: none;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    animation: pulseGlow 3s infinite;
+    text-decoration: none;
   }
 
   .btn-glow:hover {
-    background: #4f46e5;
-    box-shadow: 0 6px 32px rgba(99,102,241,0.55);
-    transform: translateY(-2px);
+    background: #4338ca;
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: var(--neon-glow);
   }
 
   .btn-on-dark {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
     color: #fff;
     border: 1px solid rgba(255,255,255,0.2);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(12px);
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
   }
 
   .btn-on-dark:hover {
-    background: rgba(255,255,255,0.2);
-    border-color: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.4);
+    transform: translateY(-3px);
   }
 
   .hero-stats-bar {
     display: flex;
-    gap: var(--space-8);
-    padding-top: var(--space-6);
-    margin-top: var(--space-6);
+    gap: var(--space-10);
+    padding-top: var(--space-8);
+    margin-top: var(--space-8);
     border-top: 1px solid rgba(255,255,255,0.1);
     flex-wrap: wrap;
   }
@@ -98,43 +190,78 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
+    position: relative;
   }
 
   .hero-stat strong {
-    font-size: var(--text-2xl);
-    font-weight: 800;
+    font-size: 2.5rem;
+    font-weight: 900;
     color: #fff;
     line-height: 1;
+    background: linear-gradient(135deg, #fff, #a5b4fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   .hero-stat span {
-    font-size: var(--text-xs);
-    color: rgba(255,255,255,0.55);
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.6);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+
+  /* Universal Section Styles */
+  .section {
+    padding: var(--space-16) 0;
+  }
+
+  .section-alt {
+    background: var(--bg-muted);
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: var(--space-12);
+  }
+
+  .section-header .eyebrow {
+    color: var(--primary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.875rem;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .heading-section {
+    font-size: clamp(2rem, 4vw, 3rem);
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  .heading-section strong {
+    color: var(--primary);
   }
 
   /* Services Grid */
   .services-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-5);
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-6);
   }
 
   .service-box {
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-7);
-    transition: all var(--transition-base);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: var(--space-8);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     overflow: hidden;
-  }
-
-  .service-box:hover {
-    border-color: var(--border-strong);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-3px);
+    z-index: 1;
   }
 
   .service-box::before {
@@ -142,61 +269,94 @@
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--primary), transparent);
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(99,102,241,0.1), transparent);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .service-box:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: var(--primary);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  }
+
+  .service-box:hover::before {
+    opacity: 1;
+  }
+
+  .service-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 20px;
+    color: var(--primary);
+    background: rgba(99,102,241,0.1);
+    padding: 10px;
+    border-radius: 12px;
+    transition: transform 0.4s ease;
+  }
+
+  .service-box:hover .service-icon {
+    transform: rotateY(180deg) scale(1.1);
   }
 
   .service-box h3 {
-    font-size: var(--text-lg);
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--text);
-    margin-bottom: var(--space-3);
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
+    margin-bottom: 12px;
   }
 
   .service-box p {
     color: var(--text-muted);
-    font-size: var(--text-sm);
-    line-height: 1.7;
+    font-size: 0.95rem;
+    line-height: 1.6;
   }
 
   /* Why Us Grid */
   .why-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-5);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-6);
   }
 
   .why-card {
     background: var(--bg-elevated);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-6);
-    transition: all var(--transition-base);
+    border-radius: 16px;
+    padding: var(--space-8);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .why-card:hover {
-    box-shadow: var(--shadow);
-    border-color: var(--border-strong);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+    transform: translateY(-5px);
+  }
+
+  .why-icon {
+    width: 40px;
+    height: 40px;
+    color: var(--primary);
+    margin-bottom: 16px;
   }
 
   .why-card h4 {
-    font-size: var(--text-lg);
+    font-size: 1.125rem;
     font-weight: 700;
     color: var(--text);
-    margin-bottom: var(--space-3);
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
+    margin-bottom: 12px;
   }
 
   .why-card p {
     color: var(--text-muted);
-    font-size: var(--text-sm);
-    line-height: 1.7;
+    font-size: 0.95rem;
+    line-height: 1.6;
   }
 
   /* Process Timeline */
@@ -204,7 +364,7 @@
     position: relative;
     max-width: 800px;
     margin: 0 auto;
-    padding-left: var(--space-8);
+    padding-left: 40px;
   }
 
   .process-timeline::before {
@@ -214,12 +374,12 @@
     top: 0;
     bottom: 0;
     width: 2px;
-    background: var(--border);
+    background: linear-gradient(to bottom, var(--primary), transparent);
   }
 
   .process-step {
     position: relative;
-    margin-bottom: var(--space-8);
+    margin-bottom: var(--space-10);
   }
 
   .step-node {
@@ -233,36 +393,47 @@
     border-radius: 50%;
     display: grid;
     place-items: center;
-    font-size: var(--text-sm);
+    font-size: 1rem;
     font-weight: 800;
-    color: var(--primary-text);
+    color: var(--primary);
     z-index: 1;
+    box-shadow: 0 0 15px rgba(99,102,241,0.3);
+    transition: all 0.3s ease;
+  }
+
+  .process-step:hover .step-node {
+    background: var(--primary);
+    color: #fff;
+    transform: scale(1.1);
+    box-shadow: 0 0 25px rgba(99,102,241,0.6);
   }
 
   .step-body {
     background: var(--bg-elevated);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-6);
+    border-radius: 16px;
+    padding: var(--space-8);
     box-shadow: var(--shadow-sm);
-    transition: all var(--transition-base);
+    transition: all 0.3s ease;
+    margin-left: 20px;
   }
 
   .step-body:hover {
     box-shadow: var(--shadow-md);
-    border-color: var(--border-strong);
+    border-color: var(--primary-light);
+    transform: translateX(10px);
   }
 
   .step-body h3 {
-    font-size: var(--text-xl);
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--text);
-    margin-bottom: var(--space-3);
+    margin-bottom: 12px;
   }
 
   .step-body p {
     color: var(--text-muted);
-    font-size: var(--text-base);
+    font-size: 1rem;
     line-height: 1.7;
   }
 
@@ -270,112 +441,172 @@
   .tech-cloud {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-3);
+    gap: var(--space-4);
     justify-content: center;
-    max-width: 700px;
+    max-width: 800px;
     margin: 0 auto;
   }
 
   .tech-tag {
     background: var(--bg-elevated);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: var(--space-2) var(--space-4);
-    font-size: var(--text-sm);
-    font-weight: 500;
+    border-radius: 30px;
+    padding: 10px 24px;
+    font-size: 0.95rem;
+    font-weight: 600;
     color: var(--text-muted);
-    transition: all var(--transition-fast);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tech-tag svg {
+    width: 18px;
+    height: 18px;
+    color: var(--primary);
   }
 
   .tech-tag:hover {
-    background: var(--primary-light);
-    color: var(--primary-text);
+    background: var(--primary);
+    color: #fff;
     border-color: var(--primary);
-    transform: translateY(-2px);
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 10px 20px rgba(99,102,241,0.2);
+  }
+
+  .tech-tag:hover svg {
+    color: #fff;
   }
 
   /* Contact Grid */
   .contact-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-6);
-    max-width: 900px;
+    gap: var(--space-8);
+    max-width: 1000px;
     margin: 0 auto;
   }
 
   .contact-card {
     background: var(--bg-elevated);
     border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-    padding: var(--space-8);
+    border-radius: 20px;
+    padding: var(--space-10);
     display: flex;
     flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .contact-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%);
+    pointer-events: none;
   }
 
   .contact-card h4 {
-    font-size: var(--text-xl);
-    font-weight: 700;
+    font-size: 1.5rem;
+    font-weight: 800;
     color: var(--text);
-    margin-bottom: var(--space-3);
+    margin-bottom: 16px;
   }
 
   .contact-card > p {
     color: var(--text-muted);
-    font-size: var(--text-sm);
+    font-size: 1rem;
     line-height: 1.7;
-    margin-bottom: var(--space-6);
+    margin-bottom: var(--space-8);
   }
 
   .contact-buttons {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-4);
     margin-top: auto;
   }
 
   .contact-buttons .btn {
     width: 100%;
     justify-content: center;
+    padding: 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+  }
+
+  .btn-primary:hover {
+    background: #4338ca;
+    box-shadow: 0 4px 15px rgba(99,102,241,0.4);
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    background: var(--bg-muted);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--bg);
+    border-color: var(--primary);
+    transform: translateY(-2px);
   }
 
   .form-note {
-    margin-top: var(--space-5);
+    margin-top: var(--space-6);
     padding: var(--space-4);
-    border-radius: var(--radius);
-    background: var(--bg-muted);
-    border: 1px dashed var(--border);
-    color: var(--text-muted);
-    font-size: var(--text-sm);
+    border-radius: 8px;
+    background: rgba(99,102,241,0.05);
+    border: 1px dashed rgba(99,102,241,0.3);
+    color: var(--primary);
+    font-size: 0.875rem;
     line-height: 1.6;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .contact-form {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
-    margin-top: var(--space-2);
+    gap: var(--space-5);
   }
 
   .form-group label {
     display: block;
-    font-size: var(--text-sm);
+    font-size: 0.875rem;
     font-weight: 600;
-    color: var(--text-muted);
-    margin-bottom: var(--space-2);
+    color: var(--text);
+    margin-bottom: 8px;
   }
 
   .form-group input,
   .form-group textarea,
   .form-group select {
     width: 100%;
-    padding: var(--space-3) var(--space-4);
-    border-radius: var(--radius);
+    padding: 14px 16px;
+    border-radius: 8px;
     border: 1px solid var(--border);
     background: var(--bg);
     color: var(--text);
     font-family: inherit;
-    font-size: var(--text-base);
-    transition: all var(--transition-fast);
+    font-size: 1rem;
+    transition: all 0.3s ease;
     outline: none;
   }
 
@@ -383,46 +614,47 @@
   .form-group textarea:focus,
   .form-group select:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--primary-light);
-  }
-
-  .form-group select {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2357534e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right var(--space-4) center;
-    padding-right: var(--space-8);
-    cursor: pointer;
-  }
-
-  [data-theme="dark"] .form-group select {
-    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23a8a29e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.15);
+    transform: translateY(-2px);
   }
 
   /* Responsive */
   @media (max-width: 900px) {
-    .services-grid,
-    .why-grid,
     .contact-grid {
       grid-template-columns: 1fr;
     }
     .process-timeline {
-      padding-left: var(--space-6);
+      padding-left: 30px;
+    }
+    .process-timeline::before {
+      left: 14px;
     }
     .step-node {
       left: -33px;
       width: 32px;
       height: 32px;
-      font-size: var(--text-xs);
+      font-size: 0.875rem;
+    }
+    .step-body {
+      margin-left: 10px;
     }
   }
 
   @media (max-width: 640px) {
     .services-hero {
-      padding: var(--space-12) 0 var(--space-10);
+      padding: var(--space-12) 0;
+      text-align: center;
+    }
+    .hero-actions {
+      justify-content: center;
     }
     .hero-stats-bar {
+      justify-content: center;
       gap: var(--space-6);
+    }
+    .services-grid,
+    .why-grid {
+      grid-template-columns: 1fr;
     }
     .contact-card {
       padding: var(--space-6);
@@ -433,12 +665,13 @@
 
 {% block content %}
 
-  <!-- Hero -->
+  <!-- Hero Section -->
   <section class="services-hero" aria-labelledby="services-hero-heading">
+    <div class="hero-orb-1"></div>
+    <div class="hero-orb-2"></div>
     <div class="container">
       <div class="reveal">
         <div class="eyebrow">
-          <span class="eyebrow-dot" aria-hidden="true"></span>
           Freelance Web Development
         </div>
         <h1 id="services-hero-heading" class="heading-hero">
@@ -449,7 +682,9 @@
         </p>
 
         <div class="hero-actions">
-          <a class="btn btn-glow" href="#contact">Start Your Project →</a>
+          <a class="btn btn-glow" href="#contact">Start Your Project 
+            <svg style="width: 16px; height: 16px; display: inline-block; vertical-align: middle; margin-left: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </a>
           <a class="btn btn-on-dark" href="{{ url_for('home') }}">View Portfolio</a>
         </div>
 
@@ -471,33 +706,37 @@
     </div>
   </section>
 
-  <!-- Services -->
+  <!-- Services Grid -->
   <section class="section" id="services" aria-labelledby="services-heading">
     <div class="container">
       <div class="section-header reveal">
         <span class="eyebrow">What I Build</span>
         <h2 id="services-heading" class="heading-section">Services <strong>Offered</strong></h2>
-        <p>Everything you need for a strong, credible online presence.</p>
+        <p class="text-muted">Everything you need for a strong, credible online presence.</p>
       </div>
 
       <div class="services-grid">
         <article class="service-box reveal">
-          <h3><span aria-hidden="true">🌐</span> Portfolio Websites</h3>
+          <svg class="service-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+          <h3>Portfolio Websites</h3>
           <p>Personal branding sites for students, developers, trainers, and freelancers that make a lasting first impression and help you stand out to employers or clients.</p>
         </article>
 
         <article class="service-box reveal">
-          <h3><span aria-hidden="true">🏢</span> Business Websites</h3>
+          <svg class="service-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+          <h3>Business Websites</h3>
           <p>Professional, conversion-focused websites for startups, agencies, and local businesses. Built to generate leads, build trust, and represent your brand with confidence.</p>
         </article>
 
         <article class="service-box reveal">
-          <h3><span aria-hidden="true">🚀</span> Landing Pages</h3>
+          <svg class="service-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          <h3>Landing Pages</h3>
           <p>High-impact, single-purpose pages for product launches, marketing campaigns, and service promotions — designed specifically to convert visitors into customers.</p>
         </article>
 
         <article class="service-box reveal">
-          <h3><span aria-hidden="true">📱</span> Responsive Design</h3>
+          <svg class="service-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+          <h3>Responsive Design</h3>
           <p>Every website is built mobile-first, ensuring a pixel-perfect experience across all screen sizes — desktop, tablet, and mobile devices.</p>
         </article>
       </div>
@@ -510,27 +749,31 @@
       <div class="section-header reveal">
         <span class="eyebrow">Why Me</span>
         <h2 id="why-heading" class="heading-section">Why Growth <strong>Steps?</strong></h2>
-        <p>Quality, speed, and a genuine focus on your business goals.</p>
+        <p class="text-muted">Quality, speed, and a genuine focus on your business goals.</p>
       </div>
 
       <div class="why-grid">
         <article class="why-card reveal">
-          <h4><span aria-hidden="true">⚡</span> Fast Delivery</h4>
+          <svg class="why-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <h4>Fast Delivery</h4>
           <p>Quick turnaround without cutting corners. You get a production-ready website on schedule — always.</p>
         </article>
 
         <article class="why-card reveal">
-          <h4><span aria-hidden="true">🎨</span> Modern UI Design</h4>
+          <svg class="why-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+          <h4>Modern UI Design</h4>
           <p>Clean, visually distinctive interfaces that reflect your brand and set you apart from template-based competitors.</p>
         </article>
 
         <article class="why-card reveal">
-          <h4><span aria-hidden="true">📈</span> Business-Focused</h4>
+          <svg class="why-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+          <h4>Business-Focused</h4>
           <p>Every design decision is made with your growth in mind — generating leads, building credibility, and driving conversions.</p>
         </article>
 
         <article class="why-card reveal">
-          <h4><span aria-hidden="true">🤝</span> Direct Communication</h4>
+          <svg class="why-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
+          <h4>Direct Communication</h4>
           <p>No middlemen. You work directly with me — quick updates, clear timelines, and full transparency throughout the project.</p>
         </article>
       </div>
@@ -543,7 +786,7 @@
       <div class="section-header reveal">
         <span class="eyebrow">How It Works</span>
         <h2 id="process-heading" class="heading-section">My Development <strong>Process</strong></h2>
-        <p>A clear, collaborative process from idea to launch.</p>
+        <p class="text-muted">A clear, collaborative process from idea to launch.</p>
       </div>
 
       <div class="process-timeline">
@@ -588,19 +831,46 @@
       <div class="section-header reveal">
         <span class="eyebrow">Stack</span>
         <h2 id="tech-heading" class="heading-section">Technologies <strong>Used</strong></h2>
-        <p>Modern, standards-compliant tools for fast, reliable websites.</p>
+        <p class="text-muted">Modern, standards-compliant tools for fast, reliable websites.</p>
       </div>
 
       <div class="tech-cloud">
-        <span class="tech-tag reveal">HTML5</span>
-        <span class="tech-tag reveal">CSS3</span>
-        <span class="tech-tag reveal">JavaScript</span>
-        <span class="tech-tag reveal">Responsive Design</span>
-        <span class="tech-tag reveal">UI / UX Principles</span>
-        <span class="tech-tag reveal">GitHub</span>
-        <span class="tech-tag reveal">Vercel</span>
-        <span class="tech-tag reveal">Netlify</span>
-        <span class="tech-tag reveal">Figma</span>
+        <span class="tech-tag reveal" style="transition-delay: 0.1s">
+          <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          HTML5
+        </span>
+        <span class="tech-tag reveal" style="transition-delay: 0.2s">
+          <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          CSS3
+        </span>
+        <span class="tech-tag reveal" style="transition-delay: 0.3s">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          JavaScript
+        </span>
+        <span class="tech-tag reveal" style="transition-delay: 0.4s">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          Responsive Design
+        </span>
+        <span class="tech-tag reveal" style="transition-delay: 0.5s">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          UI / UX Principles
+        </span>
+        <span class="tech-tag reveal" style="transition-delay: 0.6s">
+          <svg fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/></svg>
+          GitHub
+        </span>
+        <span class="tech-tag reveal" style="transition-delay: 0.7s">
+          <svg fill="currentColor" viewBox="0 0 24 24"><path d="M24 22.525H0l12-21.05 12 21.05z"/></svg>
+          Vercel
+        </span>
+        <span class="tech-tag reveal" style="transition-delay: 0.8s">
+          <svg fill="currentColor" viewBox="0 0 24 24"><path d="M5.498 16.236l4.246 7.424L24 13.56l-6.223-4.87-12.28 7.546zM2.54 9.066l10.87-8.724-4.223-1.6L0 7.82l2.54 1.246zm3.328 1.385l-1.9 2.533 13.9 8.23 2.065-4.5-14.065-6.263z"/></svg>
+          Netlify
+        </span>
+        <span class="tech-tag reveal" style="transition-delay: 0.9s">
+          <svg fill="currentColor" viewBox="0 0 24 24"><path d="M8 2c-3.3 0-6 2.7-6 6s2.7 6 6 6v-6c0-3.3 2.7-6 6-6H8zm6 12c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6v-6h-6zm0-12v6h6c0-3.3-2.7-6-6-6z"/></svg>
+          Figma
+        </span>
       </div>
     </div>
   </section>
@@ -611,31 +881,32 @@
       <div class="section-header reveal">
         <span class="eyebrow">Let's Talk</span>
         <h2 id="contact-heading" class="heading-section">Start a <strong>Project</strong></h2>
-        <p>Describe your project and I'll get back to you within 24 hours.</p>
+        <p class="text-muted">Describe your project and I'll get back to you within 24 hours.</p>
       </div>
 
-      <div class="contact-grid reveal">
-        <article class="contact-card">
+      <div class="contact-grid">
+        <article class="contact-card reveal">
           <h4>Reach Out Directly</h4>
           <p>For quick project discussions, WhatsApp is the fastest channel. Email works great for detailed briefs.</p>
           <div class="contact-buttons">
             <a class="btn btn-primary" href="https://wa.me/919952855157?text=Hello%20Vijay%2C%20I%27m%20interested%20in%20your%20web%20development%20service." target="_blank" rel="noopener noreferrer">
+              <svg style="width: 18px; height: 18px; display: inline-block; vertical-align: middle; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
               WhatsApp Me
             </a>
             <a class="btn btn-secondary" href="mailto:rsvijaysarathi123@gmail.com?subject=Website%20Development%20Inquiry">
+              <svg style="width: 18px; height: 18px; display: inline-block; vertical-align: middle; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
               Send Email
             </a>
           </div>
           <div class="form-note">
-            ⚡ I typically respond within a few hours — you'll get a clear quote and timeline after our first chat.
+            <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            I typically respond within a few hours — you'll get a clear quote and timeline after our first chat.
           </div>
         </article>
 
-        <article class="contact-card">
+        <article class="contact-card reveal" style="transition-delay: 0.2s">
           <h4>Send a Project Inquiry</h4>
-          <div class="form-note" style="margin: 0 0 var(--space-5);">
-            
-          </div>
+          <p>Fill out the form below and I will get back to you with the next steps.</p>
           <form id="contactForm" class="contact-form">
             <div class="form-group">
               <label for="name">Your Name</label>
@@ -660,11 +931,38 @@
               <label for="message">Project Details</label>
               <textarea id="message" name="message" rows="4" placeholder="Describe your project — audience, key pages, design preferences, budget, and timeline…" required></textarea>
             </div>
-            <button class="btn btn-primary" type="submit" style="width: 100%;">Send Inquiry</button>
+            <button class="btn btn-primary" type="submit" style="width: 100%;">
+              Send Inquiry 
+              <svg style="width: 16px; height: 16px; display: inline-block; vertical-align: middle; margin-left: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </button>
           </form>
         </article>
       </div>
     </div>
   </section>
+
+  <!-- Animation Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.15
+      };
+
+      const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      document.querySelectorAll('.reveal').forEach((el) => {
+        observer.observe(el);
+      });
+    });
+  </script>
 
 {% endblock %}
