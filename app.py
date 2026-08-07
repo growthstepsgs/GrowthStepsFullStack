@@ -426,7 +426,10 @@ def auth_callback():
 @app.route("/dashboard/employee")
 @login_required
 def employee_dashboard():
-    role = session.get("role")
+    user_id = session.get("user_id")
+    role = _get_current_role(user_id)
+    session["role"] = role  # <-- sync session to DB
+
     if role == "admin":
         return redirect(url_for("admin_dashboard"))
     if role == "student":
@@ -435,6 +438,15 @@ def employee_dashboard():
         "employee_dashboard.html",
         email=session.get("user_email"),
     )
+
+
+
+
+
+
+
+
+
 # ── EMPLOYEE REQUESTS / PROPOSALS ───────────────────────────────────
 @app.route("/dashboard/employee/requests", methods=["GET", "POST"])
 @login_required
@@ -521,7 +533,9 @@ def gallery():
 @app.route("/dashboard/student")
 @login_required
 def student_dashboard():
-    role = session.get("role")
+    user_id = session.get("user_id")
+    role = _get_current_role(user_id)
+    session["role"] = role 
     if role == "admin":
         return redirect(url_for("admin_dashboard"))
     if role == "employee":
@@ -923,27 +937,19 @@ def sitemap():
 
 @app.route("/robots.txt")
 def robots():
-    """Serve robots.txt for search engine crawlers."""
-    robots_txt = """User-agent: Googlebot
-Disallow:
-
-User-agent: googlebot-mobile
-Disallow:
-
-User-agent: *
-Disallow:
-Crawl-delay: 5
-
-Disallow: /cgi-bin/
-Disallow: /dashboard/
-Disallow: /admin/
-Disallow: /login
-Disallow: /signup
-
-Sitemap: https://growth-steps-full-stack.vercel.app/sitemap.xml
-"""
-
-    return robots_txt, 200, {"Content-Type": "text/plain; charset=utf-8"}
+    """Tell crawlers what they may index and where the sitemap lives."""
+    base = request.url_root.rstrip("/")
+    lines = [
+        "User-agent: *",
+        "Disallow: /dashboard/",
+        "Disallow: /admin/",
+        "Disallow: /login",
+        "Disallow: /signup",
+        "",
+        f"Sitemap: {base}/sitemap.xml",
+        "",
+    ]
+    return "\n".join(lines), 200, {"Content-Type": "text/plain"}
 
 @app.route("/admin/cleanup-orphaned-photos")
 @admin_required
@@ -970,6 +976,25 @@ def cleanup_orphaned_photos():
     flash(f"Cleanup done — removed {deleted} orphaned row(s).", "success")
     return redirect(url_for("admin_gallery"))
 
+def _get_current_role(user_id: str | None) -> str:
+    """Fetch the freshest role from Supabase profiles table."""
+    if not user_id:
+        return session.get("role", "student")
+    client = supabase_admin or supabase
+    if client:
+        try:
+            prof = (
+                client.table("profiles")
+                .select("role")
+                .eq("id", user_id)
+                .single()
+                .execute()
+            )
+            if prof.data:
+                return prof.data.get("role", "student")
+        except Exception:
+            pass
+    return session.get("role", "student")
 # ── ADMIN GALLERY MANAGEMENT ─────────────────────────────────────────
 @app.route("/admin/admin_gallery", methods=["GET", "POST"])
 @admin_required
@@ -1278,6 +1303,125 @@ def admin_delete_content(content_id):
 def contact():
     return redirect(request.referrer or url_for("home"))
 
+# ── EMPLOYEE DAILY PROGRESS ────────────────────────────────────────
+@app.route("/dashboard/employee/progress", methods=["GET", "POST"])
+@login_required
+def employee_progress():
+    user_id = session.get("user_id")
+    role = _get_current_role(user_id)
+    session["role"] = role
 
+    if role == "admin":
+        return redirect(url_for("admin_dashboard"))
+    if role == "student":
+        return redirect(url_for("student_dashboard"))
+
+    client = supabase_admin or supabase
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    if request.method == "POST":
+        if not client or not user_id:
+            flash("Could not save progress — please log in again.", "error")
+            return redirect(url_for("employee_progress"))
+
+        tasks = request.form.get("tasks_completed", "").strip()
+        hours = request.form.get("hours_worked", "0").strip()
+        blockers = request.form.get("blockers", "").strip()
+        plans = request.form.get("plans_tomorrow", "").strip()
+        work_date = request.form.get("work_date", today_str).strip()
+
+        if not tasks:
+            flash("Please describe what you worked on today.", "error")
+            return redirect(url_for("employee_progress"))
+
+        try:
+            hours_val = float(hours)
+            if not (0.1 <= hours_val <= 24):
+                raise ValueError
+        except ValueError:
+            flash("Hours worked must be between 0.1 and 24.", "error")
+            return redirect(url_for("employee_progress"))
+
+        try:
+            existing = (
+                client.table("daily_progress")
+                .select("id")
+                .eq("employee_id", user_id)
+                .eq("work_date", work_date)
+                .execute()
+            )
+            payload = {
+                "employee_id": user_id,
+                "work_date": work_date,
+                "tasks_completed": tasks,
+                "hours_worked": hours_val,
+                "blockers": blockers,
+                "plans_tomorrow": plans,
+            }
+            if existing.data:
+                client.table("daily_progress").update(payload).eq("id", existing.data[0]["id"]).execute()
+                flash("Progress updated for " + work_date + ".", "success")
+            else:
+                client.table("daily_progress").insert(payload).execute()
+                flash("Progress submitted for " + work_date + ".", "success")
+        except Exception as exc:
+            flash(f"Could not save progress: {exc}", "error")
+
+        return redirect(url_for("employee_progress"))
+
+    my_progress = []
+    today_entry = None
+    if client and user_id:
+        try:
+            res = (
+                client.table("daily_progress")
+                .select("*")
+                .eq("employee_id", user_id)
+                .order("work_date", desc=True)
+                .limit(30)
+                .execute()
+            )
+            my_progress = res.data or []
+            for p in my_progress:
+                if p.get("work_date") == today_str:
+                    today_entry = p
+                    break
+        except Exception as exc:
+            print(f"progress fetch failed: {exc}")
+
+    return render_template(
+        "employee_progress.html",
+        email=session.get("user_email"),
+        my_progress=my_progress,
+        today_entry=today_entry,
+        today=today_str,
+    )
+
+@app.route("/dashboard/admin/progress")
+@admin_required
+def admin_progress():
+    client = supabase_admin or supabase
+    all_progress = []
+    if client:
+        try:
+            res = (
+                client.table("daily_progress")
+                .select("*")
+                .order("work_date", desc=True)
+                .limit(200)
+                .execute()
+            )
+            all_progress = res.data or []
+            emp_ids = list({p["employee_id"] for p in all_progress if p.get("employee_id")})
+            names = {}
+            if emp_ids:
+                prof = client.table("profiles").select("id, full_name, email").in_("id", emp_ids).execute()
+                for p in (prof.data or []):
+                    names[p["id"]] = p.get("full_name") or p.get("email") or "Unknown"
+            for p in all_progress:
+                p["employee_name"] = names.get(p.get("employee_id"), "Unknown")
+        except Exception as exc:
+            print(f"admin progress fetch failed: {exc}")
+    return render_template("admin_progress.html", email=session.get("user_email"), all_progress=all_progress)
 if __name__ == "__main__":
     app.run(debug=True)

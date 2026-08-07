@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}Daily Progress | Growth Steps{% endblock %}
+{% block description %}Log your daily work, hours, blockers, and plans.{% endblock %}
+
+{% block styles %}
+<style>
+  .progress-layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: var(--space-8);
+    align-items: start;
+  }
+  .progress-form-wrap {
+    position: sticky;
+    top: 100px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+  }
+  .progress-form-wrap h3 {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    margin-bottom: var(--space-4);
+  }
+  .form-group { margin-bottom: var(--space-4); }
+  .form-group label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    margin-bottom: var(--space-2);
+    color: var(--text);
+  }
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    font-family: inherit;
+    font-size: var(--text-sm);
+  }
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+  .form-hint { font-size: var(--text-xs); color: var(--text-subtle); margin-top: var(--space-1); }
+  .progress-list { display: flex; flex-direction: column; gap: var(--space-4); }
+  .progress-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    transition: all var(--transition-fast);
+  }
+  .progress-card:hover { border-color: var(--border-strong); }
+  .progress-card.is-today { border-color: var(--primary); background: linear-gradient(135deg, var(--bg-elevated) 0%, rgba(180,83,9,0.03) 100%); }
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-3);
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .progress-date { font-weight: 700; font-size: var(--text-base); }
+  .progress-hours {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    background: var(--primary-light);
+    color: var(--primary-text);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
+  }
+  .progress-section { margin-top: var(--space-3); }
+  .progress-section strong {
+    display: block;
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-subtle);
+    margin-bottom: var(--space-1);
+  }
+  .progress-section p {
+    font-size: var(--text-sm);
+    line-height: 1.65;
+    color: var(--text);
+    margin: 0;
+    white-space: pre-wrap;
+  }
+  .empty-progress {
+    text-align: center;
+    padding: var(--space-12);
+    color: var(--text-subtle);
+  }
+  @media (max-width: 900px) {
+    .progress-layout { grid-template-columns: 1fr; }
+    .progress-form-wrap { position: static; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="dash-hero" style="padding-bottom: var(--space-6);">
+  <div class="container">
+    <div class="dash-hero-inner reveal">
+      <div class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Daily Log</div>
+      <h1>Daily <em>Progress</em></h1>
+      <p class="body">Log what you accomplished today, any blockers you hit, and what you're planning next.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="progress-layout reveal">
+
+      <!-- Form -->
+      <div class="progress-form-wrap">
+        <h3>{% if today_entry %}Update{% else %}Submit{% endif %} Today's Progress</h3>
+        <form method="POST" action="{{ url_for('employee_progress') }}">
+          <div class="form-group">
+            <label for="work_date">Date</label>
+            <input type="date" id="work_date" name="work_date" value="{{ today_entry.work_date if today_entry else today }}" max="{{ today }}" required>
+          </div>
+
+          <div class="form-group">
+            <label for="tasks_completed">What did you work on?</label>
+            <textarea id="tasks_completed" name="tasks_completed" placeholder="Describe the tasks, features, or projects you worked on..." required>{{ today_entry.tasks_completed if today_entry else '' }}</textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="hours_worked">Hours Worked</label>
+            <input type="number" id="hours_worked" name="hours_worked" step="0.5" min="0.5" max="24"
+              value="{{ today_entry.hours_worked if today_entry else '8' }}" required>
+            <div class="form-hint">Enter a value between 0.5 and 24 hours.</div>
+          </div>
+
+          <div class="form-group">
+            <label for="blockers">Blockers / Challenges (optional)</label>
+            <textarea id="blockers" name="blockers" placeholder="Anything that slowed you down?">{{ today_entry.blockers if today_entry else '' }}</textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="plans_tomorrow">Plan for Next Day (optional)</label>
+            <textarea id="plans_tomorrow" name="plans_tomorrow" placeholder="What are you tackling next?">{{ today_entry.plans_tomorrow if today_entry else '' }}</textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%;">
+            {% if today_entry %}Update Entry{% else %}Submit Progress{% endif %}
+          </button>
+        </form>
+      </div>
+
+      <!-- History -->
+      <div>
+        <h2 class="heading-section" style="margin-bottom: var(--space-5); font-size: var(--text-xl);">Recent Entries</h2>
+        {% if my_progress %}
+          <div class="progress-list">
+            {% for p in my_progress %}
+            <article class="progress-card {% if p.work_date == today %}is-today{% endif %}">
+              <div class="progress-meta">
+                <span class="progress-date">{{ p.work_date }}</span>
+                <span class="progress-hours">{{ p.hours_worked }} hrs</span>
+              </div>
+              <div class="progress-section">
+                <strong>Tasks Completed</strong>
+                <p>{{ p.tasks_completed }}</p>
+              </div>
+              {% if p.blockers %}
+              <div class="progress-section">
+                <strong>Blockers</strong>
+                <p>{{ p.blockers }}</p>
+              </div>
+              {% endif %}
+              {% if p.plans_tomorrow %}
+              <div class="progress-section">
+                <strong>Next Up</strong>
+                <p>{{ p.plans_tomorrow }}</p>
+              </div>
+              {% endif %}
+            </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-progress">
+            <p>No progress entries yet. Use the form to log your first day.</p>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}

@@ -17,22 +17,7 @@
 <body class="{% block body_class %}{% endblock %}">
 {% block layout %}
 
-  <!-- Loading Screen -->
-  <div id="gs-loader" aria-hidden="true">
-    <div class="loader-inner">
-      <div class="loader-logo" aria-hidden="true">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-          <path d="M2 17l10 5 10-5"/>
-          <path d="M2 12l10 5 10-5"/>
-        </svg>
-      </div>
-      <div class="loader-wordmark">Growth Steps</div>
-      <div class="loader-bar-wrap" aria-hidden="true">
-        <div class="loader-bar"></div>
-      </div>
-    </div>
-  </div>
+
 
   <!-- Skip Link -->
   <a class="skip-link" href="#main">Skip to content</a>
@@ -110,11 +95,35 @@
       <div class="nav-row">
         <nav aria-label="Primary">
           <ul>
-            <li><a href="{{ url_for('home') }}">Home</a></li>
-            <li><a href="{{ url_for('available_courses') }}">Courses</a></li>
-            <li><a href="{{ url_for('services') }}">Services</a></li>
-            <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
-            <li><a href="{{ url_for('reviews') }}">Reviews</a></li>
+            {% if session.get('role') == 'admin' %}
+              <li><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+              <li><a href="{{ url_for('admin_requests') }}">Requests</a></li>
+              <li><a href="{{ url_for('admin_gallery') }}">Manage Gallery</a></li>
+              <li><a href="{{ url_for('admin_courses') }}">Manage Courses</a></li>
+              <li><a href="{{ url_for('admin_enrollments') }}">Manage Enrollments</a></li>
+              <li><a href="{{ url_for('admin_course_contents') }}">Manage Course Content</a></li>
+              <li><a href="{{ url_for('reviews') }}">Reviews</a></li>
+
+            {% elif session.get('role') == 'employee' %}
+              <li><a href="{{ url_for('employee_dashboard') }}">Dashboard</a></li>
+              <li><a href="{{ url_for('employee_requests') }}">My Requests</a></li>
+              <li><a href="{{ url_for('employee_sheets') }}">Employee Sheets</a></li>
+              <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
+              <li><a href="{{ url_for('reviews') }}">Reviews</a></li>
+
+            {% elif session.get('role') == 'student' %}
+              <li><a href="{{ url_for('student_dashboard') }}">Dashboard</a></li>
+              <li><a href="{{ url_for('available_courses') }}">Courses</a></li>
+              <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
+              <li><a href="{{ url_for('reviews') }}">Reviews</a></li>
+
+            {% else %}
+              <li><a href="{{ url_for('home') }}">Home</a></li>
+              <li><a href="{{ url_for('available_courses') }}">Courses</a></li>
+              <li><a href="{{ url_for('services') }}">Services</a></li>
+              <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
+              <li><a href="{{ url_for('reviews') }}">Reviews</a></li>
+            {% endif %}
           </ul>
         </nav>
 

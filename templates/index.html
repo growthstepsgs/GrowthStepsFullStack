@@ -4,7 +4,22 @@
 {% block description %}Growth Steps is a digital growth company offering professional web development services and live Gen AI training. Everything you need to build, grow, and lead in the digital era.{% endblock %}
 
 {% block content %}
-
+  <!-- Loading Screen -->
+  <div id="gs-loader" aria-hidden="true">
+    <div class="loader-inner">
+      <div class="loader-logo" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="loader-wordmark">Growth Steps</div>
+      <div class="loader-bar-wrap" aria-hidden="true">
+        <div class="loader-bar"></div>
+      </div>
+    </div>
+  </div>
   <!-- Hero -->
   <section class="hero" aria-labelledby="hero-heading">
     <div class="container">
