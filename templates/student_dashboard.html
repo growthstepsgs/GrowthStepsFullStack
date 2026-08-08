@@ -87,6 +87,82 @@
 
   .locked { opacity: 0.6; }
   .empty-note { color: var(--text-subtle); font-size: var(--text-sm); text-align: center; padding: var(--space-6); }
+
+  /* Profile card */
+  .profile-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    flex-wrap: wrap;
+    padding: var(--space-2);
+  }
+  .profile-avatar-lg {
+    width: 80px; height: 80px;
+    border-radius: var(--radius-full);
+    background: var(--primary);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 3px solid var(--border-strong);
+  }
+  .profile-avatar-lg img { width: 100%; height: 100%; object-fit: cover; }
+  .profile-info { flex: 1; min-width: 220px; }
+  .profile-info h3 { font-size: var(--text-xl); font-weight: 700; margin-bottom: var(--space-1); }
+  .profile-meta-line {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-1);
+  }
+  .profile-meta-line span { display: inline-flex; align-items: center; gap: 4px; }
+  .profile-bio {
+    font-size: var(--text-sm);
+    color: var(--text-subtle);
+    margin-top: var(--space-2);
+    max-width: 600px;
+    line-height: 1.5;
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    transition: all var(--transition-fast);
+  }
+  .btn-ghost:hover { border-color: var(--primary); color: var(--primary-text); }
+  .btn-sm { padding: var(--space-2) var(--space-4); font-size: var(--text-sm); }
+
+  /* Completion banner */
+  .complete-banner {
+    border-left: 4px solid var(--warning);
+    background: linear-gradient(90deg, var(--warning-bg), transparent);
+  }
+  .complete-banner h2 { margin-bottom: var(--space-1); }
+
+  /* Debug box — delete after fixing */
+  .debug-box {
+    background: #ffebee;
+    border: 2px dashed #c62828;
+    color: #c62828;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    font-family: monospace;
+    font-size: var(--text-sm);
+    white-space: pre-wrap;
+    margin-bottom: var(--space-4);
+  }
 </style>
 {% endblock %}
 
@@ -96,7 +172,7 @@
   <div class="container">
     <div class="student-hero-inner reveal">
       <div class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Student Dashboard</div>
-      <h1 id="student-heading">Welcome, <span>{{ email.split('@')[0] if email else 'Learner' }}</span></h1>
+      <h1 id="student-heading">Welcome, <span>{{ profile.get('full_name') or (email.split('@')[0] if email else 'Learner') }}</span></h1>
       <p class="body">Manage your courses, track enrollments, and access learning materials.</p>
     </div>
   </div>
@@ -104,6 +180,60 @@
 
 <section class="section" aria-labelledby="learning-heading">
   <div class="container">
+
+    {# ── DEBUG: uncomment the next 4 lines to see raw profile data ── #}
+    {# <div class="dash-section reveal debug-box">
+      <strong>DEBUG RAW PROFILE:</strong><br>
+      {{ profile | tojson(indent=2) }}
+    </div> #}
+
+    {# Robust completion check using .get() — no more silent Undefined #}
+    {% set has_mobile = profile.get('mobile') and profile.get('mobile') | length > 0 %}
+    {% set is_complete = profile.get('profile_complete') == true and has_mobile %}
+
+    {% if not is_complete %}
+    <!-- Complete Profile Banner -->
+    <div class="dash-section reveal complete-banner">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:var(--space-4);">
+        <div>
+          <h2><span aria-hidden="true">👤</span> Complete Your Profile</h2>
+          <p class="body" style="color:var(--text-muted);">Add your mobile number and a photo so we can reach you regarding your courses.</p>
+        </div>
+        <a href="{{ url_for('student_profile') }}" class="btn btn-primary">Create Profile</a>
+      </div>
+    </div>
+    {% else %}
+    <!-- Professional Profile Card -->
+    <div class="dash-section reveal">
+      <div class="profile-card">
+        <div class="profile-avatar-lg" aria-hidden="true">
+          {% if profile.get('avatar_url') %}
+            <img src="{{ profile.get('avatar_url') }}" alt="Profile photo">
+          {% else %}
+            {{ (profile.get('full_name') or email or 'U')[0] | upper }}
+          {% endif %}
+        </div>
+        <div class="profile-info">
+          <h3>{{ profile.get('full_name') or (email.split('@')[0] if email else 'Learner') }}</h3>
+          <div class="profile-meta-line">
+            {% if profile.get('mobile') %}<span>📱 {{ profile.get('mobile') }}</span>{% endif %}
+            {% if profile.get('location') %}<span>📍 {{ profile.get('location') }}</span>{% endif %}
+            {% if profile.get('education') %}<span>🎓 {{ profile.get('education') }}</span>{% endif %}
+            {% if profile.get('date_of_birth') %}<span>🎂 {{ profile.get('date_of_birth') }}</span>{% endif %}
+          </div>
+          {% if profile.get('bio') %}
+            <p class="profile-bio">{{ profile.get('bio') }}</p>
+          {% endif %}
+          {% if profile.get('linkedin_url') %}
+            <p class="profile-meta-line" style="margin-top:var(--space-2);">
+              <a href="{{ profile.get('linkedin_url') }}" target="_blank" rel="noopener" style="color:var(--primary-text); font-weight:600;">LinkedIn Profile ↗</a>
+            </p>
+          {% endif %}
+        </div>
+        <a href="{{ url_for('student_profile') }}" class="btn btn-ghost">✏️ Edit Profile</a>
+      </div>
+    </div>
+    {% endif %}
 
     <!-- Approved -->
     <div class="dash-section reveal">
