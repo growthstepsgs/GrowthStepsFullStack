@@ -132,7 +132,7 @@
         {% if session.get('user_id') %}
           <a href="{{ url_for('logout') }}" class="btn btn-ghost">Logout</a>
         {% else %}
-          <a href="{{ url_for('login') }}" class="btn btn-ghost">Get Started</a>
+          <a href="{{ url_for('login') }}" class="btn btn-ghost">Sign in</a>
         {% endif %}
 
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle light or dark mode">

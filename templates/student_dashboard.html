@@ -87,39 +87,6 @@
 
   .locked { opacity: 0.6; }
   .empty-note { color: var(--text-subtle); font-size: var(--text-sm); text-align: center; padding: var(--space-6); }
-
-  .profile-mini { padding: var(--space-5); }
-  .profile-mini-inner {
-    display: flex;
-    align-items: center;
-    gap: var(--space-4);
-    flex-wrap: wrap;
-  }
-  .profile-avatar {
-    width: 64px; height: 64px;
-    border-radius: var(--radius-full);
-    background: var(--primary);
-    color: #fff;
-    display: grid;
-    place-items: center;
-    font-size: var(--text-xl);
-    font-weight: 700;
-    flex-shrink: 0;
-    overflow: hidden;
-  }
-  .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .profile-meta { flex: 1; min-width: 200px; }
-  .profile-meta h3 { font-size: var(--text-lg); font-weight: 700; margin-bottom: var(--space-1); }
-  .body-sm { font-size: var(--text-sm); color: var(--text-muted); }
-  .btn-ghost {
-    background: transparent;
-    border: 1px solid var(--border-strong);
-    color: var(--text);
-  }
-  .btn-ghost:hover { border-color: var(--primary); color: var(--primary-text); }
-  .btn-sm { padding: var(--space-2) var(--space-4); font-size: var(--text-sm); }
-</style>
-  
 </style>
 {% endblock %}
 
@@ -129,7 +96,7 @@
   <div class="container">
     <div class="student-hero-inner reveal">
       <div class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Student Dashboard</div>
-      <h1 id="student-heading">Welcome, <span>{{ profile.full_name or (email.split('@')[0] if email else 'Learner') }}</span></h1>
+      <h1 id="student-heading">Welcome, <span>{{ email.split('@')[0] if email else 'Learner' }}</span></h1>
       <p class="body">Manage your courses, track enrollments, and access learning materials.</p>
     </div>
   </div>
@@ -137,7 +104,7 @@
 
 <section class="section" aria-labelledby="learning-heading">
   <div class="container">
-    
+
     <!-- Approved -->
     <div class="dash-section reveal">
       <h2><span aria-hidden="true">✅</span> My Learning</h2>
