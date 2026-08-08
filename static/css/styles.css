@@ -73,10 +73,10 @@
 
 /* Dark Mode */
 [data-theme="dark"] {
-  --bg: #3a2f2b;
-  --bg-elevated: #1c1917;
-  --bg-muted: #292524;
-  --bg-subtle: #44403c;
+  --bg: #1c1917;
+  --bg-elevated: #292524;
+  --bg-muted: #44403c;
+  --bg-subtle: #57534e;
   --text: #fafaf9;
   --text-muted: #a8a29e;
   --text-subtle: #78716c;
