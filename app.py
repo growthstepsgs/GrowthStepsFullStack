@@ -98,6 +98,14 @@ def _allowed_image(filename: str) -> bool:
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-me")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
+# ── CRITICAL: Session cookie config for Vercel + OAuth ──
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    PERMANENT_SESSION_LIFETIME=3600,
+)
 if not SUPABASE_URL or not SUPABASE_KEY:
     print(
         "\n⚠️  SUPABASE NOT CONFIGURED\n"
@@ -242,6 +250,14 @@ def login():
             )
             if prof.data:
                 role = prof.data.get("role", "student")
+            else:
+                # Safety net: create profile if it doesn't exist
+                if supabase_admin:
+                    supabase_admin.table("profiles").upsert({
+                        "id": result.user.id,
+                        "email": email,
+                        "role": "student",
+                    }).execute()
         except Exception:
             pass
 
@@ -290,11 +306,13 @@ def signup():
         user = result.user
         if user and supabase_admin:
             try:
-                # Save name/email for admin visibility; leave role as 'student' (trigger default)
-                supabase_admin.table("profiles").update({
+                # Create profile since we no longer use the database trigger
+                supabase_admin.table("profiles").upsert({
+                    "id": user.id,
                     "full_name": full_name,
                     "email": email,
-                }).eq("id", user.id).execute()
+                    "role": "student",
+                }).execute()
             except Exception:
                 pass
 
@@ -331,7 +349,10 @@ def auth_google():
         return redirect(url_for("login"))
 
     verifier, challenge = _generate_pkce()
-    session["oauth_verifier"] = verifier
+
+    # CRITICAL: Mark permanent BEFORE storing values so the cookie survives the redirect
+    session.permanent = True
+
     next_param = request.args.get("next", "")
     if next_param.startswith("/"):
         session["oauth_next"] = next_param
@@ -347,12 +368,19 @@ def auth_google():
         "code_challenge_method": "S256",
     }
     qs = urllib.parse.urlencode(params)
+    session["oauth_verifier"] = verifier
     return redirect(f"{SUPABASE_URL}/auth/v1/authorize?{qs}")
 
 
 @app.route("/auth/callback")
 def auth_callback():
-    """Supabase redirects back here after Google approval."""
+    # ── Check for Supabase OAuth errors first ──
+    oauth_error = request.args.get("error")
+    oauth_error_desc = request.args.get("error_description", "")
+    if oauth_error:
+        flash(f"Sign-in failed: {oauth_error_desc or oauth_error}", "error")
+        return redirect(url_for("login"))
+
     code = request.args.get("code")
     verifier = session.pop("oauth_verifier", None)
 
@@ -360,7 +388,7 @@ def auth_callback():
         flash("Sign-in failed — session expired or denied.", "error")
         return redirect(url_for("login"))
 
-    # Exchange the code for user info
+    # Exchange code for session
     try:
         r = httpx.post(
             f"{SUPABASE_URL}/auth/v1/token?grant_type=pkce",
@@ -384,9 +412,12 @@ def auth_callback():
 
     user_id = user.get("id")
     email = user.get("email", "").lower()
+    meta = user.get("user_metadata") or {}
+    full_name = meta.get("full_name") or meta.get("name", "")
 
-    # Fetch role from profiles (new users keep the default 'student' from the trigger)
+    # ── Fetch or create profile ──
     role = "student"
+    profile_exists = False
     try:
         prof = (
             supabase.table("profiles")
@@ -397,14 +428,28 @@ def auth_callback():
         )
         if prof.data:
             role = prof.data.get("role", "student")
+            profile_exists = True
     except Exception:
         pass
 
-    # Save email for admin visibility
+    # Fallback: if trigger failed, create profile via service role
+    if supabase_admin and not profile_exists:
+        try:
+            supabase_admin.table("profiles").upsert({
+                "id": user_id,
+                "full_name": full_name,
+                "email": email,
+                "role": "student",
+            }).execute()
+        except Exception as exc:
+            print(f"[WARN] Fallback profile creation failed: {exc}")
+
+    # Sync email/name
     if supabase_admin:
         try:
             supabase_admin.table("profiles").update({
                 "email": email,
+                "full_name": full_name,
             }).eq("id", user_id).execute()
         except Exception:
             pass
@@ -414,6 +459,10 @@ def auth_callback():
     session["role"] = role
 
     flash("Signed in with Google.", "success")
+
+    next_url = session.pop("oauth_next", None)
+    if next_url:
+        return redirect(next_url)
 
     if role == "employee":
         return redirect(url_for("employee_dashboard"))
@@ -1328,7 +1377,9 @@ def employee_progress():
         hours = request.form.get("hours_worked", "0").strip()
         blockers = request.form.get("blockers", "").strip()
         plans = request.form.get("plans_tomorrow", "").strip()
-        work_date = request.form.get("work_date", today_str).strip()
+        work_date = request.form.get("work_date", "").strip()
+        if not work_date:
+            work_date = today_str
 
         if not tasks:
             flash("Please describe what you worked on today.", "error")
