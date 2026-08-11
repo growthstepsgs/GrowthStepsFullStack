@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Gallery | Growth Steps{% endblock %}
+{% block description %}Upload and manage gallery photos for the Growth Steps website.{% endblock %}
+
+{% block content %}
+
+  <!-- Hero -->
+  <section class="hero" aria-labelledby="gallery-heading">
+    <div class="container">
+      <div class="hero-inner reveal">
+        <div class="eyebrow">
+          <span class="eyebrow-dot" aria-hidden="true"></span>
+          Admin Panel
+        </div>
+        <h1 id="gallery-heading" class="heading-hero">
+          Manage <strong>Gallery</strong>
+        </h1>
+        <p class="body-large">
+          Upload new photos to the public gallery or remove existing ones.
+          Changes appear instantly.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Upload Form -->
+  <section class="section section-alt" aria-labelledby="upload-heading">
+    <div class="container" style="max-width: 640px;">
+      <div class="section-header reveal">
+        <span class="eyebrow">Upload</span>
+        <h2 id="upload-heading" class="heading-section">Add a <strong>new photo</strong></h2>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div class="card reveal" style="margin-bottom: var(--space-6); {% if category == 'error' %}border-color: var(--primary); background: var(--primary-light);{% else %}border-color: var(--success); background: var(--success-bg);{% endif %}">
+              <p style="{% if category == 'error' %}color: var(--primary-text);{% else %}color: var(--success);{% endif %} font-size: var(--text-sm); font-weight: 500;">{{ msg }}</p>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <article class="card reveal">
+        <form class="contact-form" method="POST" action="{{ url_for('admin_gallery') }}" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="image">Image File</label>
+            <input id="image" name="image" type="file" accept="image/*" required />
+          </div>
+          <div class="form-group">
+            <label for="caption">Description</label>
+            <textarea id="caption" name="caption" rows="3" placeholder="e.g. Live build walkthrough with students"></textarea>
+          </div>
+          <button class="btn btn-primary" type="submit">Upload Photo</button>
+        </form>
+      </article>
+    </div>
+  </section>
+
+  <!-- Current Photos -->
+  <section class="section" aria-labelledby="photos-heading">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="eyebrow">Library</span>
+        <h2 id="photos-heading" class="heading-section">Current <strong>Photos</strong></h2>
+        <p>{{ photos|length }} photo(s) live on the gallery.</p>
+      </div>
+
+      {% if photos %}
+      <div class="why-grid">
+        {% for p in photos %}
+        <article class="card reveal" style="padding: 0; overflow: hidden;">
+          <div style="overflow: hidden;">
+            <img src="{{ p.image_url }}" alt="{{ p.caption }}" style="width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block;" loading="lazy" />
+          </div>
+          <div style="padding: var(--space-5);">
+            <p class="body" style="font-size: var(--text-sm); margin-bottom: var(--space-4);">
+              {{ p.caption or "No description" }}
+            </p>
+            <form method="POST" action="{{ url_for('admin_delete_gallery_photo', photo_id=p.id) }}" onsubmit="return confirm('Delete this photo?');">
+              <button class="btn btn-secondary" type="submit" style="width: 100%;">Delete Photo</button>
+            </form>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state reveal" style="text-align: center; padding: var(--space-12) var(--space-6);">
+        <div class="card-icon" aria-hidden="true" style="margin: 0 auto var(--space-4); width: 56px; height: 56px; font-size: var(--text-2xl);">🖼️</div>
+        <h3 class="heading-card" style="margin-bottom: var(--space-2);">No photos yet</h3>
+        <p class="body">Upload your first photo above to get started.</p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+{% endblock %}

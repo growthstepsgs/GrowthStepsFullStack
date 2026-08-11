@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Requests | GS-Growth Steps</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+</head>
+<body>
+
+<button class="menu-toggle" id="menuToggle" aria-label="Open navigation menu">☰</button>
+
+<div class="sidebar" id="sidebar" aria-hidden="true">
+  <div class="sidebar-header">
+    <h3>GS-Growth Steps</h3>
+    <button id="closeSidebar" aria-label="Close navigation">✕</button>
+  </div>
+  <ul>
+    <li><a href="{{ url_for('home') }}">🏠 Home</a></li>
+    <li><a href="{{ url_for('courses') }}">📚 Courses</a></li>
+    <li><a href="{{ url_for('services') }}">🚀 Services</a></li>
+    <li><a href="{{ url_for('admin_dashboard') }}">🛠️ Admin</a></li>
+    <li><a href="{{ url_for('admin_requests') }}" class="active-page">📝 Requests</a></li>
+    <li><a href="{{ url_for('logout') }}">🚪 Logout</a></li>
+  </ul>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header>
+  <div class="container nav">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 22C28 14 38 10 52 10C67 10 79 16 86 27" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <path d="M18 48H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <path d="M18 64H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <path d="M54 23V86" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+          <path d="M22 88H76C86 88 92 82 92 73C92 63 85 58 74 58H54" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="brand-copy">
+        <h1>GS-Growth Steps</h1>
+        <p>Freelance Web Development</p>
+      </div>
+    </div>
+    <div class="nav-row">
+      <nav aria-label="Main navigation">
+        <ul>
+          <li><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+          <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode" title="Toggle theme">
+        <span class="icon-sun" aria-hidden="true">☀️</span>
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="container">
+      <article class="hero-card hero-main reveal visible">
+        <div class="eyebrow">📝 Employee Requests</div>
+        <h2>Review & respond</h2>
+        <p>Signed in as {{ email }}. Update status and leave a note for the employee on each request below.</p>
+        <div class="hero-stats">
+          <div class="stat"><strong>{{ all_requests|length }}</strong><span>Total Requests</span></div>
+          <div class="stat"><strong>{{ all_requests|selectattr('status','equalto','pending')|list|length }}</strong><span>Pending</span></div>
+          <div class="stat"><strong>{{ all_requests|selectattr('status','equalto','approved')|list|length }}</strong><span>Approved</span></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <section class="section" style="padding-top:0">
+        <div class="container">
+          {% for category, message in messages %}
+            <div class="form-warning {{ 'form-success' if category == 'success' else '' }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      </section>
+    {% endif %}
+  {% endwith %}
+
+  <section class="section">
+    <div class="container">
+      {% if all_requests %}
+      <div class="about-grid">
+        {% for r in all_requests %}
+        <article class="info-card reveal visible">
+          <h4>{{ r.title }}</h4>
+          <p>
+            <strong>From:</strong> {{ r.employee_name }}<br>
+            <strong>Submitted:</strong> {{ r.created_at[:10] }}
+          </p>
+          <p>{{ r.description }}</p>
+          <p><strong>Current status:</strong> <span class="status-badge status-{{ r.status }}">{{ r.status.replace('_', ' ') | title }}</span></p>
+
+          <form method="POST" action="{{ url_for('admin_update_request', request_id=r.id) }}" class="form">
+            <label for="status-{{ r.id }}">Update status</label>
+            <select id="status-{{ r.id }}" name="status">
+              <option value="pending" {{ "selected" if r.status == "pending" }}>Pending</option>
+              <option value="in_review" {{ "selected" if r.status == "in_review" }}>In Review</option>
+              <option value="approved" {{ "selected" if r.status == "approved" }}>Approved</option>
+              <option value="rejected" {{ "selected" if r.status == "rejected" }}>Rejected</option>
+            </select>
+
+            <label for="note-{{ r.id }}">Response / note to employee</label>
+            <textarea id="note-{{ r.id }}" name="admin_note" rows="2">{{ r.admin_note or "" }}</textarea>
+
+            <button type="submit" class="btn btn-primary">Save Update</button>
+          </form>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="form-warning">No requests submitted yet.</div>
+      {% endif %}
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container footer-box">
+    <span>© 2026 GS-Growth Steps · Vijay Sarathi R S</span>
+    <div class="footer-links">
+      <a href="{{ url_for('home') }}">Home</a>
+      <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

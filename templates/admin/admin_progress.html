@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Team Progress | Growth Steps{% endblock %}
+{% block description %}View daily progress submissions from all team members.{% endblock %}
+
+{% block styles %}
+<style>
+  .progress-filter-bar {
+    display: flex;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+    flex-wrap: wrap;
+  }
+  .progress-filter-bar input {
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    font-family: inherit;
+    font-size: var(--text-sm);
+  }
+  .progress-table-wrap {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .progress-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+  }
+  .progress-table th {
+    text-align: left;
+    padding: var(--space-3) var(--space-4);
+    background: var(--bg-muted);
+    color: var(--text-subtle);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: var(--text-xs);
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+  .progress-table td {
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+  .progress-table tr:last-child td { border-bottom: none; }
+  .progress-table tr:hover td { background: var(--bg-muted); }
+  .progress-name { font-weight: 600; }
+  .progress-date { white-space: nowrap; color: var(--text-muted); }
+  .progress-hours { font-weight: 700; color: var(--primary-text); }
+  .progress-cell { max-width: 280px; line-height: 1.6; }
+  .progress-cell p { margin: 0; white-space: pre-wrap; }
+  .empty-progress {
+    text-align: center;
+    padding: var(--space-12);
+    color: var(--text-subtle);
+  }
+  @media (max-width: 900px) {
+    .progress-table-wrap { overflow-x: auto; }
+    .progress-table { min-width: 800px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="admin-hero" style="padding-bottom: var(--space-6);">
+  <div class="container">
+    <div class="admin-hero-inner reveal">
+      <div class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Team Tracking</div>
+      <h1>Daily <span>Progress</span></h1>
+      <p class="body">Review what your team worked on, how much time they logged, and what blockers they're facing.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="progress-filter-bar reveal">
+      <input type="text" id="filterName" placeholder="Filter by name..." onkeyup="filterTable()">
+      <input type="date" id="filterDate" onchange="filterTable()">
+    </div>
+
+    {% if all_progress %}
+    <div class="progress-table-wrap reveal">
+      <table class="progress-table" id="progressTable">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Date</th>
+            <th>Hours</th>
+            <th>Tasks Completed</th>
+            <th>Blockers</th>
+            <th>Next Up</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in all_progress %}
+          <tr data-name="{{ p.employee_name | lower }}" data-date="{{ p.work_date }}">
+            <td class="progress-name">{{ p.employee_name }}</td>
+            <td class="progress-date">{{ p.work_date }}</td>
+            <td class="progress-hours">{{ p.hours_worked }}</td>
+            <td class="progress-cell"><p>{{ p.tasks_completed }}</p></td>
+            <td class="progress-cell">{% if p.blockers %}<p>{{ p.blockers }}</p>{% else %}—{% endif %}</td>
+            <td class="progress-cell">{% if p.plans_tomorrow %}<p>{{ p.plans_tomorrow }}</p>{% else %}—{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-progress reveal">
+      <p>No progress submissions yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+function filterTable() {
+  var nameVal = document.getElementById('filterName').value.toLowerCase();
+  var dateVal = document.getElementById('filterDate').value;
+  var rows = document.querySelectorAll('#progressTable tbody tr');
+  rows.forEach(function(row) {
+    var name = row.getAttribute('data-name');
+    var date = row.getAttribute('data-date');
+    var showName = !nameVal || name.indexOf(nameVal) !== -1;
+    var showDate = !dateVal || date === dateVal;
+    row.style.display = (showName && showDate) ? '' : 'none';
+  });
+}
+</script>
+
+{% endblock %}

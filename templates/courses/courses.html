@@ -1,0 +1,1305 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Agentic AI Sunday Workshop | Growth Steps{% endblock %}
+{% block description %}Join the free live demo for the Agentic AI Sunday Workshop — a 4-week live program covering AI Agents, No-Code Automation with n8n, Agent Code Development, and real AI Agent projects.{% endblock %}
+
+{% block styles %}
+<style>
+  /* ══════════════════════════════════════════
+     COURSES PAGE — Workshop Specific Styles
+  ══════════════════════════════════════════ */
+
+  /* ── Hero ── */
+  .workshop-hero {
+    padding: var(--space-16) 0 var(--space-12);
+    background: linear-gradient(160deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+  }
+
+  .workshop-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .workshop-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(251,191,36,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .workshop-hero .container {
+    position: relative;
+    z-index: 1;
+  }
+
+  .workshop-hero .eyebrow {
+    background: rgba(239,68,68,0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(239,68,68,0.25);
+  }
+
+  .workshop-hero .heading-hero {
+    color: #fff;
+    font-size: clamp(2.4rem, 5.5vw, 4rem);
+  }
+
+  .workshop-hero .heading-hero span {
+    color: #818cf8;
+  }
+
+  .workshop-hero .body-large {
+    color: rgba(255,255,255,0.75);
+    max-width: 600px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    margin-top: var(--space-2);
+  }
+
+  .btn-on-dark {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(8px);
+  }
+
+  .btn-on-dark:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.3);
+  }
+
+  .btn-glow {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 4px 24px rgba(99,102,241,0.4);
+  }
+
+  .btn-glow:hover {
+    background: #4f46e5;
+    box-shadow: 0 6px 32px rgba(99,102,241,0.55);
+    transform: translateY(-2px);
+  }
+
+  /* Demo info grid */
+  .demo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+    margin: var(--space-8) 0 var(--space-6);
+  }
+
+  .demo-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    text-align: center;
+    backdrop-filter: blur(8px);
+    transition: all var(--transition-base);
+  }
+
+  .demo-card:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.15);
+    transform: translateY(-2px);
+  }
+
+  .demo-card .icon {
+    font-size: var(--text-2xl);
+    margin-bottom: var(--space-3);
+    display: block;
+  }
+
+  .demo-card strong {
+    display: block;
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: var(--space-1);
+  }
+
+  .demo-card span {
+    font-size: var(--text-sm);
+    color: rgba(255,255,255,0.55);
+  }
+
+  /* Benefit list on hero */
+  .hero-benefits {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--space-3);
+    margin: var(--space-6) 0;
+  }
+
+  .hero-benefits li {
+    position: relative;
+    padding-left: var(--space-6);
+    color: rgba(255,255,255,0.85);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+  }
+
+  .hero-benefits li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #818cf8;
+    font-weight: 800;
+  }
+
+  /* Hero stats bar */
+  .hero-stats-bar {
+    display: flex;
+    gap: var(--space-8);
+    padding-top: var(--space-6);
+    margin-top: var(--space-6);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    flex-wrap: wrap;
+  }
+
+  .hero-stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .hero-stat strong {
+    font-size: var(--text-2xl);
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .hero-stat span {
+    font-size: var(--text-xs);
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Countdown ── */
+  .countdown-wrap {
+    background: var(--bg-muted);
+    border-bottom: 1px solid var(--border);
+    padding: var(--space-10) 0;
+  }
+
+  .countdown-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .countdown-unit {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6) var(--space-4);
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .countdown-unit .num {
+    font-size: var(--text-4xl);
+    font-weight: 800;
+    color: var(--primary-text);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: var(--space-2);
+  }
+
+  .countdown-unit .label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--text-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── Trainer ── */
+  .trainer-wrap {
+    display: flex;
+    gap: var(--space-8);
+    align-items: center;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .trainer-avatar {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 3px solid var(--primary);
+    box-shadow: 0 0 0 6px var(--primary-light), var(--shadow-md);
+  }
+
+  .trainer-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .trainer-body {
+    flex: 1;
+  }
+
+  .trainer-body h3 {
+    font-size: var(--text-2xl);
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: var(--space-2);
+  }
+
+  .trainer-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-5);
+  }
+
+  .trainer-tags span {
+    background: var(--primary-light);
+    color: var(--primary-text);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+    font-weight: 600;
+  }
+
+  .trainer-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+  }
+
+  .trainer-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .trainer-list li::before {
+    content: '◆';
+    color: var(--primary);
+    font-size: var(--text-xs);
+  }
+
+  /* ── Outcomes ── */
+  .outcomes-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+  }
+
+  .outcome-item {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5) var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-weight: 600;
+    color: var(--text);
+    font-size: var(--text-sm);
+    transition: all var(--transition-fast);
+  }
+
+  .outcome-item:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+  }
+
+  .outcome-item .check {
+    color: var(--success);
+    font-size: var(--text-lg);
+    flex-shrink: 0;
+  }
+
+  /* ── Curriculum Timeline ── */
+  .timeline {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+    padding-left: var(--space-8);
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+
+  .timeline-week {
+    position: relative;
+    margin-bottom: var(--space-8);
+  }
+
+  .week-node {
+    position: absolute;
+    left: -37px;
+    top: 0;
+    width: 40px;
+    height: 40px;
+    background: var(--bg-elevated);
+    border: 2px solid var(--primary);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: var(--text-xs);
+    font-weight: 800;
+    color: var(--primary-text);
+    z-index: 1;
+  }
+
+  .week-body {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
+  }
+
+  .week-body:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-strong);
+  }
+
+  .week-body h3 {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: var(--space-3);
+  }
+
+  .week-body p {
+    color: var(--text-muted);
+    font-size: var(--text-base);
+    line-height: 1.7;
+    margin-bottom: var(--space-4);
+  }
+
+  .week-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .week-tags .tag {
+    background: var(--bg-muted);
+    color: var(--text-muted);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    border: 1px solid var(--border);
+  }
+
+  /* ── Projects ── */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-5);
+  }
+
+  .project-item {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    transition: all var(--transition-base);
+    border-top: 3px solid var(--primary);
+  }
+
+  .project-item:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+  }
+
+  .project-item h4 {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: var(--space-3);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .project-item p {
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    line-height: 1.65;
+  }
+
+  /* ── Benefits ── */
+  .benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-5);
+  }
+
+  .benefit-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+  }
+
+  .benefit-card h4 {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: var(--space-4);
+  }
+
+  .benefit-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .benefit-list li {
+    position: relative;
+    padding-left: var(--space-6);
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+  }
+
+  .benefit-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--primary);
+    font-weight: 800;
+  }
+
+  /* ── Pricing ── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+    max-width: 800px;
+    margin: 0 auto;
+    align-items: start;
+  }
+
+  .pricing-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-base);
+  }
+
+  .pricing-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+  }
+
+  .pricing-card.featured {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-md);
+    background: linear-gradient(180deg, var(--bg-elevated) 0%, rgba(99,102,241,0.03) 100%);
+  }
+
+  .pricing-card.featured::before {
+    content: 'Most Popular';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--primary);
+    color: #fff;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: var(--space-2) 0;
+  }
+
+  .pricing-card.featured {
+    padding-top: var(--space-10);
+  }
+
+  .pricing-card h3 {
+    font-size: var(--text-xl);
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: var(--space-2);
+  }
+
+  .pricing-card .meta {
+    color: var(--text-subtle);
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-6);
+  }
+
+  .price {
+    font-size: var(--text-5xl);
+    font-weight: 800;
+    color: var(--primary-text);
+    line-height: 1;
+    margin-bottom: var(--space-6);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pricing-features {
+    list-style: none;
+    text-align: left;
+    margin-bottom: var(--space-8);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .pricing-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .pricing-features li:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .pricing-features li::before {
+    content: '✓';
+    color: var(--success);
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .pricing-features li.missing {
+    opacity: 0.6;
+  }
+
+  .pricing-features li.missing::before {
+    content: '—';
+    color: var(--text-subtle);
+  }
+
+  .pricing-features li strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .pricing-features li small {
+    display: block;
+    color: var(--text-subtle);
+    font-size: var(--text-xs);
+    margin-top: var(--space-1);
+  }
+
+  /* ── FAQ ── */
+  .faq-wrap {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .faq-item {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: all var(--transition-fast);
+  }
+
+  .faq-item:hover {
+    border-color: var(--border-strong);
+  }
+
+  .faq-item.active {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+
+  .faq-q {
+    padding: var(--space-4) var(--space-5);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-4);
+    font-weight: 600;
+    color: var(--text);
+    font-size: var(--text-base);
+    transition: background var(--transition-fast);
+  }
+
+  .faq-q:hover {
+    background: var(--bg-muted);
+  }
+
+  .faq-icon {
+    color: var(--primary);
+    font-size: var(--text-xl);
+    font-weight: 300;
+    transition: transform var(--transition-base);
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .faq-item.active .faq-icon {
+    transform: rotate(45deg);
+  }
+
+  .faq-a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, padding 0.35s ease;
+  }
+
+  .faq-item.active .faq-a {
+    max-height: 300px;
+    padding: 0 var(--space-5) var(--space-5);
+  }
+
+  .faq-a p {
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    line-height: 1.7;
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--border-light);
+  }
+
+  /* ── Final CTA ── */
+  .cta-band {
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+    border-radius: var(--radius-xl);
+    padding: var(--space-12) var(--space-8);
+    text-align: center;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-band::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cta-band h2 {
+    font-size: clamp(var(--text-2xl), 4vw, var(--text-4xl));
+    font-weight: 800;
+    margin-bottom: var(--space-3);
+    position: relative;
+  }
+
+  .cta-band p {
+    color: rgba(255,255,255,0.85);
+    font-size: var(--text-lg);
+    max-width: 520px;
+    margin: 0 auto var(--space-8);
+    position: relative;
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+  }
+
+  .btn-white {
+    background: #fff;
+    color: #3730a3;
+    font-weight: 700;
+  }
+
+  .btn-white:hover {
+    background: #f8fafc;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+
+  .btn-ghost-light {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+
+  .btn-ghost-light:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.4);
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .outcomes-grid { grid-template-columns: repeat(2, 1fr); }
+    .projects-grid { grid-template-columns: 1fr; }
+    .benefits-grid { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; max-width: 420px; }
+    .trainer-wrap { flex-direction: column; text-align: center; }
+    .trainer-list { grid-template-columns: 1fr; text-align: left; }
+    .demo-grid { grid-template-columns: 1fr; }
+    .hero-stats-bar { gap: var(--space-6); }
+    .timeline { padding-left: var(--space-6); }
+    .week-node { left: -33px; width: 32px; height: 32px; font-size: 10px; }
+  }
+
+  @media (max-width: 640px) {
+    .outcomes-grid { grid-template-columns: 1fr; }
+    .countdown-grid { grid-template-columns: repeat(2, 1fr); }
+    .workshop-hero { padding: var(--space-12) 0 var(--space-10); }
+    .hero-benefits { grid-template-columns: 1fr; }
+    .trainer-avatar { width: 120px; height: 120px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+  <!-- ═══ HERO ═══ -->
+  <section class="workshop-hero" aria-labelledby="workshop-title">
+    <div class="container">
+      <div class="reveal">
+        <div class="eyebrow">
+          <span class="eyebrow-dot" aria-hidden="true"></span>
+          Free Live Demo Session
+        </div>
+        <h1 id="workshop-title" class="heading-hero">
+          Agentic AI <span>Sunday</span><br>Workshop
+        </h1>
+        <p class="body-large">
+          Experience the course for free. Join a live online demo and discover how Agentic AI can shape your career — then decide if the full 4-week workshop is right for you.
+        </p>
+
+        <div class="demo-grid">
+          <div class="demo-card reveal">
+            <span class="icon" aria-hidden="true">📅</span>
+            <strong>This Sunday</strong>
+            <span>Demo Date</span>
+          </div>
+          <div class="demo-card reveal">
+            <span class="icon" aria-hidden="true">⏰</span>
+            <strong>11:00 AM</strong>
+            <span>Demo Time (IST)</span>
+          </div>
+          <div class="demo-card reveal">
+            <span class="icon" aria-hidden="true">💻</span>
+            <strong>Online</strong>
+            <span>Google Meet</span>
+          </div>
+        </div>
+
+        <ul class="hero-benefits">
+          <li>What is Agentic AI?</li>
+          <li>No-code agent building with n8n</li>
+          <li>Code-based agent development</li>
+          <li>Live AI agent application demo</li>
+          <li>Full course roadmap walkthrough</li>
+        </ul>
+
+        <div class="hero-actions">
+          <a class="btn btn-glow" href="https://docs.google.com/forms/d/e/1FAIpQLSfhQ6Ci1Lu8R9ObX9KXKa3ptkkXossocyOgpNZecL8qOR4jBA/viewform?usp=dialog" target="_blank" rel="noopener noreferrer">
+            Register Free Demo →
+          </a>
+          <a class="btn btn-on-dark" href="#curriculum">View Full Curriculum</a>
+        </div>
+
+        <div class="hero-stats-bar">
+          <div class="hero-stat">
+            <strong>4</strong>
+            <span>Sunday Sessions</span>
+          </div>
+          <div class="hero-stat">
+            <strong>3 hrs</strong>
+            <span>Per Session</span>
+          </div>
+          <div class="hero-stat">
+            <strong>8+</strong>
+            <span>Portfolio Projects</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ COUNTDOWN ═══ -->
+  <section class="countdown-wrap" aria-labelledby="countdown-heading">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="eyebrow">Limited Seats</span>
+        <h2 id="countdown-heading" class="heading-section">Next Demo Starts In</h2>
+        <p>Don't miss your chance to experience the workshop for free.</p>
+      </div>
+      <div class="countdown-grid reveal">
+        <div class="countdown-unit">
+          <div class="num" id="cd-days">00</div>
+          <div class="label">Days</div>
+        </div>
+        <div class="countdown-unit">
+          <div class="num" id="cd-hours">00</div>
+          <div class="label">Hours</div>
+        </div>
+        <div class="countdown-unit">
+          <div class="num" id="cd-minutes">00</div>
+          <div class="label">Minutes</div>
+        </div>
+        <div class="countdown-unit">
+          <div class="num" id="cd-seconds">00</div>
+          <div class="label">Seconds</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ TRAINER ═══ -->
+  <section class="section" aria-labelledby="trainer-heading">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="eyebrow">Your Instructor</span>
+        <h2 id="trainer-heading" class="heading-section">Meet Your Trainer</h2>
+        <p>Learn directly from someone building real agentic AI applications.</p>
+      </div>
+
+      <div class="trainer-wrap reveal">
+        <div class="trainer-avatar">
+          <img src="{{ url_for('static', filename='images/vijay.png') }}" alt="Vijay Sarathi R S" />
+        </div>
+        <div class="trainer-body">
+          <h3>Vijay Sarathi R S</h3>
+          <div class="trainer-tags">
+            <span>Agentic AI Developer</span>
+            <span>AI Engineer</span>
+            <span>Python Developer</span>
+            <span>Gen AI Trainer</span>
+            <span>Ex-Cohort Trainer @ SNS iHub</span>
+          </div>
+          <ul class="trainer-list">
+            <li>Trained 1500+ students</li>
+            <li>Built agentic AI systems</li>
+            <li>Developed AI applications</li>
+            <li>Worked on real industry projects</li>
+            <li>
+              <a href="https://www.linkedin.com/in/vijay-sarathi-r-s/" target="_blank" rel="noopener noreferrer" style="color: var(--primary-text); text-decoration: underline; text-underline-offset: 3px;">
+                View LinkedIn Profile →
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ OUTCOMES ═══ -->
+  <section class="section section-alt" aria-labelledby="outcomes-heading">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="eyebrow">Results</span>
+        <h2 id="outcomes-heading" class="heading-section">What You'll Achieve</h2>
+        <p>Skills and outcomes that go straight onto your portfolio and resume.</p>
+      </div>
+
+      <div class="outcomes-grid">
+        <div class="outcome-item reveal"><span class="check" aria-hidden="true">✓</span>Build AI Agents</div>
+        <div class="outcome-item reveal"><span class="check" aria-hidden="true">✓</span>No-Code Automation with n8n</div>
+        <div class="outcome-item reveal"><span class="check" aria-hidden="true">✓</span>Code AI Agents in Python</div>
+        <div class="outcome-item reveal"><span class="check" aria-hidden="true">✓</span>Use OpenAI & Gemini APIs</div>
+        <div class="outcome-item reveal"><span class="check" aria-hidden="true">✓</span>Create Streamlit Apps</div>
+        <div class="outcome-item reveal"><span class="check" aria-hidden="true">✓</span>Deploy AI Agent Projects</div>
+        <div class="outcome-item reveal"><span class="check" aria-hidden="true">✓</span>Build Portfolio Projects</div>
+        <div class="outcome-item reveal"><span class="check" aria-hidden="true">✓</span>Understand RAG & Tool Use</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CURRICULUM ═══ -->
+  <section class="section" id="curriculum" aria-labelledby="curriculum-heading">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="eyebrow">Roadmap</span>
+        <h2 id="curriculum-heading" class="heading-section">4-Week Curriculum</h2>
+        <p>One Sunday at a time — structured for real learning and real results.</p>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-week reveal">
+          <div class="week-node">W1</div>
+          <div class="week-body">
+            <h3>Agentic AI Foundations</h3>
+            <p>Understand what Agentic AI really is, how AI agents differ from regular chatbots, and explore the full landscape of agent frameworks and tools. Set up your Python environment and run your first AI agent.</p>
+            <div class="week-tags">
+              <span class="tag">What is Agentic AI?</span>
+              <span class="tag">How AI Agents Work</span>
+              <span class="tag">Agent Tools Landscape</span>
+              <span class="tag">Environment Setup</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-week reveal">
+          <div class="week-node">W2</div>
+          <div class="week-body">
+            <h3>No-Code Agent Building with n8n</h3>
+            <p>Build your first AI agents without writing a single line of code. Learn n8n workflow automation, connect AI models and apps visually, and design agent workflows that trigger, think, and act on their own.</p>
+            <div class="week-tags">
+              <span class="tag">n8n Workflows</span>
+              <span class="tag">No-Code Agent Building</span>
+              <span class="tag">Workflow Automation</span>
+              <span class="tag">Connecting APIs Visually</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-week reveal">
+          <div class="week-node">W3</div>
+          <div class="week-body">
+            <h3>Code-Based Agent Development</h3>
+            <p>Move from no-code to full code development. Connect to OpenAI, Gemini, and Anthropic APIs using Python, give your agents tools and memory, and build scripts that reason, plan, and take action automatically.</p>
+            <div class="week-tags">
+              <span class="tag">Python Agent Development</span>
+              <span class="tag">OpenAI & Gemini APIs</span>
+              <span class="tag">Tool-Calling & Memory</span>
+              <span class="tag">Task Automation</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-week reveal">
+          <div class="week-node">W4</div>
+          <div class="week-body">
+            <h3>Build & Deploy Agentic AI Applications</h3>
+            <p>Bring no-code and code skills together to build a complete agentic AI application. Deploy it live on Streamlit Cloud or Hugging Face Spaces — a real agent project for your portfolio by end of session.</p>
+            <div class="week-tags">
+              <span class="tag">Streamlit UI</span>
+              <span class="tag">RAG Basics</span>
+              <span class="tag">Website Deployment</span>
+              <span class="tag">Portfolio Project</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ PROJECTS ═══ -->
+  <section class="section section-alt" id="projects" aria-labelledby="projects-heading">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="eyebrow">Portfolio</span>
+        <h2 id="projects-heading" class="heading-section">Projects You'll Build</h2>
+        <p>Real, portfolio-ready AI agent projects — no-code and code-based, not toy examples.</p>
+      </div>
+
+      <div class="projects-grid">
+        <article class="project-item reveal">
+          <h4><span aria-hidden="true">🤖</span> Autonomous AI Chat Agent</h4>
+          <p>A fully functional AI agent powered by OpenAI or Gemini API with a clean Streamlit interface — capable of reasoning and responding intelligently, deployed live and shareable with anyone.</p>
+        </article>
+        <article class="project-item reveal">
+          <h4><span aria-hidden="true">📄</span> Document Q&A Agent</h4>
+          <p>Upload a PDF and ask it questions. A retrieval-based AI agent that reads your documents and gives intelligent, context-aware answers.</p>
+        </article>
+        <article class="project-item reveal">
+          <h4><span aria-hidden="true">✍️</span> AI Content Generator Agent</h4>
+          <p>A prompt-powered agent that generates blogs, emails, or social posts on demand — your first real AI automation built from scratch.</p>
+        </article>
+        <article class="project-item reveal">
+          <h4><span aria-hidden="true">🧾</span> Resume Analyzer Agent</h4>
+          <p>An AI agent that reads a resume, evaluates it against a job description, and gives instant, actionable improvement suggestions.</p>
+        </article>
+        <article class="project-item reveal">
+          <h4><span aria-hidden="true">⚙️</span> No-Code Workflow Agent (n8n)</h4>
+          <p>A complete no-code AI agent built in n8n that listens for triggers, calls an AI model, and automatically takes action — no programming required.</p>
+        </article>
+        <article class="project-item reveal">
+          <h4><span aria-hidden="true">📧</span> AI Email Automation Agent</h4>
+          <p>A smart agent built with n8n and AI APIs that reads incoming requests and drafts professional emails automatically — perfect for outreach, follow-ups, and replies.</p>
+        </article>
+        <article class="project-item reveal">
+          <h4><span aria-hidden="true">🧠</span> Multi-Agent Task Planner</h4>
+          <p>A code-based system where multiple AI agents collaborate — one plans, one researches, and one executes — to complete a multi-step task end-to-end.</p>
+        </article>
+        <article class="project-item reveal">
+          <h4><span aria-hidden="true">🛒</span> AI Customer Support Agent</h4>
+          <p>An agent that handles customer queries, looks up information using tools, and escalates only when truly needed — built with both no-code and code approaches.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ BENEFITS ═══ -->
+  <section class="section" aria-labelledby="benefits-heading">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="eyebrow">Enrollment</span>
+        <h2 id="benefits-heading" class="heading-section">Included With Enrollment</h2>
+        <p>Everything you need to learn, build, and showcase your work.</p>
+      </div>
+
+      <div class="benefits-grid">
+        <article class="benefit-card reveal">
+          <h4>📦 What You Get</h4>
+          <ul class="benefit-list">
+            <li>Live classes every Sunday</li>
+            <li>Certificate of completion</li>
+            <li>Full source code for every project</li>
+          </ul>
+        </article>
+        <article class="benefit-card reveal">
+          <h4>🤝 Support & Guidance</h4>
+          <ul class="benefit-list">
+            <li>Project guidance from the trainer</li>
+            <li>Community support group</li>
+            <li>Career guidance & portfolio tips</li>
+            <li>Direct access for doubt-clearing</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ PRICING ═══ -->
+  <section class="section section-alt" id="pricing" aria-labelledby="pricing-heading">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="eyebrow">Investment</span>
+        <h2 id="pricing-heading" class="heading-section">Simple, Affordable Pricing</h2>
+        <p>Choose the plan that fits your learning goals.</p>
+      </div>
+
+      <div class="pricing-grid reveal">
+        <article class="pricing-card featured">
+          <h3>Certified Pro</h3>
+          <p class="meta">Includes Certification & Project Validation</p>
+          <div class="price">₹1999</div>
+          <ul class="pricing-features">
+            <li><strong>Certification Provided</strong><small>Full access to certified curriculum</small></li>
+            <li><strong>Project Validation</strong><small>Expert review of your projects</small></li>
+            <li>Community support</li>
+            <li>Interview Questions Provided</li>
+          </ul>
+          <a class="btn btn-primary" href="https://forms.gle/jgsStKXVRRwDD9JD7" target="_blank" rel="noopener noreferrer" style="width: 100%; justify-content: center;">
+            Enroll Now
+          </a>
+        </article>
+
+        <article class="pricing-card">
+          <h3>Standard Plan</h3>
+          <p class="meta">Reading Material & Project Validation</p>
+          <div class="price">₹999</div>
+          <ul class="pricing-features">
+            <li><strong>Course Reading</strong><small>Access to all reading materials</small></li>
+            <li><strong>Project Validation</strong><small>Expert review of your projects</small></li>
+            <li class="missing">Certification Not Included</li>
+          </ul>
+          <a class="btn btn-primary" href="https://forms.gle/jgsStKXVRRwDD9JD7" target="_blank" rel="noopener noreferrer" style="width: 100%; justify-content: center;">
+            Enroll Now
+          </a>
+        </article>
+      </div>
+
+      <div style="text-align: center; margin-top: var(--space-8);">
+        <a class="btn btn-secondary" href="https://docs.google.com/forms/d/e/1FAIpQLSfhQ6Ci1Lu8R9ObX9KXKa3ptkkXossocyOgpNZecL8qOR4jBA/viewform?usp=dialog" target="_blank" rel="noopener noreferrer">
+          Register for Free Demo →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FAQ ═══ -->
+  <section class="section" id="faq" aria-labelledby="faq-heading">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="eyebrow">Questions</span>
+        <h2 id="faq-heading" class="heading-section">Frequently Asked Questions</h2>
+        <p>Everything you might want to know before joining.</p>
+      </div>
+
+      <div class="faq-wrap reveal">
+        <div class="faq-item">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+            Do I need Python knowledge to join?
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </div>
+          <div class="faq-a">
+            <p>No prior knowledge is required. You'll start with no-code agent building using n8n, then move into Python-based code development at your own pace — the course is designed to be beginner-friendly while still useful for those with some experience.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+            Will I receive a certificate?
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </div>
+          <div class="faq-a">
+            <p>Yes, if you choose the ₹1999 Certified Pro plan. The ₹999 Standard plan does not include a certificate.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+            Can beginners join?
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </div>
+          <div class="faq-a">
+            <p>Absolutely. The workshop is structured so beginners can follow along comfortably while building real, working AI projects.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+            Will projects be taught step by step?
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </div>
+          <div class="faq-a">
+            <p>Yes, each project is built live during sessions with guided, step-by-step explanations, plus source code provided afterward.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+            How will classes be conducted?
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </div>
+          <div class="faq-a">
+            <p>All classes are conducted live online via Google Meet every Sunday, with interactive sessions.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FINAL CTA ═══ -->
+  <section class="section">
+    <div class="container">
+      <div class="cta-band reveal">
+        <h2>Start Your Agentic AI Journey Today</h2>
+        <p>Join the free demo session and experience the course before enrolling.</p>
+        <div class="cta-actions">
+          <a class="btn btn-white" href="https://docs.google.com/forms/d/e/1FAIpQLSfhQ6Ci1Lu8R9ObX9KXKa3ptkkXossocyOgpNZecL8qOR4jBA/viewform?usp=dialog" target="_blank" rel="noopener noreferrer">
+            Register Free Demo
+          </a>
+          <a class="btn btn-ghost-light" href="https://forms.gle/jgsStKXVRRwDD9JD7" target="_blank" rel="noopener noreferrer">
+            Enroll Now
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  /* ── FAQ Accordion ── */
+  (function() {
+    const items = document.querySelectorAll('.faq-item');
+    items.forEach(item => {
+      const question = item.querySelector('.faq-q');
+      question.addEventListener('click', () => {
+        const isOpen = item.classList.contains('active');
+        items.forEach(i => {
+          i.classList.remove('active');
+          i.querySelector('.faq-q').setAttribute('aria-expanded', 'false');
+        });
+        if (!isOpen) {
+          item.classList.add('active');
+          question.setAttribute('aria-expanded', 'true');
+        }
+      });
+      question.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          question.click();
+        }
+      });
+    });
+  })();
+
+  /* ── Countdown Timer ── */
+  (function() {
+    const daysEl = document.getElementById('cd-days');
+    const hoursEl = document.getElementById('cd-hours');
+    const minsEl = document.getElementById('cd-minutes');
+    const secsEl = document.getElementById('cd-seconds');
+    if (!daysEl) return;
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function getNextDemo() {
+      const now = new Date();
+      const target = new Date(now);
+      target.setHours(10, 0, 0, 0);
+      let daysUntil = (7 - now.getDay()) % 7;
+      if (daysUntil === 0 && now >= target) daysUntil = 7;
+      target.setDate(now.getDate() + daysUntil);
+      return target;
+    }
+
+    let nextDemo = getNextDemo();
+
+    function update() {
+      const now = new Date();
+      let diff = nextDemo - now;
+      if (diff <= 0) {
+        nextDemo = getNextDemo();
+        diff = nextDemo - now;
+      }
+      daysEl.textContent  = pad(Math.floor(diff / (1000 * 60 * 60 * 24)));
+      hoursEl.textContent = pad(Math.floor((diff / (1000 * 60 * 60)) % 24));
+      minsEl.textContent  = pad(Math.floor((diff / (1000 * 60)) % 60));
+      secsEl.textContent  = pad(Math.floor((diff / 1000) % 60));
+    }
+
+    update();
+    setInterval(update, 1000);
+  })();
+</script>
+{% endblock %}

@@ -167,7 +167,7 @@ def home():
 
 @app.route("/courses")
 def courses():
-    return render_template("courses.html")
+    return render_template("courses/courses.html")
 
 
 @app.route("/available-courses")
@@ -484,7 +484,7 @@ def employee_dashboard():
     if role == "student":
         return redirect(url_for("student_dashboard"))
     return render_template(
-        "employee_dashboard.html",
+        "employee/employee_dashboard.html",
         email=session.get("user_email"),
     )
 
@@ -545,7 +545,7 @@ def employee_requests():
             my_requests = []
 
     return render_template(
-        "employee_requests.html",
+        "employee/employee_requests.html",
         email=session.get("user_email"),
         my_requests=my_requests,
     )
@@ -555,7 +555,7 @@ def employee_requests():
 @login_required
 def employee_sheets():
     return render_template(
-        "employee_sheets.html",
+        "employee/employee_sheets.html",
         email=session.get("user_email")
     )
 
@@ -634,7 +634,7 @@ def student_dashboard():
         e["course"] = course_by_id.get(e["course_id"])
 
     return render_template(
-        "student_dashboard.html",
+        "student/student_dashboard.html",
         email=session.get("user_email"),
         approved_enrollments=approved_enrollments,
         pending_enrollments=pending_enrollments,
@@ -667,7 +667,7 @@ def admin_dashboard():
     employee_count = sum(1 for u in users if u.get("role") == "employee")
 
     return render_template(
-        "admin_dashboard.html",
+        "admin/admin_dashboard.html",
         email=session.get("user_email"),
         users=users,
         course_count=course_count,
@@ -808,7 +808,7 @@ def admin_enrollments():
             print(f"admin_enrollments failed: {exc}")
 
     return render_template(
-        "admin_enrollments.html",
+        "admin/admin_enrollments.html",
         email=session.get("user_email"),
         enrollments=enrollments,
     )
@@ -1103,7 +1103,7 @@ def admin_gallery():
         except Exception:
             photos = []
 
-    return render_template("admin_gallery.html", photos=photos)
+    return render_template("admin/admin_gallery.html", photos=photos)
 
 @app.route("/admin/courses", methods=["GET", "POST"])
 @admin_required
@@ -1156,7 +1156,7 @@ def admin_courses():
             courses = res.data or []
         except Exception:
             courses = []
-    return render_template("admin_courses.html", courses=courses)
+    return render_template("admin/admin_courses.html", courses=courses)
 
 
 @app.route("/admin/courses/<course_id>/delete", methods=["POST"])
@@ -1240,7 +1240,7 @@ def admin_requests():
             all_requests = []
 
     return render_template(
-        "admin_requests.html",
+        "admin/admin_requests.html",
         email=session.get("user_email"),
         all_requests=all_requests,
     )
@@ -1322,7 +1322,7 @@ def admin_course_contents():
         return redirect(url_for("admin_course_contents"))
 
     return render_template(
-        "admin_course_contents.html",
+        "admin/admin_course_contents.html",
         email=session.get("user_email"),
         courses=courses,
         contents=contents,
@@ -1441,7 +1441,7 @@ def employee_progress():
             print(f"progress fetch failed: {exc}")
 
     return render_template(
-        "employee_progress.html",
+        "employee/employee_progress.html",
         email=session.get("user_email"),
         my_progress=my_progress,
         today_entry=today_entry,
@@ -1473,6 +1473,6 @@ def admin_progress():
                 p["employee_name"] = names.get(p.get("employee_id"), "Unknown")
         except Exception as exc:
             print(f"admin progress fetch failed: {exc}")
-    return render_template("admin_progress.html", email=session.get("user_email"), all_progress=all_progress)
+    return render_template("admin/admin_progress.html", email=session.get("user_email"), all_progress=all_progress)
 if __name__ == "__main__":
     app.run(debug=True)

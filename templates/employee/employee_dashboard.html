@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+
+{% block title %}Employee Dashboard | Growth Steps{% endblock %}
+{% block description %}Personal workspace for Growth Steps team members.{% endblock %}
+
+{% block styles %}
+<style>
+  /* ── EMPLOYEE DASHBOARD
+     Paste these rules into static/css/styles.css, then delete this block */
+
+  .dash-hero {
+    padding: var(--space-12) 0 var(--space-8);
+    background: var(--bg-muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dash-hero-inner {
+    max-width: 720px;
+  }
+
+  .dash-hero h1 {
+    font-size: clamp(var(--text-2xl), 4vw, var(--text-4xl));
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: var(--space-3);
+    line-height: 1.2;
+  }
+
+  .dash-hero h1 em {
+    color: var(--primary-text);
+    font-style: normal;
+  }
+
+  .dash-hero > .container > .reveal > p {
+    color: var(--text-muted);
+    font-size: var(--text-lg);
+    line-height: 1.7;
+    margin-bottom: var(--space-6);
+  }
+
+  .dash-stats {
+    display: flex;
+    gap: var(--space-8);
+    flex-wrap: wrap;
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--border);
+  }
+
+  .dash-stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .dash-stat strong {
+    font-size: var(--text-2xl);
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .dash-stat span {
+    font-size: var(--text-xs);
+    color: var(--text-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5);
+  }
+
+  .dash-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    transition: all var(--transition-base);
+  }
+
+  .dash-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+  }
+
+  .dash-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius);
+    background: var(--primary-light);
+    color: var(--primary-text);
+    display: grid;
+    place-items: center;
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-4);
+  }
+
+  .dash-card h3 {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: var(--space-3);
+  }
+
+  .dash-card p {
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    line-height: 1.65;
+    margin-bottom: var(--space-5);
+    flex: 1;
+  }
+
+  .dash-card .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .dash-card .btn.is-disabled {
+    opacity: 0.5;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  @media (max-width: 900px) {
+    .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 640px) {
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .dash-hero { padding: var(--space-10) 0 var(--space-6); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+  <!-- Hero -->
+  <section class="dash-hero" aria-labelledby="dash-heading">
+    <div class="container">
+      <div class="dash-hero-inner reveal">
+        <div class="eyebrow">
+          <span class="eyebrow-dot" aria-hidden="true"></span>
+          Employee Workspace
+        </div>
+        <h1 id="dash-heading">
+          Welcome back, <em>{{ email.split('@')[0] if email else 'Team Member' }}</em>
+        </h1>
+        <p>This is your personal workspace. Project assignments, course material, and updates from Growth Steps will appear here.</p>
+
+        <div class="dash-stats">
+          <div class="dash-stat">
+            <strong>Employee</strong>
+            <span>Access Level</span>
+          </div>
+          <div class="dash-stat">
+            <strong>{{ email }}</strong>
+            <span>Signed In</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard Grid -->
+  <section class="section" aria-labelledby="overview-heading">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="eyebrow">Overview</span>
+        <h2 id="overview-heading" class="heading-section">Your <strong>Dashboard</strong></h2>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Profile -->
+        <article class="dash-card reveal">
+          <div class="dash-icon" aria-hidden="true">👤</div>
+          <h3>Your Profile</h3>
+          <p>
+            <strong>Email:</strong> {{ email }}<br>
+            <strong>Role:</strong> Employee
+          </p>
+          <span class="btn btn-ghost is-disabled">No Action</span>
+        </article>
+
+        <!-- Courses -->
+        <article class="dash-card reveal">
+          <div class="dash-icon" aria-hidden="true">📚</div>
+          <h3>Assigned Courses</h3>
+          <p>No courses assigned yet. Check back soon.</p>
+          <span class="btn btn-ghost is-disabled">No Action</span>
+        </article>
+
+        <!-- Projects -->
+        <article class="dash-card reveal">
+          <div class="dash-icon" aria-hidden="true">✅</div>
+          <h3>Daily Progress</h3>
+          <p>Log your daily tasks, hours worked, blockers, and plans. Keep your manager in the loop.</p>
+          <a class="btn btn-primary" href="{{ url_for('employee_progress') }}">Log Progress</a>
+        </article>
+        <!-- Sheets -->
+        <article class="dash-card reveal">
+          <div class="dash-icon" aria-hidden="true">📊</div>
+          <h3>Employee Sheets</h3>
+          <p>Access and edit company spreadsheets directly from the dashboard.</p>
+          <a class="btn btn-primary" href="{{ url_for('employee_sheets') }}">Open Sheets</a>
+        </article>
+
+        <!-- Requests -->
+        <article class="dash-card reveal">
+          <div class="dash-icon" aria-hidden="true">📝</div>
+          <h3>Requests & Proposals</h3>
+          <p>Submit a proposal or leave request and track admin responses.</p>
+          <a class="btn btn-secondary" href="{{ url_for('employee_requests') }}">Go to My Requests</a>
+        </article>
+
+        <!-- Announcements -->
+        <article class="dash-card reveal">
+          <div class="dash-icon" aria-hidden="true">📢</div>
+          <h3>Announcements</h3>
+          <p>Nothing new right now — you're all caught up.</p>
+          <span class="btn btn-ghost is-disabled">No Action</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+{% endblock %}
