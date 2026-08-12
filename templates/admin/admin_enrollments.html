@@ -69,7 +69,7 @@
                 <span class="badge badge-{{ e.status }}">{{ e.status }}</span>
               </td>
               <td>
-                <form class="action-form" method="POST" action="{{ url_for('admin_update_enrollment', enrollment_id=e.id) }}">
+                <form class="action-form" method="POST" action="{{ url_for('admin.admin_update_enrollment', enrollment_id=e.id) }}">
                   <select name="status" required>
                     <option value="pending" {% if e.status == 'pending' %}selected{% endif %}>Pending</option>
                     <option value="approved" {% if e.status == 'approved' %}selected{% endif %}>Approve</option>

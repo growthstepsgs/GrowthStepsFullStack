@@ -63,36 +63,36 @@
         <article class="action-card">
           <h3><span aria-hidden="true">🎬</span> Course Content</h3>
           <p>Upload videos, PPTs, assignments and certificates for any course. Students see these after approval.</p>
-          <a class="btn btn-secondary" href="{{ url_for('admin_course_contents') }}">Manage Content</a>
+          <a class="btn btn-secondary" href="{{ url_for('admin.admin_course_contents') }}">Manage Content</a>
         </article>
 
         <article class="action-card">
           <h3><span aria-hidden="true">✅</span> Team Progress</h3>
           <p>View daily work logs from all employees. Filter by person or date to track productivity.</p>
-          <a class="btn btn-secondary" href="{{ url_for('admin_progress') }}">View Logs</a>
+          <a class="btn btn-secondary" href="{{ url_for('admin.admin_progress') }}">View Logs</a>
         </article>
         <article class="action-card">
           <h3><span aria-hidden="true">🎓</span> Enrollment Approvals</h3>
           <p>Review student course enrollment requests. Approve or reject access to paid and live courses.</p>
-          <a class="btn btn-primary" href="{{ url_for('admin_enrollments') }}">View Enrollments</a>
+          <a class="btn btn-primary" href="{{ url_for('admin.admin_enrollments') }}">View Enrollments</a>
         </article>
 
         <article class="action-card">
           <h3><span aria-hidden="true">📝</span> Employee Requests</h3>
           <p>Review proposals and leave requests submitted by employees, and respond with a status update.</p>
-          <a class="btn btn-secondary" href="{{ url_for('admin_requests') }}">View Requests</a>
+          <a class="btn btn-secondary" href="{{ url_for('admin.admin_requests') }}">View Requests</a>
         </article>
 
         <article class="action-card">
           <h3><span aria-hidden="true">🖼️</span> Gallery Manager</h3>
           <p>Add, remove, or update workshop photos displayed on the public gallery page.</p>
-          <a class="btn btn-secondary" href="{{ url_for('admin_gallery') }}">Manage Gallery</a>
+          <a class="btn btn-secondary" href="{{ url_for('admin.admin_gallery') }}">Manage Gallery</a>
         </article>
 
         <article class="action-card">
           <h3><span aria-hidden="true">📚</span> Course Manager</h3>
           <p>Publish new courses, edit pricing, and manage what appears on the public catalog.</p>
-          <a class="btn btn-secondary" href="{{ url_for('admin_courses') }}">Manage Courses</a>
+          <a class="btn btn-secondary" href="{{ url_for('admin.admin_courses') }}">Manage Courses</a>
         </article>
 
       </div>
@@ -115,7 +115,7 @@
                 <h4>{{ u.full_name or "Unnamed User" }}</h4>
                 {% if u.email %}<p>{{ u.email }}</p>{% else %}<p style="font-family: monospace; font-size: var(--text-xs); color: var(--text-subtle);">{{ u.id[:8] }}…</p>{% endif %}
                 <span class="badge-role" style="{% if u.role == 'student' %}background: var(--warning-bg); color: var(--warning);{% endif %}">{{ u.role }}</span>
-                <form class="role-form" method="POST" action="{{ url_for('admin_update_role', user_id=u.id) }}">
+                <form class="role-form" method="POST" action="{{ url_for('admin.admin_update_role', user_id=u.id) }}">
                   <select name="role" required>
                     <option value="student" {% if u.role == 'student' %}selected{% endif %}>Student</option>
                     <option value="employee" {% if u.role == 'employee' %}selected{% endif %}>Employee</option>

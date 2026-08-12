@@ -42,7 +42,7 @@
           <h3 class="heading-card" style="margin: 0;">Course Details</h3>
         </div>
         <div style="padding: var(--space-6);">
-          <form class="contact-form" method="POST" action="{{ url_for('admin_courses') }}">
+          <form class="contact-form" method="POST" action="{{ url_for('admin.admin_courses') }}">
             <div class="form-group">
               <label for="title">Course Title</label>
               <input id="title" name="title" type="text" placeholder="e.g. Advanced Python Workshop" required />
@@ -130,7 +130,7 @@
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="font-weight: 700; color: var(--primary-text);">₹{{ c.price }}</span>
-                <form method="POST" action="{{ url_for('admin_delete_course', course_id=c.id) }}"
+                <form method="POST" action="{{ url_for('admin.admin_delete_course', course_id=c.id) }}"
                       onsubmit="return confirm('Delete this course?');">
                   <button class="btn btn-ghost" type="submit" style="color: var(--red);">Delete</button>
                 </form>

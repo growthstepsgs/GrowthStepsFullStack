@@ -17,10 +17,10 @@
   </div>
   <ul>
     
-    <li><a href="{{ url_for('employee_dashboard') }}" class="active-page">📋 Dashboard</a></li>
-    <li><a href="{{ url_for('employee_requests') }}">📝 My Requests</a></li>
-    <li><a href="{{ url_for('employee_sheets') }}">📊 Employee Sheets</a></li>
-    <li><a href="{{ url_for('logout') }}">🚪 Logout</a></li>
+    <li><a href="{{ url_for('employee.employee_dashboard') }}" class="active-page">📋 Dashboard</a></li>
+    <li><a href="{{ url_for('employee.employee_requests') }}">📝 My Requests</a></li>
+    <li><a href="{{ url_for('employee.employee_sheets') }}">📊 Employee Sheets</a></li>
+    <li><a href="{{ url_for('auth.logout') }}">🚪 Logout</a></li>
   </ul>
 </div>
 <div class="overlay" id="overlay"></div>
@@ -47,8 +47,8 @@
     <div class="nav-row">
       <nav aria-label="Main navigation">
         <ul>
-          <li><a href="{{ url_for('employee_dashboard') }}">Dashboard</a></li>
-          <li><a href="{{ url_for('logout') }}">Logout</a></li>
+          <li><a href="{{ url_for('employee.employee_dashboard') }}">Dashboard</a></li>
+          <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
         </ul>
       </nav>
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode" title="Toggle theme">
@@ -87,7 +87,7 @@
       <div class="about-grid" style="grid-template-columns: 1fr;">
         <article class="info-card reveal visible">
           <h4>➕ New Request</h4>
-          <form method="POST" action="{{ url_for('employee_requests') }}" class="form">
+          <form method="POST" action="{{ url_for('employee.employee_requests') }}" class="form">
             <label for="title">Title</label>
             <input type="text" id="title" name="title" placeholder="e.g. Leave request, budget approval, tool access…" required maxlength="120" />
 
@@ -136,8 +136,8 @@
   <div class="container footer-box">
     <span>© 2026 GS-Growth Steps · Vijay Sarathi R S</span>
     <div class="footer-links">
-      <a href="{{ url_for('home') }}">Home</a>
-      <a href="{{ url_for('logout') }}">Logout</a>
+      <a href="{{ url_for('public.home') }}">Home</a>
+      <a href="{{ url_for('auth.logout') }}">Logout</a>
     </div>
   </div>
 </footer>

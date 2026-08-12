@@ -124,7 +124,7 @@
       <!-- Form -->
       <div class="progress-form-wrap">
         <h3>{% if today_entry %}Update{% else %}Submit{% endif %} Today's Progress</h3>
-        <form method="POST" action="{{ url_for('employee_progress') }}">
+        <form method="POST" action="{{ url_for('employee.employee_progress') }}">
           <div class="form-group">
             <label for="work_date">Date</label>
             <input type="date" id="work_date" name="work_date" value="{{ today_entry.work_date if today_entry else today }}" max="{{ today }}" required>

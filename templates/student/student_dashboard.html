@@ -128,7 +128,7 @@
                         {% if item.type == 'video' %}▶️{% elif item.type == 'ppt' %}📄{% elif item.type == 'assignment' %}📝{% else %}📦{% endif %}
                       </div>
                       <h5>{{ item.title }}</h5>
-                      <a href="{{ url_for('course_content', course_id=e.course_id, content_id=item.id) }}">
+                      <a href="{{ url_for('student.course_content', course_id=e.course_id, content_id=item.id) }}">
                         {% if item.type == 'video' %}Watch Video →{% elif item.type == 'ppt' %}Download PPT →{% else %}Open →{% endif %}
                       </a>
                     </div>
@@ -178,7 +178,7 @@
                 <h4>{{ course.title }}</h4>
                 <p>{{ course.description[:80] }}{% if course.description|length > 80 %}...{% endif %}</p>
               </div>
-              <form method="POST" action="{{ url_for('enroll_course', course_id=course.id) }}">
+              <form method="POST" action="{{ url_for('student.enroll_course', course_id=course.id) }}">
                 <button class="btn btn-primary" type="submit">Enroll</button>
               </form>
             </div>

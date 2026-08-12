@@ -43,7 +43,7 @@
       {% endwith %}
 
       <article class="card reveal">
-        <form class="contact-form" method="POST" action="{{ url_for('admin_gallery') }}" enctype="multipart/form-data">
+        <form class="contact-form" method="POST" action="{{ url_for('admin.admin_gallery') }}" enctype="multipart/form-data">
           <div class="form-group">
             <label for="image">Image File</label>
             <input id="image" name="image" type="file" accept="image/*" required />

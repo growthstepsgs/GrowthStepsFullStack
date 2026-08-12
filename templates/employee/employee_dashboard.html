@@ -200,14 +200,14 @@
           <div class="dash-icon" aria-hidden="true">✅</div>
           <h3>Daily Progress</h3>
           <p>Log your daily tasks, hours worked, blockers, and plans. Keep your manager in the loop.</p>
-          <a class="btn btn-primary" href="{{ url_for('employee_progress') }}">Log Progress</a>
+          <a class="btn btn-primary" href="{{ url_for('employee.employee_progress') }}">Log Progress</a>
         </article>
         <!-- Sheets -->
         <article class="dash-card reveal">
           <div class="dash-icon" aria-hidden="true">📊</div>
           <h3>Employee Sheets</h3>
           <p>Access and edit company spreadsheets directly from the dashboard.</p>
-          <a class="btn btn-primary" href="{{ url_for('employee_sheets') }}">Open Sheets</a>
+          <a class="btn btn-primary" href="{{ url_for('employee.employee_sheets') }}">Open Sheets</a>
         </article>
 
         <!-- Requests -->
@@ -215,7 +215,7 @@
           <div class="dash-icon" aria-hidden="true">📝</div>
           <h3>Requests & Proposals</h3>
           <p>Submit a proposal or leave request and track admin responses.</p>
-          <a class="btn btn-secondary" href="{{ url_for('employee_requests') }}">Go to My Requests</a>
+          <a class="btn btn-secondary" href="{{ url_for('employee.employee_requests') }}">Go to My Requests</a>
         </article>
 
         <!-- Announcements -->

@@ -45,38 +45,38 @@
     <nav aria-label="Sidebar">
       <ul>
         {% if session.get('role') == 'admin' %}
-          <li><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
-          <li><a href="{{ url_for('admin_requests') }}">Requests</a></li>
-          <li><a href="{{ url_for('admin_gallery') }}">Manage Gallery</a></li>
-          <li><a href="{{ url_for('admin_courses') }}">Manage Courses</a></li>
-          <li><a href="{{ url_for('admin_enrollments') }}">Manage Enrollments</a></li>
-          <li><a href="{{ url_for('admin_course_contents') }}">Manage Course Content</a></li>
-          <li><a href="{{ url_for('reviews') }}">Reviews</a></li>
-          <li><a href="{{ url_for('logout') }}">Logout</a></li>
+          <li><a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a></li>
+          <li><a href="{{ url_for('admin.admin_requests') }}">Requests</a></li>
+          <li><a href="{{ url_for('admin.admin_gallery') }}">Manage Gallery</a></li>
+          <li><a href="{{ url_for('admin.admin_courses') }}">Manage Courses</a></li>
+          <li><a href="{{ url_for('admin.admin_enrollments') }}">Manage Enrollments</a></li>
+          <li><a href="{{ url_for('admin.admin_course_contents') }}">Manage Course Content</a></li>
+          <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
+          <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
 
         {% elif session.get('role') == 'employee' %}
-          <li><a href="{{ url_for('employee_dashboard') }}">Dashboard</a></li>
-          <li><a href="{{ url_for('employee_requests') }}">My Requests</a></li>
-          <li><a href="{{ url_for('employee_sheets') }}">Employee Sheets</a></li>
-          <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
-          <li><a href="{{ url_for('reviews') }}">Reviews</a></li>
-          <li><a href="{{ url_for('logout') }}">Logout</a></li>
+          <li><a href="{{ url_for('employee.employee_dashboard') }}">Dashboard</a></li>
+          <li><a href="{{ url_for('employee.employee_requests') }}">My Requests</a></li>
+          <li><a href="{{ url_for('employee.employee_sheets') }}">Employee Sheets</a></li>
+          <li><a href="{{ url_for('public.gallery') }}">Gallery</a></li>
+          <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
+          <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
         
         {% elif session.get('role') == 'student' %}
-          <li><a href="{{ url_for('student_dashboard') }}">Dashboard</a></li>
-          <li><a href="{{ url_for('available_courses') }}">Courses</a></li>
-          <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
-          <li><a href="{{ url_for('reviews') }}">Reviews</a></li>
-          <li><a href="{{ url_for('logout') }}">Logout</a></li>
+          <li><a href="{{ url_for('student.student_dashboard') }}">Dashboard</a></li>
+          <li><a href="{{ url_for('public.available_courses') }}">Courses</a></li>
+          <li><a href="{{ url_for('public.gallery') }}">Gallery</a></li>
+          <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
+          <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
         
 
         {% else %}
-          <li><a href="{{ url_for('home') }}">Home</a></li>
-          <li><a href="{{ url_for('available_courses') }}">Courses</a></li>
-          <li><a href="{{ url_for('services') }}">Services</a></li>
-          <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
-          <li><a href="{{ url_for('reviews') }}">Reviews</a></li>
-          <li><a href="{{ url_for('login') }}">Login</a></li>
+          <li><a href="{{ url_for('public.home') }}">Home</a></li>
+          <li><a href="{{ url_for('public.available_courses') }}">Courses</a></li>
+          <li><a href="{{ url_for('public.services') }}">Services</a></li>
+          <li><a href="{{ url_for('public.gallery') }}">Gallery</a></li>
+          <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
+          <li><a href="{{ url_for('auth.login') }}">Login</a></li>
         {% endif %}
       </ul>
 
@@ -88,7 +88,7 @@
   <!-- Header -->
   <header>
     <div class="container nav">
-      <a class="brand" href="{{ url_for('home') }}" aria-label="Growth Steps Home">
+      <a class="brand" href="{{ url_for('public.home') }}" aria-label="Growth Steps Home">
         <img class="brand-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="Growth Steps" />
       </a>
 
@@ -96,33 +96,33 @@
         <nav aria-label="Primary">
           <ul>
             {% if session.get('role') == 'admin' %}
-              <li><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
-              <li><a href="{{ url_for('admin_requests') }}">Requests</a></li>
-              <li><a href="{{ url_for('admin_gallery') }}">Manage Gallery</a></li>
-              <li><a href="{{ url_for('admin_courses') }}">Manage Courses</a></li>
-              <li><a href="{{ url_for('admin_enrollments') }}">Manage Enrollments</a></li>
-              <li><a href="{{ url_for('admin_course_contents') }}">Manage Course Content</a></li>
-              <li><a href="{{ url_for('reviews') }}">Reviews</a></li>
+              <li><a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a></li>
+              <li><a href="{{ url_for('admin.admin_requests') }}">Requests</a></li>
+              <li><a href="{{ url_for('admin.admin_gallery') }}">Manage Gallery</a></li>
+              <li><a href="{{ url_for('admin.admin_courses') }}">Manage Courses</a></li>
+              <li><a href="{{ url_for('admin.admin_enrollments') }}">Manage Enrollments</a></li>
+              <li><a href="{{ url_for('admin.admin_course_contents') }}">Manage Course Content</a></li>
+              <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
 
             {% elif session.get('role') == 'employee' %}
-              <li><a href="{{ url_for('employee_dashboard') }}">Dashboard</a></li>
-              <li><a href="{{ url_for('employee_requests') }}">My Requests</a></li>
-              <li><a href="{{ url_for('employee_sheets') }}">Employee Sheets</a></li>
-              <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
-              <li><a href="{{ url_for('reviews') }}">Reviews</a></li>
+              <li><a href="{{ url_for('employee.employee_dashboard') }}">Dashboard</a></li>
+              <li><a href="{{ url_for('employee.employee_requests') }}">My Requests</a></li>
+              <li><a href="{{ url_for('employee.employee_sheets') }}">Employee Sheets</a></li>
+              <li><a href="{{ url_for('public.gallery') }}">Gallery</a></li>
+              <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
 
             {% elif session.get('role') == 'student' %}
-              <li><a href="{{ url_for('student_dashboard') }}">Dashboard</a></li>
-              <li><a href="{{ url_for('available_courses') }}">Courses</a></li>
-              <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
-              <li><a href="{{ url_for('reviews') }}">Reviews</a></li>
+              <li><a href="{{ url_for('student.student_dashboard') }}">Dashboard</a></li>
+              <li><a href="{{ url_for('public.available_courses') }}">Courses</a></li>
+              <li><a href="{{ url_for('public.gallery') }}">Gallery</a></li>
+              <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
 
             {% else %}
-              <li><a href="{{ url_for('home') }}">Home</a></li>
-              <li><a href="{{ url_for('available_courses') }}">Courses</a></li>
-              <li><a href="{{ url_for('services') }}">Services</a></li>
-              <li><a href="{{ url_for('gallery') }}">Gallery</a></li>
-              <li><a href="{{ url_for('reviews') }}">Reviews</a></li>
+              <li><a href="{{ url_for('public.home') }}">Home</a></li>
+              <li><a href="{{ url_for('public.available_courses') }}">Courses</a></li>
+              <li><a href="{{ url_for('public.services') }}">Services</a></li>
+              <li><a href="{{ url_for('public.gallery') }}">Gallery</a></li>
+              <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
             {% endif %}
           </ul>
         </nav>
@@ -130,9 +130,9 @@
         <div class="nav-divider" aria-hidden="true"></div>
 
         {% if session.get('user_id') %}
-          <a href="{{ url_for('logout') }}" class="btn btn-ghost">Logout</a>
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost">Logout</a>
         {% else %}
-          <a href="{{ url_for('login') }}" class="btn btn-ghost">Sign in</a>
+          <a href="{{ url_for('auth.login') }}" class="btn btn-ghost">Sign in</a>
         {% endif %}
 
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle light or dark mode">
@@ -169,9 +169,9 @@
     <div class="container footer-inner">
       <span class="footer-brand">&copy; 2026 Growth Steps. All rights reserved.</span>
       <nav class="footer-links" aria-label="Footer">
-        <a href="{{ url_for('home') }}">Home</a>
-        <a href="{{ url_for('available_courses') }}">Courses</a>
-        <a href="{{ url_for('services') }}">Services</a>
+        <a href="{{ url_for('public.home') }}">Home</a>
+        <a href="{{ url_for('public.available_courses') }}">Courses</a>
+        <a href="{{ url_for('public.services') }}">Services</a>
         <a href="mailto:rsvijaysarathi123@gmail.com">Email</a>
       </nav>
     </div>

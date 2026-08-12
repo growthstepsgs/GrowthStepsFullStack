@@ -30,7 +30,7 @@
     {% if session.get('user_id') %}
     <div class="review-form-wrap reveal">
       <h3 class="heading-card">Write a Review</h3>
-      <form method="POST" action="{{ url_for('reviews') }}" class="review-form">
+      <form method="POST" action="{{ url_for('public.reviews') }}" class="review-form">
         <div class="form-group">
           <label>Rating</label>
           <!-- 
@@ -56,7 +56,7 @@
     </div>
     {% else %}
     <div class="review-login-cta reveal">
-      <p><a href="{{ url_for('login') }}" class="btn btn-primary">Log in</a> to share your experience.</p>
+      <p><a href="{{ url_for('auth.login') }}" class="btn btn-primary">Log in</a> to share your experience.</p>
     </div>
     {% endif %}
 
@@ -85,13 +85,13 @@
 
         {% if session.get('role') == 'admin' %}
         <div class="review-admin-actions">
-          <form method="POST" action="{{ url_for('admin_pin_review', review_id=review.id) }}" class="inline-form">
+          <form method="POST" action="{{ url_for('admin.admin_pin_review', review_id=review.id) }}" class="inline-form">
             <input type="hidden" name="is_pinned" value="{{ 'false' if review.is_pinned else 'true' }}">
             <button type="submit" class="btn btn-ghost btn-sm">
               {% if review.is_pinned %}Unpin{% else %}Pin to top{% endif %}
             </button>
           </form>
-          <form method="POST" action="{{ url_for('admin_delete_review', review_id=review.id) }}" class="inline-form" onsubmit="return confirm('Delete this review permanently?');">
+          <form method="POST" action="{{ url_for('admin.admin_delete_review', review_id=review.id) }}" class="inline-form" onsubmit="return confirm('Delete this review permanently?');">
             <button type="submit" class="btn btn-ghost btn-sm delete-btn">Delete</button>
           </form>
         </div>
