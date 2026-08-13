@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if profile.username %}Edit Profile{% else %}Complete Profile{% endif %} | Growth Steps{% endblock %}
+{% block description %}Manage your student profile.{% endblock %}
+
+{% block styles %}
+<style>
+  .profile-wrap {
+    max-width: 520px;
+    margin: 40px auto;
+    padding: 32px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+  }
+  .profile-wrap h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    font-size: var(--text-2xl);
+    font-weight: 800;
+  }
+  .avatar-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--border);
+    display: block;
+    margin: 0 auto 24px;
+  }
+  .avatar-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--bg-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    margin: 0 auto 24px;
+    border: 3px solid var(--border);
+  }
+  .form-group { margin-bottom: 20px; }
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: var(--text-sm);
+    color: var(--text);
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--bg);
+    color: var(--text);
+    font-size: var(--text-base);
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  .form-group small {
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+  }
+  .btn-save {
+    width: 100%;
+    padding: 12px;
+    background: var(--text);
+    color: var(--bg);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-weight: 700;
+    cursor: pointer;
+    font-size: var(--text-base);
+  }
+  .btn-save:hover { opacity: 0.9; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-wrap reveal">
+  <h2>{% if profile.username %}Edit Profile{% else %}Complete Your Profile{% endif %}</h2>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div style="margin-bottom: 20px;">
+      {% for category, message in messages %}
+        <div style="padding: 12px 16px; border-radius: 10px; margin-bottom: 10px; font-size: 14px; font-weight: 600;
+          {% if category == 'error' %}background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;
+          {% elif category == 'success' %}background: #dcfce7; color: #166534; border: 1px solid #86efac;
+          {% else %}background: #e0f2fe; color: #075985; border: 1px solid #7dd3fc;{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+  {% if profile.avatar_url %}
+    <img src="{{ profile.avatar_url }}" alt="Avatar" class="avatar-preview">
+  {% else %}
+    <div class="avatar-placeholder">👤</div>
+  {% endif %}
+
+  <form method="POST" action="{{ url_for('student.student_profile') }}" enctype="multipart/form-data">
+    <div class="form-group">
+      <label>Profile Photo</label>
+      <input type="file" name="avatar" accept="image/*">
+      <small>JPG, PNG, WEBP, GIF — max 2MB</small>
+    </div>
+
+    <div class="form-group">
+      <label>Username *</label>
+      <input type="text" name="username" value="{{ profile.username or '' }}" required placeholder="e.g. vijay_dev">
+    </div>
+
+    <div class="form-group">
+      <label>Phone Number</label>
+      <input type="tel" name="phone" value="{{ profile.phone or '' }}" placeholder="+91 98765 43210">
+    </div>
+
+    <div class="form-group">
+      <label>College / Institution</label>
+      <input type="text" name="college" value="{{ profile.college or '' }}" placeholder="Anna University">
+    </div>
+
+    <div class="form-group">
+      <label>Gender</label>
+      <select name="gender">
+        <option value="">Select</option>
+        <option value="male" {% if profile.gender == 'male' %}selected{% endif %}>Male</option>
+        <option value="female" {% if profile.gender == 'female' %}selected{% endif %}>Female</option>
+        <option value="other" {% if profile.gender == 'other' %}selected{% endif %}>Other</option>
+        <option value="prefer_not_to_say" {% if profile.gender == 'prefer_not_to_say' %}selected{% endif %}>Prefer not to say</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Bio</label>
+      <textarea name="bio" rows="3" placeholder="A short bio about yourself...">{{ profile.bio or '' }}</textarea>
+    </div>
+
+    <button type="submit" class="btn-save">
+      {% if profile.username %}Update Profile{% else %}Save Profile{% endif %}
+    </button>
+  </form>
+</div>
+{% endblock %}

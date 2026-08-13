@@ -37,11 +37,7 @@ def login():
             return redirect(url_for("admin.admin_dashboard"))
 
         if not supabase:
-            flash(
-                "Supabase isn't configured on the server yet — see the "
-                "terminal log for what's missing.",
-                "error",
-            )
+            flash("Supabase isn't configured.", "error")
             return redirect(url_for("auth.login"))
 
         try:
@@ -62,18 +58,20 @@ def login():
                 supabase.table("profiles")
                 .select("role")
                 .eq("id", result.user.id)
-                .single()
                 .execute()
             )
             if prof.data:
-                role = prof.data.get("role", "student")
+                role = prof.data[0].get("role", "student")
             else:
                 if supabase_admin:
-                    supabase_admin.table("profiles").upsert({
-                        "id": result.user.id,
-                        "email": email,
-                        "role": "student",
-                    }).execute()
+                    try:
+                        supabase_admin.table("profiles").upsert({
+                            "id": result.user.id,
+                            "email": email,
+                            "role": "student",
+                        }).execute()
+                    except Exception as exc:
+                        print(f"[PROFILE CREATE FAIL] login user={result.user.id} error={exc}")
         except Exception:
             pass
 
@@ -102,11 +100,7 @@ def signup():
             return redirect(url_for("auth.signup"))
 
         if not supabase:
-            flash(
-                "Supabase isn't configured on the server yet — see the "
-                "terminal log for what's missing.",
-                "error",
-            )
+            flash("Supabase isn't configured.", "error")
             return redirect(url_for("auth.signup"))
 
         try:
@@ -128,8 +122,8 @@ def signup():
                     "email": email,
                     "role": "student",
                 }).execute()
-            except Exception:
-                pass
+            except Exception as exc:
+                print(f"[PROFILE CREATE FAIL] signup user={user.id} error={exc}")
 
         flash("Account created! Check your email to confirm, then log in.", "success")
         return redirect(url_for("auth.login"))
@@ -219,25 +213,29 @@ def auth_callback():
             supabase.table("profiles")
             .select("role")
             .eq("id", user_id)
-            .single()
             .execute()
         )
         if prof.data:
-            role = prof.data.get("role", "student")
+            role = prof.data[0].get("role", "student")
             profile_exists = True
     except Exception:
         pass
 
-    if supabase_admin and not profile_exists:
-        try:
-            supabase_admin.table("profiles").upsert({
-                "id": user_id,
-                "full_name": full_name,
-                "email": email,
-                "role": "student",
-            }).execute()
-        except Exception as exc:
-            print(f"[WARN] Fallback profile creation failed: {exc}")
+    if not profile_exists:
+        if supabase_admin:
+            try:
+                supabase_admin.table("profiles").upsert({
+                    "id": user_id,
+                    "full_name": full_name,
+                    "email": email,
+                    "role": "student",
+                }).execute()
+            except Exception as exc:
+                print(f"[PROFILE CREATE FAIL] user={user_id} error={exc}")
+                flash("Logged in, but profile sync had an issue.", "warning")
+        else:
+            print("[PROFILE CREATE FAIL] supabase_admin is None")
+            flash("Logged in, but profile sync is unavailable.", "warning")
 
     if supabase_admin:
         try:

@@ -15,6 +15,7 @@ ADMIN_PASSWORD = "v2v24123@v2v24123"
 VALID_STATUSES = {"pending", "in_review", "approved", "rejected"}
 
 GALLERY_BUCKET = "Gallery"
+AVATARS_BUCKET = "avatars" 
 ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "gif"}
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-me")

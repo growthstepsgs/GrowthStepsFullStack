@@ -96,7 +96,32 @@
   <div class="container">
     <div class="student-hero-inner reveal">
       <div class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Student Dashboard</div>
-      <h1 id="student-heading">Welcome, <span>{{ email.split('@')[0] if email else 'Learner' }}</span></h1>
+
+      <!-- Instagram-style profile header -->
+      <div style="display: flex; align-items: center; gap: 16px; margin: 20px 0;">
+        {% if profile and profile.avatar_url %}
+          <a href="{{ url_for('student.student_profile') }}" style="text-decoration: none; flex-shrink: 0;">
+            <img src="{{ profile.avatar_url }}" alt="{{ profile.username or 'You' }}"
+              style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border);">
+          </a>
+        {% else %}
+          <a href="{{ url_for('student.student_profile') }}" style="text-decoration: none; flex-shrink: 0;">
+            <div style="width: 72px; height: 72px; border-radius: 50%; background: var(--bg-muted); display: flex; align-items: center; justify-content: center; font-size: 28px; border: 3px solid var(--border);">👤</div>
+          </a>
+        {% endif %}
+        <div>
+          <h1 id="student-heading" style="margin-bottom: 2px; font-size: clamp(var(--text-xl), 3vw, var(--text-3xl));">
+            {{ profile.username or (email.split('@')[0] if email else 'Learner') }}
+          </h1>
+          <p style="margin: 0; color: var(--text-muted); font-size: var(--text-sm);">
+            {{ profile.college or '' }}
+          </p>
+          <a href="{{ url_for('student.student_profile') }}" style="font-size: var(--text-xs); color: var(--primary-text); text-decoration: none; font-weight: 600;">
+            Edit profile →
+          </a>
+        </div>
+      </div>
+
       <p class="body">Manage your courses, track enrollments, and access learning materials.</p>
     </div>
   </div>

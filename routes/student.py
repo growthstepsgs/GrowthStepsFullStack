@@ -1,9 +1,12 @@
+import uuid
 from flask import (
     Blueprint, render_template, request, redirect,
     url_for, session, flash, abort
 )
+from werkzeug.utils import secure_filename
 from extensions import supabase, supabase_admin
-from utils import login_required, _get_current_role
+from config import AVATARS_BUCKET
+from utils import login_required, _get_current_role, _profile_complete, _allowed_image
 
 bp = Blueprint("student", __name__)
 
@@ -20,12 +23,17 @@ def student_dashboard():
     if role == "employee":
         return redirect(url_for("employee.employee_dashboard"))
 
-    user_id = session.get("user_id")
+    # Profile gate
+    if not _profile_complete(user_id):
+        flash("Complete your profile to continue.", "info")
+        return redirect(url_for("student.student_profile"))
+
     client = supabase_admin or supabase
 
     all_courses = []
     enrollments = []
     course_contents = {}
+    profile = {}
 
     if client:
         try:
@@ -52,6 +60,13 @@ def student_dashboard():
             except Exception:
                 pass
 
+        try:
+            res = client.table("profiles").select("*").eq("id", user_id).execute()
+            if res.data:
+                profile = res.data[0]
+        except Exception:
+            pass
+
     enrolled_ids = {e["course_id"] for e in enrollments}
     available_courses = [c for c in all_courses if c["id"] not in enrolled_ids]
     approved_enrollments = [e for e in enrollments if e.get("status") == "approved"]
@@ -66,11 +81,103 @@ def student_dashboard():
     return render_template(
         "student/student_dashboard.html",
         email=session.get("user_email"),
+        profile=profile,
         approved_enrollments=approved_enrollments,
         pending_enrollments=pending_enrollments,
         available_courses=available_courses,
         course_contents=course_contents,
     )
+
+
+@bp.route("/dashboard/student/profile", methods=["GET", "POST"])
+@login_required
+def student_profile():
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("auth.login"))
+
+    client = supabase_admin
+    profile = {}
+
+    if client:
+        try:
+            res = client.table("profiles").select("*").eq("id", user_id).execute()
+            if res.data:
+                profile = res.data[0]
+        except Exception:
+            pass
+
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        phone = request.form.get("phone", "").strip()
+        college = request.form.get("college", "").strip()
+        gender = request.form.get("gender", "").strip()
+        bio = request.form.get("bio", "").strip()
+
+        if not username:
+            flash("Username is required.", "error")
+            return render_template("student/student_profile.html", profile=profile)
+
+        if not client:
+            flash("Server misconfiguration: service key is missing. Contact admin.", "error")
+            return render_template("student/student_profile.html", profile=profile)
+
+        update_data = {
+            "id": user_id,
+            "username": username,
+            "phone": phone or None,
+            "college": college or None,
+            "bio": bio or None,
+            "full_name": profile.get("full_name") or "",   # <-- FIX: preserve full_name
+            "email": profile.get("email") or session.get("user_email") or "",  # <-- FIX: preserve email
+        }
+
+        if gender in ("male", "female", "other", "prefer_not_to_say"):
+            update_data["gender"] = gender
+        else:
+            update_data["gender"] = None
+
+        # Handle avatar upload (optional)
+        file = request.files.get("avatar")
+        if file and file.filename and _allowed_image(file.filename):
+            ext = secure_filename(file.filename).rsplit(".", 1)[1].lower()
+            storage_path = f"{user_id}_{uuid.uuid4().hex}.{ext}"
+
+            try:
+                file_bytes = file.read()
+
+                old_path = profile.get("avatar_storage_path")
+                if old_path:
+                    try:
+                        client.storage.from_(AVATARS_BUCKET).remove([old_path])
+                    except Exception:
+                        pass
+
+                client.storage.from_(AVATARS_BUCKET).upload(
+                    storage_path,
+                    file_bytes,
+                    {"content-type": file.mimetype},
+                )
+                public_url = client.storage.from_(AVATARS_BUCKET).get_public_url(storage_path)
+
+                update_data["avatar_url"] = public_url
+                update_data["avatar_storage_path"] = storage_path
+            except Exception as exc:
+                flash(f"Avatar upload failed: {exc}", "error")
+                # Continue to save the rest of the profile — do NOT return here
+
+        try:
+            client.table("profiles").upsert(update_data, on_conflict="id").execute()
+            session["profile_complete"] = True
+            flash("Profile saved successfully.", "success")
+            return redirect(url_for("student.student_dashboard"))
+        except Exception as exc:
+            print(f"[PROFILE SAVE ERROR] {exc}")
+            flash(f"Could not save profile: {exc}", "error")
+            profile.update(update_data)
+            return render_template("student/student_profile.html", profile=profile)
+
+    return render_template("student/student_profile.html", profile=profile)
 
 
 @bp.route("/enroll/<course_id>", methods=["POST"])
@@ -135,8 +242,9 @@ def course_content(course_id, content_id):
             res = client.table("course_contents").select("*") \
                 .eq("id", content_id) \
                 .eq("course_id", course_id) \
-                .single().execute()
-            content = res.data
+                .execute()
+            if res.data:
+                content = res.data[0]
         except Exception:
             pass
 

@@ -9,5 +9,6 @@ if config.SUPABASE_URL and config.SUPABASE_KEY:
 
 if config.SUPABASE_URL and config.SUPABASE_SERVICE_KEY:
     supabase_admin = create_client(config.SUPABASE_URL, config.SUPABASE_SERVICE_KEY)
-elif supabase:
-    supabase_admin = supabase
+else:
+    supabase_admin = None
+    print("🚨 CRITICAL: SUPABASE_SERVICE_KEY is missing. Profile saves will fail.")
