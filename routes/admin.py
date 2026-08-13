@@ -15,14 +15,19 @@ bp = Blueprint("admin", __name__)
 @bp.route("/dashboard/admin")
 @admin_required
 def admin_dashboard():
-    users = []
     client = supabase_admin or supabase
+
+    profiles = []
     if client:
         try:
-            res = client.table("profiles").select("*").order("created_at", desc=True).execute()
-            users = res.data or []
+            res = client.table("profiles").select("role").execute()
+            profiles = res.data or []
         except Exception:
-            users = []
+            pass
+
+    student_count = sum(1 for p in profiles if p.get("role") == "student")
+    employee_count = sum(1 for p in profiles if p.get("role") == "employee")
+    total_users = len(profiles)
 
     course_count = 0
     if client:
@@ -32,39 +37,77 @@ def admin_dashboard():
         except Exception:
             pass
 
-    student_count = sum(1 for u in users if u.get("role") == "student")
-    employee_count = sum(1 for u in users if u.get("role") == "employee")
-
     return render_template(
         "admin/admin_dashboard.html",
         email=session.get("user_email"),
-        users=users,
+        total_users=total_users,
         course_count=course_count,
         student_count=student_count,
         employee_count=employee_count,
     )
 
 
-@bp.route("/dashboard/admin/users/<user_id>/role", methods=["POST"])
+@bp.route("/dashboard/admin/students")
 @admin_required
-def admin_update_role(user_id):
-    new_role = request.form.get("role", "").strip()
-    if new_role not in ("student", "employee"):
-        flash("Invalid role.", "error")
-        return redirect(url_for("admin.admin_dashboard"))
-
+def admin_all_students():
     client = supabase_admin or supabase
-    if not client:
-        flash("Supabase isn't configured.", "error")
-        return redirect(url_for("admin.admin_dashboard"))
 
-    try:
-        client.table("profiles").update({"role": new_role}).eq("id", user_id).execute()
-        flash(f"Role updated to {new_role}.", "success")
-    except Exception as exc:
-        flash(f"Could not update role: {exc}", "error")
+    profiles = []
+    if client:
+        try:
+            res = client.table("profiles").select("*").order("created_at", desc=True).execute()
+            profiles = res.data or []
+        except Exception:
+            pass
 
-    return redirect(url_for("admin.admin_dashboard"))
+    courses = {}
+    if client:
+        try:
+            res = client.table("courses").select("id, title").execute()
+            for c in (res.data or []):
+                courses[c["id"]] = c.get("title", "Untitled")
+        except Exception:
+            pass
+
+    enrollments = []
+    enrollments_by_student = {}
+    if client:
+        try:
+            res = client.table("enrollments").select("*").execute()
+            enrollments = res.data or []
+
+            student_ids = list({e["student_id"] for e in enrollments if e.get("student_id")})
+            names = {}
+            if student_ids:
+                r = client.table("profiles").select("id, full_name, email, username").in_("id", student_ids).execute()
+                for p in (r.data or []):
+                    names[p["id"]] = {
+                        "name": p.get("full_name") or p.get("username") or p.get("email") or "Unknown",
+                        "email": p.get("email", ""),
+                        "username": p.get("username", "")
+                    }
+
+            for e in enrollments:
+                e["student_name"] = names.get(e.get("student_id"), {}).get("name", "Unknown")
+                e["student_email"] = names.get(e.get("student_id"), {}).get("email", "")
+                e["course_title"] = courses.get(e.get("course_id"), "Unknown")
+                sid = e.get("student_id")
+                if sid:
+                    enrollments_by_student.setdefault(sid, []).append(e)
+        except Exception as exc:
+            print(f"admin_all_students enrollments failed: {exc}")
+
+    total_students = len([p for p in profiles if p.get("role") == "student"])
+    total_employees = len([p for p in profiles if p.get("role") == "employee"])
+
+    return render_template(
+        "admin/all_login_and_enrollment.html",
+        email=session.get("user_email"),
+        profiles=profiles,
+        enrollments_by_student=enrollments_by_student,
+        total_students=total_students,
+        total_employees=total_employees,
+    )
 
 
 @bp.route("/dashboard/admin/enrollments")
@@ -103,6 +146,47 @@ def admin_enrollments():
         email=session.get("user_email"),
         enrollments=enrollments,
     )
+
+
+@bp.route("/dashboard/admin/all-data")
+@admin_required
+def admin_all_data():
+    client = supabase_admin or supabase
+    profiles = []
+    if client:
+        try:
+            res = client.table("profiles").select("*").order("created_at", desc=True).execute()
+            profiles = res.data or []
+        except Exception:
+            pass
+
+    return render_template(
+        "admin/all_data.html",
+        email=session.get("user_email"),
+        profiles=profiles,
+    )
+
+
+@bp.route("/dashboard/admin/users/<user_id>/role", methods=["POST"])
+@admin_required
+def admin_update_role(user_id):
+    new_role = request.form.get("role", "").strip()
+    if new_role not in ("student", "employee", "admin"):
+        flash("Invalid role.", "error")
+        return redirect(url_for("admin.admin_all_students"))
+
+    client = supabase_admin or supabase
+    if not client:
+        flash("Supabase isn't configured.", "error")
+        return redirect(url_for("admin.admin_all_students"))
+
+    try:
+        client.table("profiles").update({"role": new_role}).eq("id", user_id).execute()
+        flash(f"Role updated to {new_role}.", "success")
+    except Exception as exc:
+        flash(f"Could not update role: {exc}", "error")
+
+    return redirect(url_for("admin.admin_all_students"))
 
 
 @bp.route("/dashboard/admin/enrollments/<enrollment_id>/update", methods=["POST"])

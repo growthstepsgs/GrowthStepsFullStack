@@ -46,10 +46,12 @@
       <ul>
         {% if session.get('role') == 'admin' %}
           <li><a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a></li>
+          <li><a href="{{ url_for('admin.admin_all_students') }}">Students</a></li>
+          <li><a href="{{ url_for('admin.admin_enrollments') }}">Enrollments</a></li>
+          <li><a href="{{ url_for('admin.admin_all_data') }}">All Data</a></li>
           <li><a href="{{ url_for('admin.admin_requests') }}">Requests</a></li>
           <li><a href="{{ url_for('admin.admin_gallery') }}">Manage Gallery</a></li>
           <li><a href="{{ url_for('admin.admin_courses') }}">Manage Courses</a></li>
-          <li><a href="{{ url_for('admin.admin_enrollments') }}">Manage Enrollments</a></li>
           <li><a href="{{ url_for('admin.admin_course_contents') }}">Manage Course Content</a></li>
           <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
           <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
@@ -98,12 +100,15 @@
           <ul>
             {% if session.get('role') == 'admin' %}
               <li><a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a></li>
+              <li><a href="{{ url_for('admin.admin_all_students') }}">Students</a></li>
+              <li><a href="{{ url_for('admin.admin_enrollments') }}">Enrollments</a></li>
+              <li><a href="{{ url_for('admin.admin_all_data') }}">All Data</a></li>
               <li><a href="{{ url_for('admin.admin_requests') }}">Requests</a></li>
               <li><a href="{{ url_for('admin.admin_gallery') }}">Manage Gallery</a></li>
               <li><a href="{{ url_for('admin.admin_courses') }}">Manage Courses</a></li>
-              <li><a href="{{ url_for('admin.admin_enrollments') }}">Manage Enrollments</a></li>
               <li><a href="{{ url_for('admin.admin_course_contents') }}">Manage Course Content</a></li>
               <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
+              <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
 
             {% elif session.get('role') == 'employee' %}
               <li><a href="{{ url_for('employee.employee_dashboard') }}">Dashboard</a></li>
