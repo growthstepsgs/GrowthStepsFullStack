@@ -5,88 +5,42 @@
 
 {% block styles %}
 <style>
-  .student-hero {
-    padding: var(--space-12) 0 var(--space-8);
-    background: var(--bg-muted);
-    border-bottom: 1px solid var(--border);
-  }
-  .student-hero-inner { max-width: 720px; }
-  .student-hero h1 {
-    font-size: clamp(var(--text-2xl), 4vw, var(--text-4xl));
-    font-weight: 800;
-    color: var(--text);
-    margin-bottom: var(--space-2);
-  }
-  .student-hero h1 span { color: var(--primary-text); }
-
-  .dash-section {
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-    padding: var(--space-6);
-    margin-bottom: var(--space-8);
-  }
-  .dash-section h2 {
-    font-size: var(--text-xl);
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: var(--space-4);
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-  }
-
+  .student-hero { padding: var(--space-12) 0 var(--space-8); background: var(--bg-muted); border-bottom: 1px solid var(--border); }
+  .student-hero-inner { max-width: 900px; }
+  .student-hero h1 { font-size: clamp(var(--text-2xl), 4vw, var(--text-4xl)); font-weight: 800; color: var(--text); margin-bottom: var(--space-2); }
+  .stats-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0; }
+  .stat-chip { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 10px 18px; display: flex; align-items: center; gap: 8px; }
+  .stat-chip strong { font-size: var(--text-lg); color: var(--text); }
+  .stat-chip span { font-size: var(--text-xs); color: var(--text-subtle); }
+  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
+  .badge-chip { background: var(--primary-light); color: var(--primary-text); padding: 6px 14px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .alert-banner { background: var(--warning-bg); border: 1px solid var(--warning); border-radius: var(--radius-lg); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; font-size: var(--text-sm); color: var(--warning); font-weight: 600; }
+  .dash-section { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: var(--space-6); margin-bottom: var(--space-8); }
+  .dash-section h2 { font-size: var(--text-xl); font-weight: 700; color: var(--text); margin-bottom: var(--space-4); display: flex; align-items: center; gap: var(--space-2); }
   .course-list { display: flex; flex-direction: column; gap: var(--space-4); }
-  .course-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-4);
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    transition: all var(--transition-fast);
-  }
+  .course-row { display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); transition: all var(--transition-fast); }
   .course-row:hover { border-color: var(--border-strong); }
   .course-row h4 { font-size: var(--text-base); font-weight: 600; color: var(--text); margin-bottom: var(--space-1); }
   .course-row p { font-size: var(--text-sm); color: var(--text-muted); }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    padding: var(--space-1) var(--space-3);
-    border-radius: var(--radius-full);
-    font-size: var(--text-xs);
-    font-weight: 700;
-    text-transform: uppercase;
-  }
+  .badge { display: inline-flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; }
   .badge-pending { background: var(--warning-bg); color: var(--warning); }
   .badge-approved { background: var(--success-bg); color: var(--success); }
   .badge-rejected { background: var(--red-light); color: var(--red); }
-
-  .content-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: var(--space-4);
-    margin-top: var(--space-4);
-    margin-left: var(--space-4);
-  }
-  .content-card {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-4);
-    transition: all var(--transition-fast);
-  }
+  .content-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-4); margin-top: var(--space-4); margin-left: var(--space-4); }
+  .content-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-4); transition: all var(--transition-fast); }
   .content-card:hover { border-color: var(--primary); box-shadow: var(--shadow-sm); }
   .content-card .type-icon { font-size: var(--text-2xl); margin-bottom: var(--space-2); }
   .content-card h5 { font-size: var(--text-sm); font-weight: 600; color: var(--text); margin-bottom: var(--space-2); }
   .content-card a { font-size: var(--text-xs); color: var(--primary-text); font-weight: 600; text-decoration: none; }
   .content-card a:hover { text-decoration: underline; }
-
   .locked { opacity: 0.6; }
   .empty-note { color: var(--text-subtle); font-size: var(--text-sm); text-align: center; padding: var(--space-6); }
+  .fun-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); text-align: center; transition: all var(--transition-fast); }
+  .fun-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+  .fun-card h4 { font-size: var(--text-base); font-weight: 700; margin-bottom: 8px; }
+  .fun-card p { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: 16px; }
+  .progress-bar { height: 6px; background: var(--bg-muted); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+  .progress-fill { height: 100%; background: var(--primary); border-radius: 3px; }
 </style>
 {% endblock %}
 
@@ -97,12 +51,10 @@
     <div class="student-hero-inner reveal">
       <div class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Student Dashboard</div>
 
-      <!-- Instagram-style profile header -->
       <div style="display: flex; align-items: center; gap: 16px; margin: 20px 0;">
         {% if profile and profile.avatar_url %}
           <a href="{{ url_for('student.student_profile') }}" style="text-decoration: none; flex-shrink: 0;">
-            <img src="{{ profile.avatar_url }}" alt="{{ profile.username or 'You' }}"
-              style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border);">
+            <img src="{{ profile.avatar_url }}" alt="{{ profile.username or 'You' }}" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border);">
           </a>
         {% else %}
           <a href="{{ url_for('student.student_profile') }}" style="text-decoration: none; flex-shrink: 0;">
@@ -113,38 +65,72 @@
           <h1 id="student-heading" style="margin-bottom: 2px; font-size: clamp(var(--text-xl), 3vw, var(--text-3xl));">
             {{ profile.username or (email.split('@')[0] if email else 'Learner') }}
           </h1>
-          <p style="margin: 0; color: var(--text-muted); font-size: var(--text-sm);">
-            {{ profile.college or '' }}
-          </p>
-          <a href="{{ url_for('student.student_profile') }}" style="font-size: var(--text-xs); color: var(--primary-text); text-decoration: none; font-weight: 600;">
-            Edit profile →
-          </a>
+          <p style="margin: 0; color: var(--text-muted); font-size: var(--text-sm);">{{ profile.college or '' }}</p>
+          <a href="{{ url_for('student.student_profile') }}" style="font-size: var(--text-xs); color: var(--primary-text); text-decoration: none; font-weight: 600;">Edit profile →</a>
         </div>
       </div>
 
-      <p class="body">Manage your courses, track enrollments, and access learning materials.</p>
+      <div class="stats-row">
+        <div class="stat-chip"><strong>{{ points }}</strong><span>Points</span></div>
+        <div class="stat-chip"><strong>{{ streak }}</strong><span>Day Streak 🔥</span></div>
+        <div class="stat-chip"><strong>{{ approved_enrollments|length }}</strong><span>Courses</span></div>
+        <div class="stat-chip"><strong>{{ pending_assignment_count }}</strong><span>Assignments Due</span></div>
+        <div class="stat-chip"><strong>{{ typing_high_score }}</strong><span>WPM Best</span></div>
+      </div>
+
+      {% if badges %}
+      <div class="badge-row">
+        {% for b in badges %}
+        <span class="badge-chip" title="{{ b.desc }}">{{ b.icon }} {{ b.name }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
     </div>
-    <div style="display: flex; gap: 16px; flex-wrap: wrap; margin: 16px 0;">
-  <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; min-width: 120px;">
-    <strong style="font-size: var(--text-lg); color: var(--text);">{{ approved_enrollments|length }}</strong>
-    <p style="margin: 0; font-size: var(--text-xs); color: var(--text-subtle);">Courses</p>
-  </div>
-  <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; min-width: 120px;">
-    <strong style="font-size: var(--text-lg); color: var(--text);">{{ pending_enrollments|length }}</strong>
-    <p style="margin: 0; font-size: var(--text-xs); color: var(--text-subtle);">Pending</p>
-  </div>
-  <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; min-width: 120px;">
-    <strong style="font-size: var(--text-lg); color: var(--text);">{{ pending_assignment_count }}</strong>
-    <p style="margin: 0; font-size: var(--text-xs); color: var(--text-subtle);">Assignments Due</p>
-  </div>
-</div>
   </div>
 </section>
 
 <section class="section" aria-labelledby="learning-heading">
   <div class="container">
 
-    <!-- Approved -->
+    <!-- Daily Challenge -->
+    {% if daily_challenge and not daily_answered %}
+    <div class="alert-banner reveal">
+      <span>🎯</span>
+      <div style="flex: 1;">
+        <strong>Daily Challenge:</strong> {{ daily_challenge.question }}
+        <form method="POST" action="{{ url_for('student.answer_daily_challenge') }}" style="display: flex; gap: 8px; margin-top: 8px;">
+          <input type="hidden" name="challenge_id" value="{{ daily_challenge.id }}">
+          <input type="text" name="answer" placeholder="Your answer..." required style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); flex: 1; max-width: 200px;">
+          <button type="submit" class="btn btn-primary" style="padding: 6px 14px; font-size: 12px;">Submit</button>
+        </form>
+      </div>
+    </div>
+    {% elif daily_challenge and daily_answered %}
+    <div class="alert-banner reveal" style="background: var(--success-bg); border-color: var(--success); color: var(--success);">
+      <span>✅</span> You completed today's challenge! Come back tomorrow.
+    </div>
+    {% endif %}
+
+    <!-- Fun & Games -->
+    <div class="dash-section reveal">
+      <h2><span aria-hidden="true">🎮</span> Fun Zone</h2>
+      <div class="content-grid">
+        <div class="fun-card">
+          <div class="type-icon">⌨️</div>
+          <h4>Typing Speed Test</h4>
+          <p>Race against the clock with real code snippets.</p>
+          <a href="{{ url_for('student.typing_test') }}">Play Now →</a>
+        </div>
+        <div class="fun-card">
+          <div class="type-icon">🏆</div>
+          <h4>Leaderboard</h4>
+          <p>See how you rank against other students.</p>
+          <a href="{{ url_for('student.leaderboard') }}">View Rankings →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Learning -->
     <div class="dash-section reveal">
       <h2><span aria-hidden="true">✅</span> My Learning</h2>
       {% if approved_enrollments %}
@@ -155,6 +141,20 @@
                 <div>
                   <h4>{{ e.course.title }}</h4>
                   <p>Enrolled {{ e.created_at[:10] if e.created_at else '' }}</p>
+                  {% set contents = course_contents.get(e.course_id, []) %}
+                  {% set total = contents|length %}
+                  {% set done = 0 %}
+                  {% for item in contents %}
+                    {% if item.type == 'assignment' and assignment_submissions.get(item.id) and assignment_submissions.get(item.id).status == 'approved' %}
+                      {% set done = done + 1 %}
+                    {% elif item.type != 'assignment' %}
+                      {% set done = done + 1 %}
+                    {% endif %}
+                  {% endfor %}
+                  {% if total > 0 %}
+                  <div class="progress-bar"><div class="progress-fill" style="width: {{ (done/total*100)|int }}%;"></div></div>
+                  <p style="font-size: 11px; color: var(--text-subtle); margin-top: 4px;">{{ done }}/{{ total }} items</p>
+                  {% endif %}
                 </div>
                 <span class="badge badge-approved">Approved</span>
               </div>
@@ -167,12 +167,11 @@
                       {% if item.type == 'video' %}▶️{% elif item.type == 'ppt' %}📄{% elif item.type == 'assignment' %}📝{% else %}📦{% endif %}
                     </div>
                     <h5>{{ item.title }}</h5>
-
                     {% if item.type == 'assignment' %}
                       {% set sub = assignment_submissions.get(item.id) %}
                       {% if sub %}
                         {% if sub.status == 'pending' %}
-                          <span class="badge badge-pending">⏳ Pending Approval</span>
+                          <span class="badge badge-pending">⏳ Pending</span>
                         {% elif sub.status == 'approved' %}
                           <span class="badge badge-approved">✅ Approved</span>
                         {% elif sub.status == 'rejected' %}
@@ -212,10 +211,7 @@
           {% for e in pending_enrollments %}
             {% if e.course %}
               <div class="course-row locked">
-                <div>
-                  <h4>{{ e.course.title }}</h4>
-                  <p>Requested {{ e.created_at[:10] if e.created_at else '' }}</p>
-                </div>
+                <div><h4>{{ e.course.title }}</h4><p>Requested {{ e.created_at[:10] if e.created_at else '' }}</p></div>
                 <span class="badge badge-pending">Pending</span>
               </div>
             {% endif %}
@@ -233,10 +229,7 @@
         <div class="course-list">
           {% for course in available_courses %}
             <div class="course-row">
-              <div>
-                <h4>{{ course.title }}</h4>
-                <p>{{ course.description[:80] }}{% if course.description|length > 80 %}...{% endif %}</p>
-              </div>
+              <div><h4>{{ course.title }}</h4><p>{{ course.description[:80] }}{% if course.description|length > 80 %}...{% endif %}</p></div>
               <form method="POST" action="{{ url_for('student.enroll_course', course_id=course.id) }}">
                 <button class="btn btn-primary" type="submit">Enroll</button>
               </form>

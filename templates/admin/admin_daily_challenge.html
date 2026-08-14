@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Daily Challenge | Growth Steps{% endblock %}
+{% block content %}
+<div style="max-width: 520px; margin: 40px auto; padding: 32px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-xl);">
+  <h2 style="text-align: center; margin-bottom: 24px;">🎯 Daily Challenge</h2>
+  <form method="POST">
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: var(--text-sm);">Question</label>
+      <input type="text" name="question" required style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg); color: var(--text);">
+    </div>
+    <div style="margin-bottom: 20px;">
+      <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: var(--text-sm);">Correct Answer</label>
+      <input type="text" name="correct_answer" required style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg); color: var(--text);">
+    </div>
+    <button type="submit" class="btn btn-primary" style="width: 100%;">Publish for Today</button>
+  </form>
+</div>
+{% endblock %}

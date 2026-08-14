@@ -657,6 +657,35 @@ def admin_assignments():
     )
 
 
+#game rout
+
+@bp.route("/admin/daily-challenge", methods=["GET", "POST"])
+@admin_required
+def admin_daily_challenge():
+    client = supabase_admin or supabase
+
+    if request.method == "POST":
+        question = request.form.get("question", "").strip()
+        correct = request.form.get("correct_answer", "").strip().lower()
+        if not question or not correct:
+            flash("Question and answer are required.", "error")
+            return redirect(url_for("admin.admin_daily_challenge"))
+
+        try:
+            from datetime import date
+            today = date.today().isoformat()
+            client.table("daily_challenges").upsert({
+                "challenge_date": today,
+                "question": question,
+                "correct_answer": correct,
+            }, on_conflict="challenge_date").execute()
+            flash("Daily challenge set.", "success")
+        except Exception as exc:
+            flash(f"Error: {exc}", "error")
+        return redirect(url_for("admin.admin_daily_challenge"))
+
+    return render_template("admin/admin_daily_challenge.html")
+
 @bp.route("/dashboard/admin/assignments/<submission_id>/review", methods=["POST"])
 @admin_required
 def admin_review_assignment(submission_id):

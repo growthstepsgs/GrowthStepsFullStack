@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Leaderboard | Growth Steps{% endblock %}
+{% block description %}Top students by points and activity.{% endblock %}
+
+{% block styles %}
+<style>
+  .lb-hero { padding: var(--space-12) 0 var(--space-8); background: var(--bg-muted); border-bottom: 1px solid var(--border); text-align: center; }
+  .lb-hero h1 { font-size: clamp(var(--text-2xl), 4vw, var(--text-4xl)); font-weight: 800; }
+  .podium { display: flex; gap: 16px; justify-content: center; align-items: flex-end; margin: 32px 0; flex-wrap: wrap; }
+  .podium-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 24px; text-align: center; min-width: 160px; }
+  .podium-card.gold { border-color: #fbbf24; background: #fef3c7; }
+  .podium-card.silver { border-color: #94a3b8; background: #f1f5f9; }
+  .podium-card.bronze { border-color: #b45309; background: #fff7ed; }
+  .podium-card .rank { font-size: 32px; margin-bottom: 8px; }
+  .podium-card .name { font-weight: 700; font-size: var(--text-lg); margin-bottom: 4px; }
+  .podium-card .points { font-size: var(--text-sm); color: var(--text-muted); }
+  .lb-table { width: 100%; max-width: 600px; margin: 0 auto; border-collapse: collapse; font-size: var(--text-sm); }
+  .lb-table th { text-align: left; padding: 12px 16px; background: var(--bg-muted); font-weight: 700; border-bottom: 1px solid var(--border); }
+  .lb-table td { padding: 12px 16px; border-bottom: 1px solid var(--border-light); }
+  .lb-table tr:nth-child(even) td { background: var(--bg-muted); }
+  .lb-table tr.you td { background: var(--primary-light); font-weight: 700; }
+  .my-rank { text-align: center; margin-top: 24px; font-size: var(--text-lg); color: var(--text-muted); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="lb-hero" aria-labelledby="lb-heading">
+  <div class="container">
+    <div class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Compete</div>
+    <h1 id="lb-heading">Student <strong>Leaderboard</strong></h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    {% if students %}
+      <div class="podium reveal">
+        {% if students[0] %}
+        <div class="podium-card gold reveal">
+          <div class="rank">🥇</div>
+          <div class="name">{{ students[0].username or students[0].full_name or 'Player 1' }}</div>
+          <div class="points">{{ students[0].points or 0 }} pts</div>
+        </div>
+        {% endif %}
+        {% if students[1] %}
+        <div class="podium-card silver reveal" style="order: -1;">
+          <div class="rank">🥈</div>
+          <div class="name">{{ students[1].username or students[1].full_name or 'Player 2' }}</div>
+          <div class="points">{{ students[1].points or 0 }} pts</div>
+        </div>
+        {% endif %}
+        {% if students[2] %}
+        <div class="podium-card bronze reveal">
+          <div class="rank">🥉</div>
+          <div class="name">{{ students[2].username or students[2].full_name or 'Player 3' }}</div>
+          <div class="points">{{ students[2].points or 0 }} pts</div>
+        </div>
+        {% endif %}
+      </div>
+
+      <table class="lb-table reveal">
+        <thead>
+          <tr><th>Rank</th><th>Student</th><th>Streak</th><th>Typing</th><th>Points</th></tr>
+        </thead>
+        <tbody>
+          {% for s in students %}
+          <tr class="{% if s.id == session.get('user_id') %}you{% endif %}">
+            <td>#{{ s.rank }}</td>
+            <td>{{ s.username or s.full_name or 'Anonymous' }}</td>
+            <td>{{ s.login_streak or 0 }} 🔥</td>
+            <td>{{ s.typing_high_score or 0 }} WPM</td>
+            <td><strong>{{ s.points or 0 }}</strong></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% if my_rank %}
+        <p class="my-rank">Your rank: <strong>#{{ my_rank }}</strong></p>
+      {% endif %}
+    {% else %}
+      <p style="text-align: center; color: var(--text-subtle);">No scores yet. Be the first!</p>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

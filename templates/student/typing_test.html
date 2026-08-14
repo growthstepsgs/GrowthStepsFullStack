@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}Typing Speed Test | Growth Steps{% endblock %}
+{% block description %}Test your typing speed with code snippets.{% endblock %}
+
+{% block styles %}
+<style>
+  .typing-wrap { max-width: 800px; margin: 40px auto; padding: 32px; }
+  .typing-wrap h2 { text-align: center; margin-bottom: 12px; font-size: var(--text-2xl); font-weight: 800; }
+  .typing-wrap > p { text-align: center; color: var(--text-muted); margin-bottom: 24px; }
+  .stats-bar { display: flex; gap: 16px; justify-content: center; margin-bottom: 32px; flex-wrap: wrap; }
+  .stat-box { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 16px 28px; text-align: center; min-width: 120px; }
+  .stat-box strong { display: block; font-size: var(--text-2xl); color: var(--text); }
+  .stat-box span { font-size: var(--text-xs); color: var(--text-subtle); text-transform: uppercase; font-weight: 600; }
+  .snippet-box { background: var(--bg-muted); border: 2px solid var(--border); border-radius: var(--radius-lg); padding: 24px; font-family: 'Fira Code', monospace; font-size: 18px; line-height: 1.8; margin-bottom: 20px; min-height: 120px; letter-spacing: 0.5px; }
+  .snippet-box .correct { color: var(--success); }
+  .snippet-box .wrong { color: var(--red); background: var(--red-light); border-radius: 2px; }
+  .snippet-box .pending { color: var(--text-subtle); }
+  .input-area { width: 100%; padding: 16px; font-size: 18px; border: 2px solid var(--border); border-radius: var(--radius-lg); background: var(--bg); color: var(--text); font-family: 'Fira Code', monospace; margin-bottom: 20px; }
+  .input-area:focus { outline: none; border-color: var(--primary); }
+  .btn-row { display: flex; gap: 12px; justify-content: center; }
+  .hidden { display: none !important; }
+  .result-box { text-align: center; padding: 24px; background: var(--success-bg); border-radius: var(--radius-lg); margin-bottom: 20px; }
+  .result-box h3 { color: var(--success); margin-bottom: 8px; }
+  .result-box p { color: var(--text); font-size: var(--text-base); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="typing-wrap reveal">
+  <h2>⌨️ Typing Speed Test</h2>
+  <p>Type the code snippet as fast and accurately as you can.</p>
+
+  <div class="stats-bar">
+    <div class="stat-box"><strong id="wpm">0</strong><span>WPM</span></div>
+    <div class="stat-box"><strong id="accuracy">100</strong><span>Accuracy %</span></div>
+    <div class="stat-box"><strong id="timer">60</strong><span>Seconds</span></div>
+  </div>
+
+  <div class="snippet-box" id="snippetDisplay">Click "Start Test" to begin</div>
+
+  <input type="text" class="input-area" id="typeInput" placeholder="Start typing here..." autocomplete="off" disabled>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="startBtn" onclick="startTest()">Start Test</button>
+    <button class="btn btn-secondary hidden" id="restartBtn" onclick="restartTest()">Try Again</button>
+  </div>
+
+  <div class="result-box hidden" id="resultBox">
+    <h3>🎉 Test Complete!</h3>
+    <p id="resultText"></p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const snippets = [
+  "function greet(name) { return `Hello, ${name}!`; }",
+  "const user = { id: 1, name: 'Vijay', role: 'student' };",
+  "for (let i = 0; i < array.length; i++) { console.log(array[i]); }",
+  "import React from 'react'; export default function App() { return <div>Hi</div>; }",
+  "def factorial(n): return 1 if n == 0 else n * factorial(n - 1)",
+  "SELECT * FROM users WHERE role = 'student' ORDER BY created_at DESC;",
+  "<div class='card'><h2>Title</h2><p>Description here</p></div>",
+  "git commit -m 'feat: add user authentication middleware'",
+  "const sum = (a, b) => a + b; console.log(sum(5, 3));",
+  "class Student { constructor(name) { this.name = name; } study() {} }"
+];
+
+let currentSnippet = "";
+let timer = 60;
+let interval = null;
+let started = false;
+let startTime = null;
+let correctChars = 0;
+let totalChars = 0;
+
+function pickSnippet() {
+  currentSnippet = snippets[Math.floor(Math.random() * snippets.length)];
+  renderSnippet();
+}
+
+function renderSnippet() {
+  const box = document.getElementById('snippetDisplay');
+  box.innerHTML = currentSnippet.split('').map(c => `<span class="pending">${c}</span>`).join('');
+}
+
+function startTest() {
+  pickSnippet();
+  started = true;
+  timer = 60;
+  startTime = Date.now();
+  correctChars = 0;
+  totalChars = 0;
+
+  document.getElementById('typeInput').value = "";
+  document.getElementById('typeInput').disabled = false;
+  document.getElementById('typeInput').focus();
+  document.getElementById('startBtn').classList.add('hidden');
+  document.getElementById('resultBox').classList.add('hidden');
+  document.getElementById('wpm').textContent = "0";
+  document.getElementById('accuracy').textContent = "100";
+  document.getElementById('timer').textContent = "60";
+
+  clearInterval(interval);
+  interval = setInterval(() => {
+    timer--;
+    document.getElementById('timer').textContent = timer;
+    if (timer <= 0) endTest();
+  }, 1000);
+}
+
+document.getElementById('typeInput').addEventListener('input', (e) => {
+  if (!started) return;
+
+  const val = e.target.value;
+  const spans = document.querySelectorAll('#snippetDisplay span');
+  correctChars = 0;
+  totalChars = val.length;
+
+  spans.forEach((span, i) => {
+    if (i < val.length) {
+      if (val[i] === currentSnippet[i]) {
+        span.className = 'correct';
+        correctChars++;
+      } else {
+        span.className = 'wrong';
+      }
+    } else {
+      span.className = 'pending';
+    }
+  });
+
+  // Use REAL elapsed time (milliseconds) for accurate WPM
+  const elapsedMs = Date.now() - startTime;
+  const elapsedMin = elapsedMs / 60000;
+  const wpm = elapsedMin > 0 ? Math.round((correctChars / 5) / elapsedMin) : 0;
+  const acc = totalChars > 0 ? Math.round((correctChars / totalChars) * 100) : 100;
+
+  document.getElementById('wpm').textContent = wpm;
+  document.getElementById('accuracy').textContent = acc;
+
+  if (val === currentSnippet) endTest();
+});
+
+function endTest() {
+  if (!started) return;
+  started = false;
+  clearInterval(interval);
+
+  document.getElementById('typeInput').disabled = true;
+  document.getElementById('restartBtn').classList.remove('hidden');
+
+  const finalWpm = parseInt(document.getElementById('wpm').textContent) || 0;
+  const finalAcc = parseInt(document.getElementById('accuracy').textContent) || 0;
+
+  let msg = `You typed at <strong>${finalWpm} WPM</strong> with <strong>${finalAcc}%</strong> accuracy.`;
+  if (finalWpm >= 40) msg += "<br>🏆 Speed Demon badge unlocked!";
+  if (finalWpm >= 60) msg += "<br>🔥 Legendary speed!";
+  document.getElementById('resultText').innerHTML = msg;
+  document.getElementById('resultBox').classList.remove('hidden');
+
+  // Save to server
+  fetch("{{ url_for('student.save_typing_score') }}", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ wpm: finalWpm })
+  })
+  .then(r => {
+    if (!r.ok) throw new Error("Server error " + r.status);
+    return r.json();
+  })
+  .then(data => {
+    if (data.success && data.points_earned > 0) {
+      const extra = `<br>+${data.points_earned} points earned!`;
+      document.getElementById('resultText').innerHTML += extra;
+    }
+  })
+  .catch(err => {
+    console.error("Save failed:", err);
+    document.getElementById('resultText').innerHTML += "<br><small style='color:var(--red)'>Score saved locally. Refresh to see on leaderboard.</small>";
+  });
+}
+
+function restartTest() {
+  document.getElementById('restartBtn').classList.add('hidden');
+  document.getElementById('startBtn').classList.remove('hidden');
+  document.getElementById('snippetDisplay').textContent = "Click \"Start Test\" to begin";
+  document.getElementById('typeInput').value = "";
+  document.getElementById('timer').textContent = "60";
+  document.getElementById('wpm').textContent = "0";
+  document.getElementById('accuracy').textContent = "100";
+}
+</script>
+{% endblock %}

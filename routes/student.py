@@ -34,8 +34,49 @@ def student_dashboard():
     course_contents = {}
     profile = {}
     assignment_submissions = {}
+    badges = []
+    streak = 0
+    points = 0
 
     if client:
+# Profile + streak
+        try:
+            res = client.table("profiles").select("*").eq("id", user_id).execute()
+            if res.data:
+                profile = res.data[0]
+                streak = profile.get("login_streak") or 0
+                points = profile.get("points") or 0
+
+                from datetime import date, timedelta
+                today = date.today()
+                last = profile.get("last_login_date")
+
+                if last:
+                    if isinstance(last, str):
+                        last = date.fromisoformat(last[:10])
+                    elif hasattr(last, 'date'):
+                        last = last.date()
+
+                    if last == today - timedelta(days=1):
+                        streak += 1
+                    elif last < today - timedelta(days=1):
+                        streak = 1
+                    # else last == today, don't change
+                else:
+                    streak = 1
+
+                if last != today:
+                    client.table("profiles").update({
+                        "login_streak": streak,
+                        "last_login_date": today.isoformat()
+                    }).eq("id", user_id).execute()
+        except Exception as exc:
+            print(f"[STREAK ERROR] {exc}")
+            streak = 0
+
+
+
+        # Courses & enrollments
         try:
             res = client.table("courses").select("*").eq("is_active", True).order("created_at", desc=True).execute()
             all_courses = res.data or []
@@ -60,26 +101,33 @@ def student_dashboard():
             except Exception:
                 pass
 
-            # Fetch assignment submissions for approved courses
             try:
-                assignment_ids = []
+                a_ids = []
                 for cid, items in course_contents.items():
                     for item in items:
                         if item.get("type") == "assignment":
-                            assignment_ids.append(item["id"])
-                if assignment_ids:
-                    res = client.table("assignment_submissions").select("*").eq("student_id", user_id).in_("assignment_id", assignment_ids).execute()
+                            a_ids.append(item["id"])
+                if a_ids:
+                    res = client.table("assignment_submissions").select("*").eq("student_id", user_id).in_("assignment_id", a_ids).execute()
                     for sub in (res.data or []):
                         assignment_submissions[sub["assignment_id"]] = sub
             except Exception:
                 pass
 
-        try:
-            res = client.table("profiles").select("*").eq("id", user_id).execute()
-            if res.data:
-                profile = res.data[0]
-        except Exception:
-            pass
+    # Calculate badges
+    if profile.get("username") and profile.get("phone") and profile.get("college"):
+        badges.append({"icon": "🎓", "name": "Profile Pro", "desc": "Completed your profile"})
+    if any(e.get("status") == "approved" for e in enrollments):
+        badges.append({"icon": "📚", "name": "Course Starter", "desc": "Enrolled in first course"})
+    subs = list(assignment_submissions.values())
+    if any(s.get("status") == "pending" for s in subs):
+        badges.append({"icon": "📝", "name": "Active Learner", "desc": "Submitted an assignment"})
+    if any(s.get("status") == "approved" for s in subs):
+        badges.append({"icon": "✅", "name": "Approved", "desc": "Assignment approved by admin"})
+    if streak >= 3:
+        badges.append({"icon": "🔥", "name": "Streak Master", "desc": f"{streak} day login streak"})
+    if profile.get("typing_high_score", 0) > 40:
+        badges.append({"icon": "⌨️", "name": "Speed Demon", "desc": "Typing score over 40 WPM"})
 
     enrolled_ids = {e["course_id"] for e in enrollments}
     available_courses = [c for c in all_courses if c["id"] not in enrolled_ids]
@@ -92,14 +140,28 @@ def student_dashboard():
     for e in pending_enrollments:
         e["course"] = course_by_id.get(e["course_id"])
 
-    # Assignment stats
     pending_assignment_count = 0
     for cid, items in course_contents.items():
         for item in items:
             if item.get("type") == "assignment":
                 sub = assignment_submissions.get(item["id"])
-                if not sub:
+                if not sub or sub.get("status") == "rejected":
                     pending_assignment_count += 1
+
+    # Daily challenge check
+    daily_challenge = None
+    daily_answered = False
+    try:
+        from datetime import date
+        today_str = date.today().isoformat()
+        res = client.table("daily_challenges").select("*").eq("challenge_date", today_str).execute()
+        if res.data:
+            daily_challenge = res.data[0]
+            # Check if already answered
+            ans = client.table("challenge_answers").select("*").eq("student_id", user_id).eq("challenge_id", daily_challenge["id"]).execute()
+            daily_answered = bool(ans.data)
+    except Exception:
+        pass
 
     return render_template(
         "student/student_dashboard.html",
@@ -111,7 +173,135 @@ def student_dashboard():
         course_contents=course_contents,
         assignment_submissions=assignment_submissions,
         pending_assignment_count=pending_assignment_count,
+        badges=badges,
+        streak=streak,
+        points=points,
+        typing_high_score=profile.get("typing_high_score", 0),
+        daily_challenge=daily_challenge,
+        daily_answered=daily_answered,
     )
+
+
+
+#game route
+@bp.route("/typing-test")
+@login_required
+def typing_test():
+    return render_template("student/typing_test.html")
+
+@bp.route("/typing-test/save", methods=["POST"])
+@login_required
+def save_typing_score():
+    data = request.get_json(force=True, silent=True) or {}
+    score = data.get("wpm", 0)
+    user_id = session.get("user_id")
+    client = supabase_admin
+
+    if not client:
+        return {"success": False, "error": "Admin client missing"}
+
+    try:
+        res = client.table("profiles").select("typing_high_score, points").eq("id", user_id).execute()
+        if not res.data:
+            return {"success": False, "error": "Profile not found"}
+
+        current_high = res.data[0].get("typing_high_score") or 0
+        current_points = res.data[0].get("points") or 0
+        new_high = max(current_high, score)
+
+        # Award 1 point per WPM over 30, capped at 20 per test
+        bonus = min(score, 20)
+
+        client.table("profiles").update({
+            "typing_high_score": new_high,
+            "points": current_points + bonus
+        }).eq("id", user_id).execute()
+
+        return {"success": True, "high_score": new_high, "points_earned": bonus}
+    except Exception as exc:
+        print(f"[TYPING SAVE ERROR] {exc}")
+        return {"success": False, "error": str(exc)}
+
+@bp.route("/leaderboard")
+@login_required
+def leaderboard():
+    client = supabase_admin or supabase
+    top_students = []
+    my_rank = None
+
+    if client:
+        try:
+            res = client.table("profiles") \
+    .select("*") \
+    .order("points", desc=True) \
+    .order("login_streak", desc=True) \
+    .order("typing_high_score", desc=True) \
+    .limit(20) \
+    .execute()
+            all_students = res.data or []
+            for i, s in enumerate(all_students, 1):
+                s["rank"] = i
+                if s["id"] == session.get("user_id"):
+                    my_rank = i
+            top_students = all_students[:10]
+        except Exception as exc:
+            print(f"[LEADERBOARD] {exc}")
+
+    return render_template("student/leaderboard.html",
+                           students=top_students,
+                           my_rank=my_rank)
+
+@bp.route("/daily-challenge/answer", methods=["POST"])
+@login_required
+def answer_daily_challenge():
+    user_id = session.get("user_id")
+    challenge_id = request.form.get("challenge_id")
+    answer = request.form.get("answer", "").strip().lower()
+    client = supabase_admin
+
+    if not client or not challenge_id:
+        flash("Server error.", "error")
+        return redirect(url_for("student.student_dashboard"))
+
+    try:
+        # Check if already answered
+        existing = client.table("challenge_answers").select("*") \
+            .eq("student_id", user_id).eq("challenge_id", challenge_id).execute()
+        if existing.data:
+            flash("You already answered today's challenge.", "info")
+            return redirect(url_for("student.student_dashboard"))
+
+        # Get correct answer
+        ch = client.table("daily_challenges").select("*").eq("id", challenge_id).execute()
+        if not ch.data:
+            flash("Challenge not found.", "error")
+            return redirect(url_for("student.student_dashboard"))
+
+        correct = ch.data[0].get("correct_answer", "").strip().lower()
+        is_correct = answer == correct
+
+        # Save answer
+        client.table("challenge_answers").insert({
+            "challenge_id": challenge_id,
+            "student_id": user_id,
+            "answer": answer,
+            "is_correct": is_correct,
+        }).execute()
+
+        if is_correct:
+            # Award points
+            prof = client.table("profiles").select("points").eq("id", user_id).execute()
+            if prof.data:
+                new_points = (prof.data[0].get("points", 0) or 0) + 10
+                client.table("profiles").update({"points": new_points}).eq("id", user_id).execute()
+            flash("🎉 Correct! You earned 10 points.", "success")
+        else:
+            flash("❌ Wrong answer. Try again tomorrow!", "error")
+
+    except Exception as exc:
+        flash(f"Error: {exc}", "error")
+
+    return redirect(url_for("student.student_dashboard"))
 
 
 @bp.route("/dashboard/student/profile", methods=["GET", "POST"])
