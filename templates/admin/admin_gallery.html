@@ -78,7 +78,7 @@
             <p class="body" style="font-size: var(--text-sm); margin-bottom: var(--space-4);">
               {{ p.caption or "No description" }}
             </p>
-            <form method="POST" action="{{ url_for('admin_delete_gallery_photo', photo_id=p.id) }}" onsubmit="return confirm('Delete this photo?');">
+            <form method="POST" action="{{ url_for('admin.admin_delete_gallery_photo', photo_id=p.id) }}" onsubmit="return confirm('Delete this photo?');">
               <button class="btn btn-secondary" type="submit" style="width: 100%;">Delete Photo</button>
             </form>
           </div>
