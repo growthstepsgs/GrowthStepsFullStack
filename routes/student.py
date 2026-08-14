@@ -5,8 +5,8 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 from extensions import supabase, supabase_admin
-from config import AVATARS_BUCKET
-from utils import login_required, _get_current_role, _profile_complete, _allowed_image
+from config import AVATARS_BUCKET, ASSIGNMENTS_BUCKET
+from utils import login_required, _get_current_role, _profile_complete, _allowed_image, _allowed_assignment
 
 bp = Blueprint("student", __name__)
 
@@ -23,7 +23,6 @@ def student_dashboard():
     if role == "employee":
         return redirect(url_for("employee.employee_dashboard"))
 
-    # Profile gate
     if not _profile_complete(user_id):
         flash("Complete your profile to continue.", "info")
         return redirect(url_for("student.student_profile"))
@@ -34,6 +33,7 @@ def student_dashboard():
     enrollments = []
     course_contents = {}
     profile = {}
+    assignment_submissions = {}
 
     if client:
         try:
@@ -60,6 +60,20 @@ def student_dashboard():
             except Exception:
                 pass
 
+            # Fetch assignment submissions for approved courses
+            try:
+                assignment_ids = []
+                for cid, items in course_contents.items():
+                    for item in items:
+                        if item.get("type") == "assignment":
+                            assignment_ids.append(item["id"])
+                if assignment_ids:
+                    res = client.table("assignment_submissions").select("*").eq("student_id", user_id).in_("assignment_id", assignment_ids).execute()
+                    for sub in (res.data or []):
+                        assignment_submissions[sub["assignment_id"]] = sub
+            except Exception:
+                pass
+
         try:
             res = client.table("profiles").select("*").eq("id", user_id).execute()
             if res.data:
@@ -78,6 +92,15 @@ def student_dashboard():
     for e in pending_enrollments:
         e["course"] = course_by_id.get(e["course_id"])
 
+    # Assignment stats
+    pending_assignment_count = 0
+    for cid, items in course_contents.items():
+        for item in items:
+            if item.get("type") == "assignment":
+                sub = assignment_submissions.get(item["id"])
+                if not sub:
+                    pending_assignment_count += 1
+
     return render_template(
         "student/student_dashboard.html",
         email=session.get("user_email"),
@@ -86,6 +109,8 @@ def student_dashboard():
         pending_enrollments=pending_enrollments,
         available_courses=available_courses,
         course_contents=course_contents,
+        assignment_submissions=assignment_submissions,
+        pending_assignment_count=pending_assignment_count,
     )
 
 
@@ -128,8 +153,8 @@ def student_profile():
             "phone": phone or None,
             "college": college or None,
             "bio": bio or None,
-            "full_name": profile.get("full_name") or "",   # <-- FIX: preserve full_name
-            "email": profile.get("email") or session.get("user_email") or "",  # <-- FIX: preserve email
+            "full_name": profile.get("full_name") or "",
+            "email": profile.get("email") or session.get("user_email") or "",
         }
 
         if gender in ("male", "female", "other", "prefer_not_to_say"):
@@ -137,7 +162,6 @@ def student_profile():
         else:
             update_data["gender"] = None
 
-        # Handle avatar upload (optional)
         file = request.files.get("avatar")
         if file and file.filename and _allowed_image(file.filename):
             ext = secure_filename(file.filename).rsplit(".", 1)[1].lower()
@@ -164,7 +188,6 @@ def student_profile():
                 update_data["avatar_storage_path"] = storage_path
             except Exception as exc:
                 flash(f"Avatar upload failed: {exc}", "error")
-                # Continue to save the rest of the profile — do NOT return here
 
         try:
             client.table("profiles").upsert(update_data, on_conflict="id").execute()
@@ -255,3 +278,178 @@ def course_content(course_id, content_id):
         return redirect(content["url"])
 
     return render_template("course_content.html", content=content)
+
+
+@bp.route("/assignment/<content_id>/submit", methods=["GET", "POST"])
+@login_required
+def submit_assignment(content_id):
+    user_id = session.get("user_id")
+
+    # CRITICAL: must use service role for insert to bypass RLS
+    client = supabase_admin
+    if not client:
+        flash("Server error: admin client not available. Check SUPABASE_SERVICE_KEY in .env and restart Flask.", "error")
+        return redirect(url_for("student.student_dashboard"))
+
+    # Fetch assignment
+    assignment = None
+    course_id = None
+    try:
+        res = client.table("course_contents").select("*").eq("id", content_id).execute()
+        if res.data:
+            assignment = res.data[0]
+            course_id = assignment["course_id"]
+    except Exception as exc:
+        flash(f"Could not load assignment: {exc}", "error")
+        return redirect(url_for("student.student_dashboard"))
+
+    if not assignment or assignment.get("type") != "assignment":
+        flash("Assignment not found.", "error")
+        return redirect(url_for("student.student_dashboard"))
+
+    # Verify enrollment
+    try:
+        res = client.table("enrollments").select("*") \
+            .eq("student_id", user_id) \
+            .eq("course_id", course_id) \
+            .eq("status", "approved") \
+            .execute()
+        if not res.data:
+            flash("You are not enrolled in this course.", "error")
+            return redirect(url_for("student.student_dashboard"))
+    except Exception as exc:
+        flash(f"Enrollment check failed: {exc}", "error")
+        return redirect(url_for("student.student_dashboard"))
+
+    # Check existing submission
+    existing = None
+    try:
+        res = client.table("assignment_submissions").select("*") \
+            .eq("student_id", user_id) \
+            .eq("assignment_id", content_id) \
+            .execute()
+        if res.data:
+            existing = res.data[0]
+    except Exception as exc:
+        print(f"[SUBMIT] Existing check error: {exc}")
+
+    # LOCK: if pending or approved, redirect away immediately
+    if existing and existing.get("status") in ("pending", "approved"):
+        flash("You have already submitted this assignment. Wait for admin review.", "info")
+        return redirect(url_for("student.my_assignments"))
+
+    if request.method == "POST":
+        submission_text = request.form.get("submission_text", "").strip()
+
+        if not submission_text and not request.files.get("submission_file"):
+            flash("Please provide text or upload a file.", "error")
+            return render_template("student/submit_assignment.html",
+                                   assignment=assignment, existing=existing)
+
+        insert_data = {
+            "assignment_id": content_id,
+            "student_id": user_id,
+            "course_id": course_id,
+            "submission_text": submission_text or None,
+            "status": "pending",
+        }
+
+        # Handle file upload
+        file = request.files.get("submission_file")
+        if file and file.filename:
+            if not _allowed_assignment(file.filename):
+                flash("Unsupported file type. Allowed: pdf, doc, docx, txt, zip, jpg, png, webp", "error")
+                return render_template("student/submit_assignment.html",
+                                       assignment=assignment, existing=existing)
+
+            ext = secure_filename(file.filename).rsplit(".", 1)[1].lower()
+            storage_path = f"{user_id}_{content_id}_{uuid.uuid4().hex}.{ext}"
+
+            try:
+                file_bytes = file.read()
+
+                if existing and existing.get("file_storage_path"):
+                    try:
+                        client.storage.from_(ASSIGNMENTS_BUCKET).remove([existing["file_storage_path"]])
+                    except Exception:
+                        pass
+
+                client.storage.from_(ASSIGNMENTS_BUCKET).upload(
+                    storage_path,
+                    file_bytes,
+                    {"content-type": file.mimetype},
+                )
+                public_url = client.storage.from_(ASSIGNMENTS_BUCKET).get_public_url(storage_path)
+                insert_data["file_url"] = public_url
+                insert_data["file_storage_path"] = storage_path
+            except Exception as exc:
+                flash(f"File upload failed: {exc}", "error")
+                return render_template("student/submit_assignment.html",
+                                       assignment=assignment, existing=existing)
+
+        # INSERT or UPSERT
+        try:
+            if existing:
+                insert_data["id"] = existing["id"]
+                result = client.table("assignment_submissions").upsert(insert_data, on_conflict="id").execute()
+            else:
+                result = client.table("assignment_submissions").insert(insert_data).execute()
+
+            # VERIFY: read it back immediately
+            verify = client.table("assignment_submissions").select("*") \
+                .eq("student_id", user_id) \
+                .eq("assignment_id", content_id) \
+                .execute()
+
+            if not verify.data:
+                flash("Submission failed: could not verify save in database.", "error")
+                return render_template("student/submit_assignment.html",
+                                       assignment=assignment, existing=existing)
+
+            flash("Assignment submitted successfully.", "success")
+            return redirect(url_for("student.my_assignments"))
+
+        except Exception as exc:
+            flash(f"Could not save submission: {exc}", "error")
+            return render_template("student/submit_assignment.html",
+                                   assignment=assignment, existing=existing)
+
+    return render_template("student/submit_assignment.html",
+                           assignment=assignment, existing=existing)
+
+
+@bp.route("/my-assignments")
+@login_required
+def my_assignments():
+    user_id = session.get("user_id")
+    client = supabase_admin or supabase
+
+    pending_assignments = []
+    my_submissions = {}
+
+    if client:
+        try:
+            res = client.table("enrollments").select("course_id").eq("student_id", user_id).eq("status", "approved").execute()
+            course_ids = [e["course_id"] for e in (res.data or [])]
+
+            if course_ids:
+                res = client.table("course_contents").select("*, courses(title)").in_("course_id", course_ids).eq("type", "assignment").order("sort_order").execute()
+                all_assignments = res.data or []
+
+                if all_assignments:
+                    a_ids = [a["id"] for a in all_assignments]
+                    res = client.table("assignment_submissions").select("*").eq("student_id", user_id).in_("assignment_id", a_ids).execute()
+                    for sub in (res.data or []):
+                        my_submissions[sub["assignment_id"]] = sub
+
+                for a in all_assignments:
+                    sub = my_submissions.get(a["id"])
+                    if not sub or sub.get("status") in ("pending", "rejected"):
+                        a["submission"] = sub
+                        pending_assignments.append(a)
+
+        except Exception as exc:
+            print(f"my_assignments failed: {exc}")
+
+    return render_template("student/my_assignments.html",
+                           pending_assignments=pending_assignments)

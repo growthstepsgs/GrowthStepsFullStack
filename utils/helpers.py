@@ -63,3 +63,11 @@ def _profile_complete(user_id: str | None) -> bool:
         print(f"[PROFILE CHECK] exception: {exc}")
         # On error, let user through rather than trapping them
         return True
+
+def _allowed_assignment(filename: str) -> bool:
+    from config import ALLOWED_ASSIGNMENT_EXTENSIONS
+    return (
+        bool(filename)
+        and "." in filename
+        and filename.rsplit(".", 1)[1].lower() in ALLOWED_ASSIGNMENT_EXTENSIONS
+    )

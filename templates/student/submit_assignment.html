@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block title %}Submit Assignment | Growth Steps{% endblock %}
+{% block description %}Submit your assignment.{% endblock %}
+
+{% block styles %}
+<style>
+  .submit-wrap {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 32px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+  }
+  .submit-wrap h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    font-size: var(--text-2xl);
+    font-weight: 800;
+  }
+  .flash-box {
+    margin-bottom: 20px;
+  }
+  .flash-msg {
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .flash-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+  .flash-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+  .flash-info { background: #e0f2fe; color: #075985; border: 1px solid #7dd3fc; }
+  .assignment-info {
+    background: var(--bg-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+  .assignment-info h3 {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .assignment-info p {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    margin: 0;
+  }
+  .form-group { margin-bottom: 20px; }
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: var(--text-sm);
+    color: var(--text);
+  }
+  .form-group input[type="file"],
+  .form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--bg);
+    color: var(--text);
+    font-size: var(--text-base);
+  }
+  .form-group textarea { min-height: 160px; resize: vertical; }
+  .form-group input:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  .form-group small {
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+  }
+  .btn-save {
+    width: 100%;
+    padding: 12px;
+    background: var(--text);
+    color: var(--bg);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-weight: 700;
+    cursor: pointer;
+    font-size: var(--text-base);
+  }
+  .btn-save:hover { opacity: 0.9; }
+  .locked-box {
+    background: var(--warning-bg);
+    border: 1px solid var(--warning);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .locked-box h4 {
+    color: var(--warning);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .locked-box p {
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    margin: 0;
+  }
+  .prev-submission {
+    background: var(--bg-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .prev-submission h4 {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .prev-submission p {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    margin: 0;
+  }
+  .prev-submission a {
+    font-size: var(--text-sm);
+    color: var(--primary-text);
+    font-weight: 600;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="submit-wrap reveal">
+  <h2>Submit Assignment</h2>
+
+  <!-- FLASH MESSAGES — now visible -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-box">
+        {% for category, message in messages %}
+          <div class="flash-msg flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="assignment-info">
+    <h3>{{ assignment.title }}</h3>
+    <p>Type your answer below or upload a file. Allowed: PDF, DOC, DOCX, TXT, ZIP, JPG, PNG, WEBP.</p>
+  </div>
+
+  {% if existing and existing.status in ('pending', 'approved') %}
+    <!-- LOCKED STATE -->
+    <div class="locked-box">
+      <h4>🔒 Submission Locked</h4>
+      <p>You have already submitted this assignment. Status: <strong>{{ existing.status | title }}</strong></p>
+      {% if existing.status == 'pending' %}
+        <p style="margin-top: 8px;">Please wait for admin review. You will see the result on your dashboard.</p>
+      {% endif %}
+    </div>
+
+    <div class="prev-submission">
+      <h4>Your Submission</h4>
+      {% if existing.submission_text %}
+        <p style="margin-bottom: 8px;">{{ existing.submission_text[:200] }}{% if existing.submission_text|length > 200 %}...{% endif %}</p>
+      {% endif %}
+      {% if existing.file_url %}
+        <p><a href="{{ existing.file_url }}" target="_blank">📎 Download Your File</a></p>
+      {% endif %}
+      <p style="margin-top: 8px; font-size: 11px; color: var(--text-subtle);">Submitted on {{ existing.submitted_at[:10] if existing.submitted_at else '—' }}</p>
+    </div>
+
+    <a href="{{ url_for('student.my_assignments') }}" class="btn btn-secondary" style="width: 100%; text-align: center; display: block;">Back to My Assignments</a>
+
+  {% else %}
+    <!-- OPEN FORM -->
+    {% if existing and existing.status == 'rejected' %}
+      <div class="prev-submission">
+        <h4>Previous Submission Rejected</h4>
+        {% if existing.admin_note %}
+          <p style="color: var(--red); margin-bottom: 8px;">Admin Note: {{ existing.admin_note }}</p>
+        {% endif %}
+        <p>Please fix the issues and submit again.</p>
+      </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('student.submit_assignment', content_id=assignment.id) }}" enctype="multipart/form-data">
+      <div class="form-group">
+        <label>Your Answer</label>
+        <textarea name="submission_text" placeholder="Write your answer here...">{{ existing.submission_text or '' }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Upload File</label>
+        <input type="file" name="submission_file">
+        <small>Optional if you typed an answer above.</small>
+      </div>
+
+      <button type="submit" class="btn-save">
+        {% if existing %}Resubmit Assignment{% else %}Submit Assignment{% endif %}
+      </button>
+    </form>
+  {% endif %}
+</div>
+{% endblock %}

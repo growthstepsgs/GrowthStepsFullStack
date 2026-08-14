@@ -48,6 +48,8 @@
           <li><a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a></li>
           <li><a href="{{ url_for('admin.admin_all_students') }}">Students</a></li>
           <li><a href="{{ url_for('admin.admin_enrollments') }}">Enrollments</a></li>
+          <li><a href="{{ url_for('admin.admin_create_assignment') }}">Create Assignment</a></li>
+          <li><a href="{{ url_for('admin.admin_assignments') }}">Review Submissions</a></li>
           <li><a href="{{ url_for('admin.admin_all_data') }}">All Data</a></li>
           <li><a href="{{ url_for('admin.admin_requests') }}">Requests</a></li>
           <li><a href="{{ url_for('admin.admin_gallery') }}">Manage Gallery</a></li>
@@ -66,7 +68,8 @@
         
         {% elif session.get('role') == 'student' %}
           <li><a href="{{ url_for('student.student_dashboard') }}">Dashboard</a></li>
-          <li><a href="{{ url_for('student.student_profile') }}">My Profile</a>
+          <li><a href="{{ url_for('student.student_profile') }}">My Profile</a></li>
+          <li><a href="{{ url_for('student.my_assignments') }}">My Assignments</a></li>
           <li><a href="{{ url_for('public.available_courses') }}">Courses</a></li>
           <li><a href="{{ url_for('public.gallery') }}">Gallery</a></li>
           <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
@@ -102,6 +105,8 @@
               <li><a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a></li>
               <li><a href="{{ url_for('admin.admin_all_students') }}">Students</a></li>
               <li><a href="{{ url_for('admin.admin_enrollments') }}">Enrollments</a></li>
+              <li><a href="{{ url_for('admin.admin_create_assignment') }}">Create Assignment</a></li>
+              <li><a href="{{ url_for('admin.admin_assignments') }}">Review Submissions</a></li>
               <li><a href="{{ url_for('admin.admin_all_data') }}">All Data</a></li>
               <li><a href="{{ url_for('admin.admin_requests') }}">Requests</a></li>
               <li><a href="{{ url_for('admin.admin_gallery') }}">Manage Gallery</a></li>
@@ -119,10 +124,13 @@
 
             {% elif session.get('role') == 'student' %}
               <li><a href="{{ url_for('student.student_dashboard') }}">Dashboard</a></li>
-              <li><a href="{{ url_for('student.student_profile') }}">My Profile</a>
+              <li><a href="{{ url_for('student.student_profile') }}">My Profile</a></li>
+              <li><a href="{{ url_for('student.my_assignments') }}">My Assignments</a></li>
               <li><a href="{{ url_for('public.available_courses') }}">Courses</a></li>
               <li><a href="{{ url_for('public.gallery') }}">Gallery</a></li>
               <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
+              <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+              
 
             {% else %}
               <li><a href="{{ url_for('public.home') }}">Home</a></li>

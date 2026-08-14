@@ -17,5 +17,7 @@ VALID_STATUSES = {"pending", "in_review", "approved", "rejected"}
 GALLERY_BUCKET = "Gallery"
 AVATARS_BUCKET = "avatars" 
 ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "gif"}
+ASSIGNMENTS_BUCKET = "assignments"
+ALLOWED_ASSIGNMENT_EXTENSIONS = {"pdf", "doc", "docx", "txt", "zip", "jpg", "jpeg", "png", "webp"}
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-me")

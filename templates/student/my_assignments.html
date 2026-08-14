@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}My Assignments | Growth Steps{% endblock %}
+{% block description %}View and submit your pending assignments.{% endblock %}
+
+{% block styles %}
+<style>
+  .assign-hero { padding: var(--space-12) 0 var(--space-8); background: var(--bg-muted); border-bottom: 1px solid var(--border); }
+  .assign-hero-inner { max-width: 720px; }
+  .assign-hero h1 { font-size: clamp(var(--text-2xl), 4vw, var(--text-4xl)); font-weight: 800; color: var(--text); margin-bottom: var(--space-2); }
+  .assign-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-4); }
+  .assign-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); transition: all var(--transition-fast); }
+  .assign-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow); }
+  .assign-card h4 { font-size: var(--text-base); font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .assign-course { font-size: var(--text-xs); color: var(--primary-text); font-weight: 600; text-transform: uppercase; margin-bottom: var(--space-3); }
+  .assign-desc { font-size: var(--text-sm); color: var(--text-muted); line-height: 1.6; margin-bottom: var(--space-4); }
+  .badge { display: inline-flex; padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; margin-bottom: var(--space-3); }
+  .badge-pending { background: var(--warning-bg); color: var(--warning); }
+  .badge-rejected { background: var(--red-light); color: var(--red); }
+  .btn-submit { display: inline-block; padding: 8px 16px; background: var(--text); color: var(--bg); border-radius: var(--radius-lg); font-size: var(--text-sm); font-weight: 700; text-decoration: none; }
+  .btn-submit:hover { opacity: 0.9; }
+  .empty-state { text-align: center; padding: var(--space-12) var(--space-6); background: var(--bg-elevated); border: 2px dashed var(--border); border-radius: var(--radius-xl); }
+  .empty-state p { color: var(--text-subtle); font-size: var(--text-base); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="assign-hero" aria-labelledby="page-heading">
+  <div class="container">
+    <div class="assign-hero-inner reveal">
+      <div class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Student</div>
+      <h1 id="page-heading">My <strong>Assignments</strong></h1>
+      <p class="body">All pending and rejected assignments across your approved courses.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="list-heading">
+  <div class="container">
+    <div class="section-header reveal" style="margin-bottom: var(--space-6);">
+      <span class="eyebrow">Pending Work</span>
+      <h2 id="list-heading" class="heading-section">Assignments <strong>Due</strong></h2>
+    </div>
+
+    {% if pending_assignments %}
+      <div class="assign-grid">
+        {% for a in pending_assignments %}
+        <article class="assign-card reveal">
+          <h4>{{ a.title }}</h4>
+          <div class="assign-course">{{ a.courses.title if a.courses else 'Course' }}</div>
+
+          {% if a.description %}
+            <div class="assign-desc">{{ a.description }}</div>
+          {% endif %}
+
+          {% if a.submission %}
+            {% if a.submission.status == 'pending' %}
+              <span class="badge badge-pending">⏳ Pending Approval</span>
+              <p style="font-size: var(--text-xs); color: var(--text-subtle);">Submitted {{ a.submission.submitted_at[:10] if a.submission.submitted_at else '' }}</p>
+            {% elif a.submission.status == 'rejected' %}
+              <span class="badge badge-rejected">❌ Rejected</span>
+              {% if a.submission.admin_note %}
+                <p style="font-size: var(--text-xs); color: var(--red); margin-bottom: var(--space-3);">Note: {{ a.submission.admin_note }}</p>
+              {% endif %}
+              <a href="{{ url_for('student.submit_assignment', content_id=a.id) }}" class="btn-submit">Resubmit →</a>
+            {% endif %}
+          {% else %}
+            <span class="badge badge-pending">🔴 Not Submitted</span><br>
+            <a href="{{ url_for('student.submit_assignment', content_id=a.id) }}" class="btn-submit" style="margin-top: var(--space-2);">Submit Now →</a>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state reveal">
+        <p>No pending assignments. You're all caught up! 🎉</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

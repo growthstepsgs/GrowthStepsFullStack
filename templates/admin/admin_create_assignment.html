@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Assignment | Growth Steps{% endblock %}
+{% block description %}Create a new assignment for students.{% endblock %}
+
+{% block styles %}
+<style>
+  .form-wrap {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 32px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+  }
+  .form-wrap h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    font-size: var(--text-2xl);
+    font-weight: 800;
+  }
+  .form-group { margin-bottom: 20px; }
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: var(--text-sm);
+    color: var(--text);
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--bg);
+    color: var(--text);
+    font-size: var(--text-base);
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  .form-group small {
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+  }
+  .btn-create {
+    width: 100%;
+    padding: 12px;
+    background: var(--text);
+    color: var(--bg);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-weight: 700;
+    cursor: pointer;
+    font-size: var(--text-base);
+  }
+  .btn-create:hover { opacity: 0.9; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-wrap reveal">
+  <h2>Create Assignment</h2>
+
+  <form method="POST" action="{{ url_for('admin.admin_create_assignment') }}">
+    <div class="form-group">
+      <label>Course *</label>
+      <select name="course_id" required>
+        <option value="">Select a course</option>
+        {% for c in courses %}
+        <option value="{{ c.id }}">{{ c.title }}</option>
+        {% endfor %}
+      </select>
+      <small>Only students approved for this course will see this assignment.</small>
+    </div>
+
+    <div class="form-group">
+      <label>Assignment Title *</label>
+      <input type="text" name="title" required placeholder="e.g. Build a Responsive Landing Page">
+    </div>
+
+    <div class="form-group">
+      <label>Instructions / Description</label>
+      <textarea name="description" rows="6" placeholder="Explain what students need to submit, deadlines, requirements..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Sort Order</label>
+      <input type="number" name="sort_order" value="0" min="0">
+      <small>Lower numbers appear first.</small>
+    </div>
+
+    <button type="submit" class="btn-create">Create Assignment</button>
+  </form>
+</div>
+{% endblock %}

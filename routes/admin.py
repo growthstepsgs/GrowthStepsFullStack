@@ -600,3 +600,134 @@ def admin_delete_review(review_id):
         flash(f"Could not delete review: {exc}", "error")
 
     return redirect(url_for("public.reviews"))
+
+
+@bp.route("/dashboard/admin/assignments")
+@admin_required
+def admin_assignments():
+    client = supabase_admin or supabase
+    submissions = []
+
+    if not client:
+        flash("Supabase client not available.", "error")
+        return render_template("admin/admin_assignments.html", submissions=[], email=session.get("user_email"))
+
+    try:
+        res = client.table("assignment_submissions").select("*").order("submitted_at", desc=True).execute()
+        submissions = res.data or []
+        print(f"[ADMIN ASSIGNMENTS] Raw count from DB: {len(submissions)}")
+
+        if submissions:
+            student_ids = list({s["student_id"] for s in submissions if s.get("student_id")})
+            assignment_ids = list({s["assignment_id"] for s in submissions if s.get("assignment_id")})
+            course_ids = list({s["course_id"] for s in submissions if s.get("course_id")})
+
+            names = {}
+            if student_ids:
+                r = client.table("profiles").select("id, full_name, email, username").in_("id", student_ids).execute()
+                for p in (r.data or []):
+                    names[p["id"]] = p.get("full_name") or p.get("username") or p.get("email") or "Unknown"
+
+            assignments = {}
+            if assignment_ids:
+                r = client.table("course_contents").select("id, title").in_("id", assignment_ids).execute()
+                for a in (r.data or []):
+                    assignments[a["id"]] = a.get("title", "Untitled")
+
+            courses = {}
+            if course_ids:
+                r = client.table("courses").select("id, title").in_("id", course_ids).execute()
+                for c in (r.data or []):
+                    courses[c["id"]] = c.get("title", "Untitled")
+
+            for s in submissions:
+                s["student_name"] = names.get(s.get("student_id"), "Unknown")
+                s["student_email"] = names.get(s.get("student_id"), "") or ""
+                s["assignment_title"] = assignments.get(s.get("assignment_id"), "Unknown")
+                s["course_title"] = courses.get(s.get("course_id"), "Unknown")
+
+    except Exception as exc:
+        print(f"[ADMIN ASSIGNMENTS ERROR] {exc}")
+        flash(f"Could not load assignments: {exc}", "error")
+
+    return render_template(
+        "admin/admin_assignments.html",
+        email=session.get("user_email"),
+        submissions=submissions,
+    )
+
+
+@bp.route("/dashboard/admin/assignments/<submission_id>/review", methods=["POST"])
+@admin_required
+def admin_review_assignment(submission_id):
+    status = request.form.get("status", "").strip()
+    admin_note = request.form.get("admin_note", "").strip()
+
+    if status not in ("pending", "approved", "rejected"):
+        flash("Invalid status.", "error")
+        return redirect(url_for("admin.admin_assignments"))
+
+    client = supabase_admin or supabase
+    if not client:
+        flash("Supabase isn't configured.", "error")
+        return redirect(url_for("admin.admin_assignments"))
+
+    try:
+        update_data = {
+            "status": status,
+            "admin_note": admin_note or None,
+        }
+        if status in ("approved", "rejected"):
+            update_data["reviewed_at"] = datetime.now(timezone.utc).isoformat()
+
+        client.table("assignment_submissions").update(update_data).eq("id", submission_id).execute()
+        flash(f"Assignment marked as {status}.", "success")
+    except Exception as exc:
+        flash(f"Could not update submission: {exc}", "error")
+
+    return redirect(url_for("admin.admin_assignments"))
+
+@bp.route("/admin/assignments/create", methods=["GET", "POST"])
+@admin_required
+def admin_create_assignment():
+    client = supabase_admin or supabase
+    courses = []
+
+    if client:
+        try:
+            res = client.table("courses").select("id, title").eq("is_active", True).order("title").execute()
+            courses = res.data or []
+        except Exception:
+            pass
+
+    if request.method == "POST":
+        course_id = request.form.get("course_id", "").strip()
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip()
+        sort_order = request.form.get("sort_order", "0").strip()
+
+        if not course_id or not title:
+            flash("Course and title are required.", "error")
+            return redirect(url_for("admin.admin_create_assignment"))
+
+        try:
+            client.table("course_contents").insert({
+                "course_id": course_id,
+                "title": title,
+                "type": "assignment",
+                "description": description or None,
+                "sort_order": int(sort_order) if sort_order else 0,
+            }).execute()
+            flash("Assignment created successfully.", "success")
+            return redirect(url_for("admin.admin_create_assignment"))
+        except Exception as exc:
+            flash(f"Failed to create assignment: {exc}", "error")
+
+    return render_template("admin/admin_create_assignment.html", courses=courses)
+
+
+@bp.route("/admin/assignments")
+@admin_required
+def admin_assignment_list():
+    """Quick redirect to the review page"""
+    return redirect(url_for("admin.admin_assignments"))

@@ -124,6 +124,20 @@
 
       <p class="body">Manage your courses, track enrollments, and access learning materials.</p>
     </div>
+    <div style="display: flex; gap: 16px; flex-wrap: wrap; margin: 16px 0;">
+  <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; min-width: 120px;">
+    <strong style="font-size: var(--text-lg); color: var(--text);">{{ approved_enrollments|length }}</strong>
+    <p style="margin: 0; font-size: var(--text-xs); color: var(--text-subtle);">Courses</p>
+  </div>
+  <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; min-width: 120px;">
+    <strong style="font-size: var(--text-lg); color: var(--text);">{{ pending_enrollments|length }}</strong>
+    <p style="margin: 0; font-size: var(--text-xs); color: var(--text-subtle);">Pending</p>
+  </div>
+  <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; min-width: 120px;">
+    <strong style="font-size: var(--text-lg); color: var(--text);">{{ pending_assignment_count }}</strong>
+    <p style="margin: 0; font-size: var(--text-xs); color: var(--text-subtle);">Assignments Due</p>
+  </div>
+</div>
   </div>
 </section>
 
@@ -147,17 +161,37 @@
               {% set contents = course_contents.get(e.course_id, []) %}
               {% if contents %}
                 <div class="content-grid">
-                  {% for item in contents %}
-                    <div class="content-card">
-                      <div class="type-icon" aria-hidden="true">
-                        {% if item.type == 'video' %}▶️{% elif item.type == 'ppt' %}📄{% elif item.type == 'assignment' %}📝{% else %}📦{% endif %}
-                      </div>
-                      <h5>{{ item.title }}</h5>
+                {% for item in contents %}
+                  <div class="content-card">
+                    <div class="type-icon" aria-hidden="true">
+                      {% if item.type == 'video' %}▶️{% elif item.type == 'ppt' %}📄{% elif item.type == 'assignment' %}📝{% else %}📦{% endif %}
+                    </div>
+                    <h5>{{ item.title }}</h5>
+
+                    {% if item.type == 'assignment' %}
+                      {% set sub = assignment_submissions.get(item.id) %}
+                      {% if sub %}
+                        {% if sub.status == 'pending' %}
+                          <span class="badge badge-pending">⏳ Pending Approval</span>
+                        {% elif sub.status == 'approved' %}
+                          <span class="badge badge-approved">✅ Approved</span>
+                        {% elif sub.status == 'rejected' %}
+                          <span class="badge badge-rejected">❌ Rejected</span><br>
+                          <a href="{{ url_for('student.submit_assignment', content_id=item.id) }}" style="font-size: var(--text-xs);">Resubmit →</a>
+                        {% endif %}
+                        {% if sub.admin_note %}
+                          <p style="font-size: 11px; color: var(--text-subtle); margin-top: 4px;">{{ sub.admin_note }}</p>
+                        {% endif %}
+                      {% else %}
+                        <a href="{{ url_for('student.submit_assignment', content_id=item.id) }}">Submit Assignment →</a>
+                      {% endif %}
+                    {% else %}
                       <a href="{{ url_for('student.course_content', course_id=e.course_id, content_id=item.id) }}">
                         {% if item.type == 'video' %}Watch Video →{% elif item.type == 'ppt' %}Download PPT →{% else %}Open →{% endif %}
                       </a>
-                    </div>
-                  {% endfor %}
+                    {% endif %}
+                  </div>
+                {% endfor %}
                 </div>
               {% else %}
                 <p class="empty-note" style="margin-left: var(--space-4);">No content uploaded yet.</p>
