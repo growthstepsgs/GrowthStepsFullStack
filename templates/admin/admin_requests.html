@@ -5,6 +5,190 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Employee Requests | GS-Growth Steps</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #4f46e5;
+      --primary-light: #e0e7ff;
+      --green: #10b981;
+      --green-bg: #d1fae5;
+      --yellow: #f59e0b;
+      --yellow-bg: #fef3c7;
+      --red: #ef4444;
+      --red-bg: #fee2e2;
+      --blue: #3b82f6;
+      --blue-bg: #dbeafe;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.08);
+      --radius: 12px;
+    }
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --border: #334155;
+      --primary: #818cf8;
+      --primary-light: #312e81;
+      --green-bg: #064e3b;
+      --yellow-bg: #78350f;
+      --red-bg: #7f1d1d;
+      --blue-bg: #1e3a8a;
+    }
+
+    /* Layout */
+    .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+    /* Stats */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-chip {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .stat-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      display: grid; place-items: center; font-size: 20px;
+    }
+    .stat-icon.all { background: var(--primary-light); }
+    .stat-icon.pending { background: var(--yellow-bg); }
+    .stat-icon.approved { background: var(--green-bg); }
+    .stat-icon.rejected { background: var(--red-bg); }
+    .stat-num { font-size: 24px; font-weight: 800; color: var(--text); line-height: 1; }
+    .stat-label { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* Filters */
+    .filter-bar {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+    }
+    .filter-pill {
+      padding: 8px 18px; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--card); color: var(--muted); font-size: 14px;
+      font-weight: 500; cursor: pointer; transition: all .15s;
+      text-decoration: none;
+    }
+    .filter-pill:hover, .filter-pill.active {
+      background: var(--primary); color: #fff; border-color: var(--primary);
+    }
+
+    /* Request List */
+    .req-list { display: flex; flex-direction: column; gap: 12px; }
+    .req-row {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow);
+      overflow: hidden; transition: box-shadow .2s;
+    }
+    .req-row:hover { box-shadow: var(--shadow-lg); }
+    .req-summary {
+      display: grid; grid-template-columns: auto 1fr auto;
+      align-items: center; gap: 16px; padding: 16px 20px;
+      cursor: pointer; user-select: none;
+    }
+    .req-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--primary-light); color: var(--primary);
+      display: grid; place-items: center; font-weight: 700; font-size: 15px;
+      flex-shrink: 0;
+    }
+    .req-meta h4 { font-size: 15px; font-weight: 700; color: var(--text); margin: 0 0 2px; }
+    .req-meta small { color: var(--muted); font-size: 13px; }
+    .req-meta small span { margin: 0 6px; color: var(--border); }
+    .badge {
+      display: inline-block; padding: 4px 12px; border-radius: 999px;
+      font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
+    }
+    .badge-pending { background: var(--yellow-bg); color: var(--yellow); }
+    .badge-in_review { background: var(--blue-bg); color: var(--blue); }
+    .badge-approved { background: var(--green-bg); color: var(--green); }
+    .badge-rejected { background: var(--red-bg); color: var(--red); }
+
+    .req-actions {
+      display: flex; gap: 8px; align-items: center;
+    }
+    .btn-icon {
+      width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border);
+      background: transparent; color: var(--muted); cursor: pointer;
+      display: grid; place-items: center; font-size: 16px; transition: all .15s;
+    }
+    .btn-icon:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+
+    /* Expanded detail */
+    .req-detail {
+      display: none;
+      border-top: 1px solid var(--border);
+      padding: 20px;
+      background: var(--bg);
+    }
+    .req-detail.open { display: block; }
+    .detail-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    }
+    .detail-box h5 { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin: 0 0 8px; }
+    .detail-box p { font-size: 14px; color: var(--text); line-height: 1.6; margin: 0; }
+    .detail-box textarea, .detail-box select {
+      width: 100%; padding: 10px 14px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--card); color: var(--text);
+      font-family: inherit; font-size: 14px; resize: vertical;
+    }
+    .detail-box textarea:focus, .detail-box select:focus {
+      outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
+    }
+    .detail-actions {
+      display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;
+    }
+    .btn {
+      padding: 10px 22px; border-radius: 8px; border: none; font-size: 14px;
+      font-weight: 600; cursor: pointer; transition: all .15s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { opacity: .9; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--border); }
+
+    /* Quick actions on card */
+    .quick-actions { display: flex; gap: 6px; }
+    .quick-btn {
+      padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
+      background: var(--card); font-size: 12px; font-weight: 600; cursor: pointer;
+      transition: all .15s;
+    }
+    .quick-btn:hover { transform: translateY(-1px); }
+    .quick-btn.approve { color: var(--green); border-color: var(--green); }
+    .quick-btn.approve:hover { background: var(--green-bg); }
+    .quick-btn.reject { color: var(--red); border-color: var(--red); }
+    .quick-btn.reject:hover { background: var(--red-bg); }
+    .quick-btn.review { color: var(--blue); border-color: var(--blue); }
+    .quick-btn.review:hover { background: var(--blue-bg); }
+
+    /* Empty */
+    .empty-box {
+      text-align: center; padding: 60px 20px; color: var(--muted);
+      background: var(--card); border: 2px dashed var(--border); border-radius: var(--radius);
+    }
+    .empty-box h3 { color: var(--text); margin-bottom: 8px; }
+
+    @media (max-width: 768px) {
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .req-summary { grid-template-columns: 1fr; gap: 10px; }
+      .detail-grid { grid-template-columns: 1fr; }
+      .req-actions { flex-wrap: wrap; }
+    }
+  </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -61,69 +245,131 @@
 </header>
 
 <main id="main">
-  <section class="hero">
-    <div class="container">
-      <article class="hero-card hero-main reveal visible">
-        <div class="eyebrow">📝 Employee Requests</div>
-        <h2>Review & respond</h2>
-        <p>Signed in as {{ email }}. Update status and leave a note for the employee on each request below.</p>
-        <div class="hero-stats">
-          <div class="stat"><strong>{{ all_requests|length }}</strong><span>Total Requests</span></div>
-          <div class="stat"><strong>{{ all_requests|selectattr('status','equalto','pending')|list|length }}</strong><span>Pending</span></div>
-          <div class="stat"><strong>{{ all_requests|selectattr('status','equalto','approved')|list|length }}</strong><span>Approved</span></div>
-        </div>
-      </article>
-    </div>
-  </section>
+  <div class="admin-wrap">
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <section class="section" style="padding-top:0">
-        <div class="container">
+    <!-- Page Header -->
+    <div style="margin-bottom: 24px;">
+      <h2 style="font-size: 28px; font-weight: 800; color: var(--text); margin: 0 0 4px;">Employee Requests</h2>
+      <p style="color: var(--muted); margin: 0; font-size: 15px;">Review, update status, and respond to employee submissions. Signed in as {{ email }}.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-chip">
+        <div class="stat-icon all">📋</div>
+        <div>
+          <div class="stat-num">{{ all_requests|length }}</div>
+          <div class="stat-label">Total</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-icon pending">⏳</div>
+        <div>
+          <div class="stat-num">{{ all_requests|selectattr('status','equalto','pending')|list|length }}</div>
+          <div class="stat-label">Pending</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-icon approved">✅</div>
+        <div>
+          <div class="stat-num">{{ all_requests|selectattr('status','equalto','approved')|list|length }}</div>
+          <div class="stat-label">Approved</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-icon rejected">❌</div>
+        <div>
+          <div class="stat-num">{{ all_requests|selectattr('status','equalto','rejected')|list|length }}</div>
+          <div class="stat-label">Rejected</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div style="margin-bottom: 20px;">
           {% for category, message in messages %}
-            <div class="form-warning {{ 'form-success' if category == 'success' else '' }}">{{ message }}</div>
+            <div style="padding: 12px 16px; border-radius: 10px; margin-bottom: 8px; font-size: 14px; font-weight: 500;
+              {% if category == 'success' %}background: var(--green-bg); color: var(--green);{% else %}background: var(--yellow-bg); color: var(--yellow);{% endif %}">
+              {{ message }}
+            </div>
           {% endfor %}
         </div>
-      </section>
-    {% endif %}
-  {% endwith %}
+      {% endif %}
+    {% endwith %}
 
-  <section class="section">
-    <div class="container">
-      {% if all_requests %}
-      <div class="about-grid">
+    <!-- Filters -->
+    <div class="filter-bar">
+      <span class="filter-pill active">All Requests</span>
+      <span class="filter-pill">Pending</span>
+      <span class="filter-pill">In Review</span>
+      <span class="filter-pill">Approved</span>
+      <span class="filter-pill">Rejected</span>
+    </div>
+
+    <!-- Requests -->
+    {% if all_requests %}
+      <div class="req-list">
         {% for r in all_requests %}
-        <article class="info-card reveal visible">
-          <h4>{{ r.title }}</h4>
-          <p>
-            <strong>From:</strong> {{ r.employee_name }}<br>
-            <strong>Submitted:</strong> {{ r.created_at[:10] }}
-          </p>
-          <p>{{ r.description }}</p>
-          <p><strong>Current status:</strong> <span class="status-badge status-{{ r.status }}">{{ r.status.replace('_', ' ') | title }}</span></p>
+        <div class="req-row" data-status="{{ r.status }}">
+          <div class="req-summary" onclick="toggleDetail('detail-{{ r.id }}')">
+            <div class="req-avatar">{{ r.employee_name[:1] }}</div>
+            <div class="req-meta">
+              <h4>{{ r.title }}</h4>
+              <small>
+                <strong>{{ r.employee_name }}</strong>
+                <span>|</span>
+                {{ r.created_at[:10] }}
+                <span>|</span>
+                <span class="badge badge-{{ r.status }}">{{ r.status.replace('_', ' ') | title }}</span>
+              </small>
+            </div>
+            <div class="req-actions">
+              <div class="quick-actions">
+                <button type="button" class="quick-btn review" onclick="event.stopPropagation();setStatus('{{ r.id }}','in_review')" title="Mark In Review">Review</button>
+                <button type="button" class="quick-btn approve" onclick="event.stopPropagation();setStatus('{{ r.id }}','approved')" title="Approve">Approve</button>
+                <button type="button" class="quick-btn reject" onclick="event.stopPropagation();setStatus('{{ r.id }}','rejected')" title="Reject">Reject</button>
+              </div>
+              <button type="button" class="btn-icon" onclick="event.stopPropagation();toggleDetail('detail-{{ r.id }}')" title="Edit details">✏️</button>
+            </div>
+          </div>
 
-          <form method="POST" action="{{ url_for('admin.admin_update_request', request_id=r.id) }}" class="form">
-            <label for="status-{{ r.id }}">Update status</label>
-            <select id="status-{{ r.id }}" name="status">
-              <option value="pending" {{ "selected" if r.status == "pending" }}>Pending</option>
-              <option value="in_review" {{ "selected" if r.status == "in_review" }}>In Review</option>
-              <option value="approved" {{ "selected" if r.status == "approved" }}>Approved</option>
-              <option value="rejected" {{ "selected" if r.status == "rejected" }}>Rejected</option>
-            </select>
-
-            <label for="note-{{ r.id }}">Response / note to employee</label>
-            <textarea id="note-{{ r.id }}" name="admin_note" rows="2">{{ r.admin_note or "" }}</textarea>
-
-            <button type="submit" class="btn btn-primary">Save Update</button>
-          </form>
-        </article>
+          <div class="req-detail" id="detail-{{ r.id }}">
+            <div class="detail-grid">
+              <div class="detail-box">
+                <h5>Description</h5>
+                <p>{{ r.description }}</p>
+              </div>
+              <div class="detail-box">
+                <h5>Update Status & Note</h5>
+                <form method="POST" action="{{ url_for('admin.admin_update_request', request_id=r.id) }}" style="display:flex;flex-direction:column;gap:12px;">
+                  <select name="status">
+                    <option value="pending" {{ "selected" if r.status == "pending" }}>Pending</option>
+                    <option value="in_review" {{ "selected" if r.status == "in_review" }}>In Review</option>
+                    <option value="approved" {{ "selected" if r.status == "approved" }}>Approved</option>
+                    <option value="rejected" {{ "selected" if r.status == "rejected" }}>Rejected</option>
+                  </select>
+                  <textarea name="admin_note" rows="3" placeholder="Leave a note for the employee...">{{ r.admin_note or "" }}</textarea>
+                  <div class="detail-actions">
+                    <button type="button" class="btn btn-ghost" onclick="toggleDetail('detail-{{ r.id }}')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">💾 Save Update</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
         {% endfor %}
       </div>
-      {% else %}
-      <div class="form-warning">No requests submitted yet.</div>
-      {% endif %}
-    </div>
-  </section>
+    {% else %}
+      <div class="empty-box">
+        <h3>No requests yet</h3>
+        <p>Employee submissions will appear here once they start rolling in.</p>
+      </div>
+    {% endif %}
+
+  </div>
 </main>
 
 <footer>
@@ -137,5 +383,18 @@
 </footer>
 
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script>
+  function toggleDetail(id) {
+    const el = document.getElementById(id);
+    el.classList.toggle('open');
+  }
+  function setStatus(id, status) {
+    const detail = document.getElementById('detail-' + id);
+    detail.classList.add('open');
+    const select = detail.querySelector('select[name="status"]');
+    if (select) select.value = status;
+    select.focus();
+  }
+</script>
 </body>
 </html>
