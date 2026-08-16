@@ -61,7 +61,7 @@
       <!-- Add Content Panel -->
       <aside class="add-panel">
         <h3>➕ Add Content</h3>
-        <form method="POST" action="{{ url_for('admin_course_contents') }}">
+        <form method="POST" action="{{ url_for('admin.admin_course_contents') }}">
           <div class="form-group">
             <label for="course_id">Course</label>
             <select id="course_id" name="course_id" required>
@@ -114,11 +114,19 @@
                     <span class="meta-tag type-{{ item.type }}">{{ item.type | upper }}</span>
                     <span class="meta-tag">Order: {{ item.sort_order }}</span>
                   </div>
+                  {% if item.url %}
                   <p class="content-link" style="margin-top: var(--space-2);">
-                    <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.url[:60] }}{% if item.url|length > 60 %}...{% endif %}</a>
+                    <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">
+                      {{ item.url[:60] }}{% if item.url|length > 60 %}...{% endif %}
+                    </a>
                   </p>
+                  {% else %}
+                  <p class="content-link" style="margin-top: var(--space-2);">
+                    No URL available
+                  </p>
+                  {% endif %}
                 </div>
-                <form class="delete-form" method="POST" action="{{ url_for('admin_delete_content', content_id=item.id) }}" onsubmit="return confirm('Delete this content?');">
+                <form class="delete-form" method="POST" action="{{ url_for('admin.admin_delete_content', content_id=item.id) }}" onsubmit="return confirm('Delete this content?');">
                   <button class="btn btn-ghost" type="submit" style="color: var(--red);">Delete</button>
                 </form>
               </article>
