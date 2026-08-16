@@ -222,6 +222,8 @@ def save_typing_score():
         print(f"[TYPING SAVE ERROR] {exc}")
         return {"success": False, "error": str(exc)}
 
+
+
 @bp.route("/leaderboard")
 @login_required
 def leaderboard():

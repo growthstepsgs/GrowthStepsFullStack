@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Gaming Hub | Growth Steps{% endblock %}
+{% block description %}Take a break and play some games.{% endblock %}
+
+{% block styles %}
+<style>
+  .gaming-hero {
+    padding: var(--space-12) 0 var(--space-8);
+    background: var(--bg-muted);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+  .gaming-hero h1 {
+    font-size: clamp(var(--text-2xl), 4vw, var(--text-4xl));
+    font-weight: 800;
+  }
+  .gaming-hero p {
+    color: var(--text-muted);
+    font-size: var(--text-lg);
+    margin-top: var(--space-2);
+  }
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-5);
+    padding: var(--space-10) 0 var(--space-16);
+  }
+  .game-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: all var(--transition-base);
+    display: flex;
+    flex-direction: column;
+  }
+  .game-card:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-strong);
+    transform: translateY(-4px);
+  }
+  .game-frame {
+    width: 100%;
+    height: 220px;
+    border: none;
+    background: var(--bg-muted);
+  }
+  .game-body {
+    padding: var(--space-5);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .game-body h3 {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--text);
+  }
+  .game-body p {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    line-height: 1.6;
+    flex: 1;
+  }
+  .game-body .btn {
+    width: 100%;
+    justify-content: center;
+    margin-top: var(--space-2);
+  }
+  .game-note {
+    text-align: center;
+    color: var(--text-subtle);
+    font-size: var(--text-sm);
+    margin-top: var(--space-4);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="gaming-hero" aria-labelledby="gaming-heading">
+  <div class="container">
+    <div class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Break Time</div>
+    <h1 id="gaming-heading">Gaming <strong>Hub</strong></h1>
+    <p>Take a breather, recharge, and come back stronger.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="games-grid reveal">
+
+      <article class="game-card">
+        <iframe class="game-frame" src="https://www.crazygames.com" loading="lazy" title="CrazyGames"></iframe>
+        <div class="game-body">
+          <h3>🎮 CrazyGames</h3>
+          <p>Thousands of online games including racing, puzzle, shooting, and multiplayer.</p>
+          <a class="btn btn-primary" href="https://www.crazygames.com" target="_blank" rel="noopener">Play Now</a>
+        </div>
+      </article>
+
+      <article class="game-card">
+        <iframe class="game-frame" src="https://poki.com" loading="lazy" title="Poki"></iframe>
+        <div class="game-body">
+          <h3>🕹️ Poki</h3>
+          <p>Popular HTML5 games that run directly in your browser with no installs.</p>
+          <a class="btn btn-primary" href="https://poki.com" target="_blank" rel="noopener">Play Now</a>
+        </div>
+      </article>
+
+      <article class="game-card">
+        <iframe class="game-frame" src="https://itch.io" loading="lazy" title="itch.io"></iframe>
+        <div class="game-body">
+          <h3>👾 itch.io</h3>
+          <p>Explore thousands of indie games created by developers around the world.</p>
+          <a class="btn btn-primary" href="https://itch.io" target="_blank" rel="noopener">Play Now</a>
+        </div>
+      </article>
+
+    </div>
+    <p class="game-note reveal">If a preview doesn't load (some sites block embedding), click <strong>Play Now</strong> to open in a new tab.</p>
+  </div>
+</section>
+
+{% endblock %}

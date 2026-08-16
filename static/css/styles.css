@@ -2,7 +2,28 @@
    Growth Steps | Clean Design System
    Accessible · Minimal · Cohesive
 ═══════════════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   LAYOUT FIX — prevents footer cutting content
+══════════════════════════════════════════ */
+html {
+  min-height: 100vh;
+}
 
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main#main {
+  flex: 1 0 auto;
+  min-height: 0;
+}
+
+footer {
+  margin-top: auto;
+  flex-shrink: 0;
+}
 /* ── THEME TOKENS ── */
 :root {
   /* Spacing (8px base) */
@@ -73,7 +94,7 @@
 
 /* Dark Mode */
 [data-theme="dark"] {
-  --bg: #3a2f2b;
+  --bg: #1d1a1a;
   --bg-elevated: #1c1917;
   --bg-muted: #292524;
   --bg-subtle: #44403c;
@@ -1379,4 +1400,216 @@ footer {
   .courses-grid { grid-template-columns: 1fr; }
   .course-card { padding: var(--space-6); }
   .course-card-eyebrow { flex-direction: column; align-items: flex-start; }
+}
+
+/* ══════════════════════════════════════════
+   ADMIN NAV FIX — hamburger for admin on all
+   screens except extra-wide desktops
+══════════════════════════════════════════ */
+body.admin header .nav-row > nav {
+  display: none;
+}
+
+body.admin .menu-toggle {
+  display: flex !important;
+}
+
+@media (min-width: 1200px) {
+  body.admin header .nav-row > nav {
+    display: flex;
+  }
+  body.admin .menu-toggle {
+    display: none !important;
+  }
+}
+
+/* ══════════════════════════════════════════
+   ADMIN DASHBOARD — Premium UI
+══════════════════════════════════════════ */
+.admin-page {
+  padding-bottom: var(--space-16);
+}
+
+.admin-hero {
+  padding: var(--space-12) 0 var(--space-8);
+  background: linear-gradient(180deg, var(--bg-muted) 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-hero-inner {
+  max-width: 720px;
+}
+
+.admin-hero h1 {
+  font-size: clamp(var(--text-2xl), 4vw, var(--text-4xl));
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.admin-hero h1 span {
+  color: var(--primary);
+}
+
+.admin-hero .sub {
+  font-size: var(--text-lg);
+  color: var(--text-muted);
+  margin-top: var(--space-2);
+}
+
+/* Stats */
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-5);
+  margin-top: var(--space-8);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--border);
+}
+
+.stat-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  text-align: center;
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--primary);
+  opacity: 0.7;
+}
+
+.stat-card:nth-child(2)::before { background: var(--success); }
+.stat-card:nth-child(3)::before { background: var(--warning); }
+.stat-card:nth-child(4)::before { background: var(--primary-hover); }
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+
+.stat-card .num {
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: var(--space-2);
+}
+
+.stat-card .label {
+  font-size: var(--text-xs);
+  color: var(--text-subtle);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 768px) {
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Action Cards Section */
+.admin-section {
+  padding: var(--space-10) 0 var(--space-16);
+}
+
+.admin-section-header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: var(--space-5);
+}
+
+.action-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  transition: all var(--transition-base);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  position: relative;
+  overflow: hidden;
+}
+
+.action-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--primary);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.action-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-strong);
+  transform: translateY(-4px);
+}
+
+.action-card:hover::after {
+  opacity: 1;
+}
+
+.action-card .card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  font-size: var(--text-xl);
+  margin-bottom: var(--space-1);
+  flex-shrink: 0;
+}
+
+/* Icon accent colors */
+.action-card.accent-gold   .card-icon { background: var(--primary-light);   color: var(--primary-text); }
+.action-card.accent-green  .card-icon { background: var(--success-bg);      color: var(--success); }
+.action-card.accent-yellow .card-icon { background: var(--warning-bg);      color: var(--warning); }
+.action-card.accent-blue   .card-icon { background: #eff6ff;                color: #1d4ed8; }
+.action-card.accent-purple .card-icon { background: #f5f3ff;                color: #6d28d9; }
+.action-card.accent-rose   .card-icon { background: #fff1f2;                color: #be123c; }
+.action-card.accent-cyan   .card-icon { background: #ecfeff;                color: #0e7490; }
+.action-card.accent-orange .card-icon { background: #fff7ed;                color: #c2410c; }
+
+.action-card h3 {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text);
+  margin-top: var(--space-1);
+}
+
+.action-card p {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.65;
+  flex: 1;
+}
+
+.action-card .btn {
+  margin-top: var(--space-2);
+  width: 100%;
+  justify-content: center;
 }
