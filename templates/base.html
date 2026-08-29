@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
@@ -57,6 +57,7 @@
           <li><a href="{{ url_for('admin.admin_courses') }}">Manage Courses</a></li>
           <li><a href="{{ url_for('admin.admin_course_contents') }}">Manage Course Content</a></li>
           <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
+          <li><a href="{{ url_for('public.verify_certificate') }}">Verify</a></li>
           <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
 
         {% elif session.get('role') == 'employee' %}
@@ -74,6 +75,7 @@
           <li><a href="{{ url_for('public.available_courses') }}">Courses</a></li>
           <li><a href="{{ url_for('public.gallery') }}">Gallery</a></li>
           <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
+          <li><a href="{{ url_for('public.verify_certificate') }}">Verify</a></li>
           <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
         
 
@@ -116,6 +118,7 @@
               <li><a href="{{ url_for('admin.admin_courses') }}">Manage Courses</a></li>
               <li><a href="{{ url_for('admin.admin_course_contents') }}">Manage Course Content</a></li>
               <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
+              <li><a href="{{ url_for('public.verify_certificate') }}">Verify</a></li>
               <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
 
             {% elif session.get('role') == 'employee' %}
@@ -132,6 +135,7 @@
               <li><a href="{{ url_for('public.available_courses') }}">Courses</a></li>
               <li><a href="{{ url_for('public.gallery') }}">Gallery</a></li>
               <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
+              <li><a href="{{ url_for('public.verify_certificate') }}">Verify</a></li>
               <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
               
 
