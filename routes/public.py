@@ -39,64 +39,104 @@ def verify_certificate():
     if request.method == "POST":
         code = request.form.get("verification_code", "").strip()
 
+        # Validate verification code
         if not code or not code.isdigit() or len(code) != 10:
             error = "Please enter a valid 10-digit verification code."
+
+        elif not supabase_admin:
+            error = "Server configuration error."
+
         else:
-            client = supabase_admin
-            if not client:
-                error = "Server configuration error."
-            else:
-                try:
-                    # 1. Fetch certificate by code (NO foreign key joins)
-                    cert_res = client.table("certificates") \
-                        .select("*") \
-                        .eq("verification_code", code) \
-                        .execute()
+            try:
+                client = supabase_admin
 
-                    if not cert_res.data:
-                        error = "No certificate found with that verification code."
-                    else:
-                        cert = cert_res.data[0]
+                # 1. Find certificate
+                cert_res = (
+                    client.table("certificates")
+                    .select("*")
+                    .eq("verification_code", code)
+                    .execute()
+                )
 
-                        # 2. Fetch student profile separately
-                        profile = {}
+                print("[VERIFY] Certificate response:", cert_res.data)
+
+                if not cert_res.data:
+                    error = "No certificate found with that verification code."
+
+                else:
+                    cert = cert_res.data[0]
+
+                    print("[VERIFY] Certificate:", cert)
+
+                    # 2. Student profile
+                    profile = {}
+
+                    student_id = cert.get("student_id")
+
+                    if student_id:
                         try:
-                            prof_res = client.table("profiles") \
-                                .select("full_name, username, email, college, gender, avatar_url") \
-                                .eq("id", cert["student_id"]) \
-                                .single().execute()
+                            prof_res = (
+                                client.table("profiles")
+                                .select(
+                                    "full_name, username, email, college, gender, avatar_url"
+                                )
+                                .eq("id", student_id)
+                                .single()
+                                .execute()
+                            )
+
                             profile = prof_res.data or {}
-                        except Exception as prof_exc:
-                            print(f"[VERIFY] Profile fetch error: {prof_exc}")
 
-                        # 3. Fetch course separately
-                        course = {}
+                        except Exception as exc:
+                            print("[VERIFY] Profile error:", exc)
+
+                    # 3. Course
+                    course = {}
+
+                    course_id = cert.get("course_id")
+
+                    if course_id:
                         try:
-                            course_res = client.table("courses") \
-                                .select("title, description, duration, trainer_name") \
-                                .eq("id", cert["course_id"]) \
-                                .single().execute()
+                            course_res = (
+                                client.table("courses")
+                                .select(
+                                    "title, description, duration, trainer_name"
+                                )
+                                .eq("id", course_id)
+                                .single()
+                                .execute()
+                            )
+
                             course = course_res.data or {}
-                        except Exception as course_exc:
-                            print(f"[VERIFY] Course fetch error: {course_exc}")
 
-                        # 4. Build result object
-                        result = {
-                            "id": cert["id"],
-                            "verification_code": cert["verification_code"],
-                            "file_url": cert["file_url"],
-                            "generated_at": cert["generated_at"],
-                            "profiles": profile,
-                            "courses": course,
-                        }
+                        except Exception as exc:
+                            print("[VERIFY] Course error:", exc)
 
-                except Exception as exc:
-                    print(f"[VERIFY ERROR] {exc}")
-                    import traceback
-                    traceback.print_exc()
-                    error = "Verification service temporarily unavailable."
+                    # 4. Build safe result
+                    result = {
+                        "id": cert.get("id"),
+                        "verification_code": cert.get("verification_code"),
+                        "file_url": cert.get("file_url"),
+                        "generated_at": cert.get("generated_at"),
+                        "profiles": profile,
+                        "courses": course,
+                    }
 
-    return render_template("public/verify_certificate.html", result=result, error=error)
+                    print("[VERIFY] Final result:", result)
+
+            except Exception as exc:
+                print("[VERIFY ERROR]", repr(exc))
+
+                import traceback
+                traceback.print_exc()
+
+                error = "Verification service temporarily unavailable."
+
+    return render_template(
+        "public/verify_certificate.html",
+        result=result,
+        error=error
+    )
 
 
 @bp.route("/courses")
