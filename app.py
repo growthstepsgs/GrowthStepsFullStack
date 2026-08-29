@@ -2,10 +2,15 @@ from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 import config
 from routes.public import bp as public_bp
-
+import os
 
 def create_app():
-    app = Flask(__name__)
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    app = Flask(
+        __name__,
+        template_folder=os.path.join(base_dir, "templates"),
+        static_folder=os.path.join(base_dir, "static"),
+    )
     app.secret_key = config.SECRET_KEY
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
