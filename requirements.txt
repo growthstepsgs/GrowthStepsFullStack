@@ -4,3 +4,5 @@ supabase
 gunicorn
 httpx
 werkzeug
+Pillow
+img2pdf
