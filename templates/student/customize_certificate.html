@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Customize Certificate | Growth Steps{% endblock %}
+
+{% block content %}
+<style>
+  .cert-wrap { max-width: 480px; margin: 3rem auto; }
+  .cert-card { background: #fff; border-radius: 12px; border: 1px solid #e5e3da; overflow: hidden; }
+  .cert-header { padding: 1.25rem; border-bottom: 1px solid #e5e3da; display: flex; align-items: center; gap: 10px; }
+  .cert-header h3 { margin: 0; font-size: 18px; font-weight: 500; }
+  .cert-body { padding: 1.25rem; }
+  .cert-label-sm { font-size: 13px; color: #888780; margin: 0 0 2px; }
+  .cert-course { font-size: 16px; font-weight: 500; margin: 0 0 1rem; }
+  .cert-warning { display: flex; gap: 10px; background: #faeeda; border-radius: 8px; padding: 12px 14px; margin-bottom: 1.25rem; }
+  .cert-warning p { font-size: 14px; margin: 0; line-height: 1.5; }
+  .cert-field-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+  .cert-input { width: 100%; font-size: 16px; padding: 8px 12px; height: 44px; border: 1px solid #d3d1c7; border-radius: 8px; box-sizing: border-box; }
+  .cert-input:focus { outline: none; border-color: #378add; box-shadow: 0 0 0 3px rgba(55,138,221,0.15); }
+  .cert-help { font-size: 13px; color: #888780; margin: 6px 0 0; }
+  .cert-error { font-size: 13px; color: #a32d2d; margin: 6px 0 0; display: none; }
+  .cert-submit { width: 100%; margin-top: 1.25rem; background: #d85a30; color: #fff; border: none; font-weight: 500;
+                 font-size: 16px; padding: 12px; border-radius: 8px; cursor: pointer; }
+  .cert-submit:hover { background: #993c1d; }
+  .cert-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+</style>
+
+<div class="cert-wrap">
+  <div class="cert-card">
+    <div class="cert-header">
+      <span aria-hidden="true">🎓</span>
+      <h3>Generate your certificate</h3>
+    </div>
+    <div class="cert-body">
+      <p class="cert-label-sm">Course</p>
+      <p class="cert-course">{{ course.title if course else 'Unknown' }}</p>
+
+      <div class="cert-warning" role="alert">
+        <span aria-hidden="true">⚠️</span>
+        <p><strong>This cannot be changed later.</strong> Enter your full name exactly as you want it printed on the certificate.</p>
+      </div>
+
+      <form method="POST" action="{{ url_for('student.generate_certificate', course_id=course_id) }}" id="certForm" novalidate>
+        <label for="custom_name" class="cert-field-label">Name on certificate</label>
+        <input
+          type="text"
+          id="custom_name"
+          name="custom_name"
+          class="cert-input"
+          placeholder="Vijay Sarathi R S"
+          required
+          maxlength="60"
+          aria-describedby="nameHelp"
+          autocomplete="name"
+        >
+        <p id="nameHelp" class="cert-help">Maximum 60 characters. Use proper capitalization.</p>
+        <p id="nameError" class="cert-error" role="alert">Enter your name first.</p>
+
+        <button type="submit" class="cert-submit" id="genBtn">Generate certificate</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById('certForm');
+  const input = document.getElementById('custom_name');
+  const error = document.getElementById('nameError');
+
+  input.addEventListener('input', () => { error.style.display = 'none'; });
+
+  form.addEventListener('submit', function (e) {
+    const name = input.value.trim();
+    if (!name) {
+      e.preventDefault();
+      error.style.display = 'block';
+      input.focus();
+      return;
+    }
+    const confirmed = confirm(`Generate certificate for "${name}"?\n\nThis name cannot be changed later.`);
+    if (!confirmed) e.preventDefault();
+  });
+</script>
+{% endblock %}

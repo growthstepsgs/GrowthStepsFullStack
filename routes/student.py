@@ -3,11 +3,14 @@ from flask import (
     Blueprint, render_template, request, redirect,
     url_for, session, flash, abort
 )
+from flask import send_file
+from io import BytesIO
 from werkzeug.utils import secure_filename
 from extensions import supabase, supabase_admin
 from config import AVATARS_BUCKET, ASSIGNMENTS_BUCKET
 from utils import login_required, _get_current_role, _profile_complete, _allowed_image, _allowed_assignment
-
+from cert_utils import is_certificate_eligible, generate_certificate_pdf, generate_verification_code
+from config import CERTIFICATES_BUCKET
 bp = Blueprint("student", __name__)
 
 
@@ -135,8 +138,26 @@ def student_dashboard():
     pending_enrollments = [e for e in enrollments if e.get("status") == "pending"]
 
     course_by_id = {c["id"]: c for c in all_courses}
+
+    course_by_id = {c["id"]: c for c in all_courses}
+
+    # Fetch all certificates for this user
+    user_certificates = {}
+    try:
+        res = client.table("certificates").select("*").eq("student_id", user_id).execute()
+        for cert in (res.data or []):
+            user_certificates[cert["course_id"]] = cert
+    except Exception:
+        pass
+
     for e in approved_enrollments:
         e["course"] = course_by_id.get(e["course_id"])
+        e["certificate"] = user_certificates.get(e["course_id"])
+        if not e["certificate"]:
+            e["certificate_eligible"] = is_certificate_eligible(user_id, e["course_id"], client)
+        else:
+            e["certificate_eligible"] = False
+
     for e in pending_enrollments:
         e["course"] = course_by_id.get(e["course_id"])
 
@@ -426,7 +447,222 @@ def enroll_course(course_id):
         flash(f"Enrollment failed: {exc}", "error")
 
     return redirect(url_for("student.student_dashboard"))
+#CERTIFICATION ROUTE
+@bp.route("/certificate/customize/<course_id>")
+@login_required
+def customize_certificate(course_id):
+    user_id = session.get("user_id")
+    client = supabase_admin or supabase
 
+    # If already generated, go straight to success
+    try:
+        existing = client.table("certificates").select("*") \
+            .eq("student_id", user_id).eq("course_id", course_id).execute()
+        if existing.data:
+            return redirect(url_for("student.certificate_success", cert_id=existing.data[0]["id"]))
+    except Exception:
+        pass
+
+    if not is_certificate_eligible(user_id, course_id, client):
+        flash("You are not eligible for a certificate yet. Complete all assignments first.", "error")
+        return redirect(url_for("student.student_dashboard"))
+
+    course = None
+    if client:
+        try:
+            res = client.table("courses").select("title").eq("id", course_id).single().execute()
+            course = res.data
+        except Exception:
+            pass
+
+    return render_template("student/customize_certificate.html", course=course, course_id=course_id)
+
+@bp.route("/certificate/generate/<course_id>", methods=["POST"])
+@login_required
+def generate_certificate(course_id):
+    user_id = session.get("user_id")
+    client = supabase_admin
+
+    custom_name = request.form.get("custom_name", "").strip()
+    print(f"[CERT GEN] Starting for user={user_id}, course={course_id}, name='{custom_name}'")
+
+    if not custom_name or len(custom_name) < 2:
+        flash("Please enter a valid name (at least 2 characters).", "error")
+        return redirect(url_for("student.customize_certificate", course_id=course_id))
+
+    if not client:
+        flash("Server error: admin client not available.", "error")
+        return redirect(url_for("student.student_dashboard"))
+
+    # Check if already generated (prevents double-submit)
+    try:
+        existing = client.table("certificates").select("*") \
+            .eq("student_id", user_id).eq("course_id", course_id).execute()
+        if existing.data:
+            print(f"[CERT GEN] Already exists: {existing.data[0]['id']}")
+            flash("Certificate already generated.", "info")
+            return redirect(url_for("student.certificate_success", cert_id=existing.data[0]["id"]))
+    except Exception as exc:
+        print(f"[CERT GEN] Existing check error: {exc}")
+
+    # Check eligibility
+    if not is_certificate_eligible(user_id, course_id, client):
+        print(f"[CERT GEN] NOT ELIGIBLE")
+        flash("You are not eligible for a certificate yet. Complete all assignments first.", "error")
+        return redirect(url_for("student.student_dashboard"))
+
+    try:
+        course = client.table("courses").select("title").eq("id", course_id).single().execute()
+        course_name = course.data.get("title", "Course")
+        print(f"[CERT GEN] Course: {course_name}")
+
+        verification_code = generate_verification_code()
+        print(f"[CERT GEN] Code: {verification_code}")
+
+        pdf_buffer = generate_certificate_pdf(custom_name, course_name, verification_code)
+        pdf_bytes = pdf_buffer.getvalue()
+        print(f"[CERT GEN] PDF size: {len(pdf_bytes)} bytes")
+
+        storage_path = f"{user_id}_{course_id}_{uuid.uuid4().hex}.pdf"
+        print(f"[CERT GEN] Uploading to: {storage_path}")
+
+        client.storage.from_(CERTIFICATES_BUCKET).upload(
+            storage_path,
+            pdf_bytes,
+            {"content-type": "application/pdf"}
+        )
+        print(f"[CERT GEN] Upload OK")
+
+        public_url = client.storage.from_(CERTIFICATES_BUCKET).get_public_url(storage_path)
+        print(f"[CERT GEN] Public URL: {public_url}")
+
+        insert_data = {
+            "student_id": user_id,
+            "course_id": course_id,
+            "verification_code": verification_code,
+            "file_url": public_url,
+            "storage_path": storage_path,
+        }
+        print(f"[CERT GEN] Inserting: {insert_data}")
+
+        result = client.table("certificates").insert(insert_data).execute()
+        print(f"[CERT GEN] Insert result: {result}")
+
+        if not result.data:
+            print(f"[CERT GEN] ERROR: insert returned no data")
+            flash("Certificate saved to storage but database insert failed.", "error")
+            return redirect(url_for("student.student_dashboard"))
+
+        cert_id = result.data[0]["id"]
+        print(f"[CERT GEN] Cert ID: {cert_id}")
+
+        # Update enrollment
+        client.table("enrollments").update({
+            "certificate_generated": True
+        }).eq("student_id", user_id).eq("course_id", course_id).execute()
+
+        flash(f"Certificate generated! Code: {verification_code}", "success")
+        print(f"[CERT GEN] Redirecting to success page: {cert_id}")
+        return redirect(url_for("student.certificate_success", cert_id=cert_id))
+
+    except Exception as exc:
+        import traceback
+        print(f"[CERT GEN] CRASH: {exc}")
+        traceback.print_exc()
+        flash(f"Could not generate certificate: {exc}", "error")
+        return redirect(url_for("student.student_dashboard"))
+
+
+@bp.route("/certificate/success/<cert_id>")
+@login_required
+def certificate_success(cert_id):
+    """Shows the verification code and a download button."""
+    user_id = session.get("user_id")
+    client = supabase_admin
+
+    cert = None
+    if client:
+        try:
+            res = client.table("certificates") \
+                .select("*, courses(title)").eq("id", cert_id).single().execute()
+            if res.data and res.data["student_id"] == user_id:
+                cert = res.data
+        except Exception:
+            pass
+
+    if not cert:
+        flash("Certificate not found.", "error")
+        return redirect(url_for("student.student_dashboard"))
+
+    return render_template("student/certificate_success.html", cert=cert)
+
+
+
+@bp.route("/certificate/test-download")
+@login_required
+def test_download():
+    """Creates a dummy PDF on-the-fly and forces download."""
+    from io import BytesIO
+    from flask import make_response
+    
+    # Create a minimal valid PDF (header only, enough to trigger download)
+    dummy_pdf = b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n>>\nendobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer\n<<\n/Size 4\n/Root 1 0 R\n>>\nstartxref\n196\n%%EOF"
+    
+    response = make_response(dummy_pdf)
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = 'attachment; filename="test.pdf"'
+    return response
+@bp.route("/certificate/download/<cert_id>")
+@login_required
+def download_certificate(cert_id):
+    user_id = session.get("user_id")
+    client = supabase_admin
+
+    if not client:
+        flash("Server error.", "error")
+        return redirect(url_for("student.student_dashboard"))
+
+    try:
+        # 1. Get cert record
+        cert_res = client.table("certificates").select("*").eq("id", cert_id).single().execute()
+        if not cert_res.data or cert_res.data["student_id"] != user_id:
+            flash("Certificate not found.", "error")
+            return redirect(url_for("student.student_dashboard"))
+
+        cert = cert_res.data
+        storage_path = cert["storage_path"]
+        filename = f"GrowthSteps_Certificate_{cert['verification_code']}.pdf"
+
+        print(f"[DOWNLOAD] Fetching: bucket={CERTIFICATES_BUCKET}, path={storage_path}")
+
+        # 2. Get bytes from Supabase
+        file_bytes = client.storage.from_(CERTIFICATES_BUCKET).download(storage_path)
+        print(f"[DOWNLOAD] Fetched {len(file_bytes)} bytes")
+
+        if not file_bytes or len(file_bytes) < 100:
+            flash("File appears empty.", "error")
+            return redirect(url_for("student.student_dashboard"))
+
+        # 3. Build response manually (100% reliable)
+        response = make_response(file_bytes)
+        response.headers["Content-Type"] = "application/pdf"
+        response.headers["Content-Disposition"] = f"attachment; filename=\"{filename}\""
+        response.headers["Content-Length"] = str(len(file_bytes))
+
+        print(f"[DOWNLOAD] Sending response with attachment header")
+        return response
+
+    except Exception as exc:
+        print(f"[DOWNLOAD ERROR] {exc}")
+        # Ultimate fallback: redirect to public URL
+        try:
+            if cert and cert.get("file_url"):
+                flash("Opening certificate...", "info")
+                return redirect(cert["file_url"])
+        except:
+            pass
+        flash(f"Download failed: {exc}", "error")
+        return redirect(url_for("student.student_dashboard"))
 
 @bp.route("/course/<course_id>/content/<content_id>")
 @login_required

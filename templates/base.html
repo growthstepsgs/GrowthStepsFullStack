@@ -78,11 +78,12 @@
         
 
         {% else %}
-          <li><a href="{{ url_for('public.home') }}">Home</a></li>
+          <a href="{{ url_for('public.landing') }}">Home</a>
           <li><a href="{{ url_for('public.available_courses') }}">Courses</a></li>
           <li><a href="{{ url_for('public.services') }}">Services</a></li>
           <li><a href="{{ url_for('public.gallery') }}">Gallery</a></li>
           <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
+          <li><a href="{{ url_for('public.verify_certificate') }}">Verify</a></li>
           <li><a href="{{ url_for('auth.login') }}">Login</a></li>
         {% endif %}
       </ul>
@@ -95,7 +96,7 @@
   <!-- Header -->
   <header>
     <div class="container nav">
-      <a class="brand" href="{{ url_for('public.home') }}" aria-label="Growth Steps Home">
+      <a class="brand" href="{{ url_for('public.landing') if not session.get('user_id') else url_for('public.home') }}" aria-label="Growth Steps Home">
         <img class="brand-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="Growth Steps" />
       </a>
 
@@ -135,10 +136,11 @@
               
 
             {% else %}
-              <li><a href="{{ url_for('public.home') }}">Home</a></li>
+              <li><a href="{{ url_for('public.landing') }}">Home</a></li>
               <li><a href="{{ url_for('public.available_courses') }}">Courses</a></li>
               <li><a href="{{ url_for('public.services') }}">Services</a></li>
               <li><a href="{{ url_for('public.gallery') }}">Gallery</a></li>
+              <li><a href="{{ url_for('public.verify_certificate') }}">Verify</a></li>
               <li><a href="{{ url_for('public.reviews') }}">Reviews</a></li>
             {% endif %}
           </ul>

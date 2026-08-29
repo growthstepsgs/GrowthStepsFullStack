@@ -10,7 +10,93 @@ bp = Blueprint("public", __name__)
 
 @bp.route("/")
 def home():
+    """Root: push unauthenticated users to login; authenticated users to their dashboard."""
+    if "user_id" not in session:
+        return redirect(url_for("auth.login"))
+    
+    role = session.get("role")
+    if role == "admin":
+        return redirect(url_for("admin.admin_dashboard"))
+    elif role == "employee":
+        return redirect(url_for("employee.employee_dashboard"))
+    elif role == "student":
+        return redirect(url_for("student.student_dashboard"))
+    
+    return redirect(url_for("auth.login"))
+
+
+@bp.route("/home")
+def landing():
+    """Public landing page — still accessible for direct visits."""
     return render_template("index.html")
+
+
+@bp.route("/verify-certificate", methods=["GET", "POST"])
+def verify_certificate():
+    result = None
+    error = None
+
+    if request.method == "POST":
+        code = request.form.get("verification_code", "").strip()
+
+        if not code or not code.isdigit() or len(code) != 10:
+            error = "Please enter a valid 10-digit verification code."
+        else:
+            client = supabase_admin
+            if not client:
+                error = "Server configuration error."
+            else:
+                try:
+                    # 1. Fetch certificate by code (NO foreign key joins)
+                    cert_res = client.table("certificates") \
+                        .select("*") \
+                        .eq("verification_code", code) \
+                        .execute()
+
+                    if not cert_res.data:
+                        error = "No certificate found with that verification code."
+                    else:
+                        cert = cert_res.data[0]
+
+                        # 2. Fetch student profile separately
+                        profile = {}
+                        try:
+                            prof_res = client.table("profiles") \
+                                .select("full_name, username, email, college, gender, avatar_url") \
+                                .eq("id", cert["student_id"]) \
+                                .single().execute()
+                            profile = prof_res.data or {}
+                        except Exception as prof_exc:
+                            print(f"[VERIFY] Profile fetch error: {prof_exc}")
+
+                        # 3. Fetch course separately
+                        course = {}
+                        try:
+                            course_res = client.table("courses") \
+                                .select("title, description, duration, trainer_name") \
+                                .eq("id", cert["course_id"]) \
+                                .single().execute()
+                            course = course_res.data or {}
+                        except Exception as course_exc:
+                            print(f"[VERIFY] Course fetch error: {course_exc}")
+
+                        # 4. Build result object
+                        result = {
+                            "id": cert["id"],
+                            "verification_code": cert["verification_code"],
+                            "file_url": cert["file_url"],
+                            "generated_at": cert["generated_at"],
+                            "profiles": profile,
+                            "courses": course,
+                        }
+
+                except Exception as exc:
+                    print(f"[VERIFY ERROR] {exc}")
+                    import traceback
+                    traceback.print_exc()
+                    error = "Verification service temporarily unavailable."
+
+    return render_template("public/verify_certificate.html", result=result, error=error)
 
 
 @bp.route("/courses")

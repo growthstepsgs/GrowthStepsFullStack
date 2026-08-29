@@ -26,6 +26,16 @@ def _generate_pkce():
 
 @bp.route("/login", methods=["GET", "POST"])
 def login():
+    # Already logged in? Go to dashboard.
+    if "user_id" in session:
+        role = session.get("role")
+        if role == "admin":
+            return redirect(url_for("admin.admin_dashboard"))
+        elif role == "employee":
+            return redirect(url_for("employee.employee_dashboard"))
+        elif role == "student":
+            return redirect(url_for("student.student_dashboard"))
+
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")

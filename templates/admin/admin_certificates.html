@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>📜 Certificates</h2>
+
+  <!-- Manual Issue Form -->
+  <div class="card mb-4">
+    <div class="card-header">Manual Issue (Bypass Assignment Check)</div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('admin.admin_issue_certificate') }}">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <select name="student_id" class="form-select" required>
+              <option value="">Select Student</option>
+              {% for s in students %}
+                <option value="{{ s.id }}">{{ s.full_name or s.email }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <select name="course_id" class="form-select" required>
+              <option value="">Select Course</option>
+              {% for c in courses %}
+                <option value="{{ c.id }}">{{ c.title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <button type="submit" class="btn btn-warning w-100">Issue Certificate</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Certificates Table -->
+  <table class="table table-bordered table-hover">
+    <thead class="table-dark">
+      <tr>
+        <th>Student</th>
+        <th>Course</th>
+        <th>Verification Code</th>
+        <th>Generated At</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cert in certificates %}
+      <tr>
+        <td>{{ cert.profiles.full_name or cert.profiles.username or cert.profiles.email }}</td>
+        <td>{{ cert.courses.title }}</td>
+        <td><code>{{ cert.verification_code }}</code></td>
+        <td>{{ cert.generated_at }}</td>
+        <td>
+          <a href="{{ cert.file_url }}" target="_blank" class="btn btn-sm btn-success">View</a>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="text-center text-muted">No certificates issued yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

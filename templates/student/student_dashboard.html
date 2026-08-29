@@ -158,6 +158,7 @@
                 </div>
                 <span class="badge badge-approved">Approved</span>
               </div>
+
               {% set contents = course_contents.get(e.course_id, []) %}
               {% if contents %}
                 <div class="content-grid">
@@ -195,6 +196,31 @@
               {% else %}
                 <p class="empty-note" style="margin-left: var(--space-4);">No content uploaded yet.</p>
               {% endif %}
+
+              <!-- CERTIFICATE BLOCK -->
+              <div style="margin-left: var(--space-4); margin-top: var(--space-4); padding: var(--space-4); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg);">
+                {% if e.certificate %}
+                  <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <a href="{{ e.certificate.file_url }}" target="_blank" class="btn btn-success" style="text-decoration: none;">
+                      📜 Download Certificate
+                    </a>
+                    <span style="font-size: var(--text-xs); color: var(--text-muted);">
+                      Verify: <code style="background: var(--bg-muted); padding: 2px 6px; border-radius: 4px; font-weight: 700;">{{ e.certificate.verification_code }}</code>
+                    </span>
+                  </div>
+                {% elif e.certificate_eligible %}
+                  <a href="{{ url_for('student.customize_certificate', course_id=e.course_id) }}" 
+                     class="btn btn-primary"
+                     onclick="return confirm('You can only generate this once. Continue?')">
+                    🎓 Get My Certificate
+                  </a>
+                  <span style="font-size: var(--text-xs); color: var(--text-muted); margin-left: 8px;">All assignments approved!</span>
+                {% else %}
+                  <span style="font-size: var(--text-sm); color: var(--text-muted);">🔒 Complete all assignments to unlock your certificate</span>
+                {% endif %}
+              </div>
+              <!-- END CERTIFICATE BLOCK -->
+
             {% endif %}
           {% endfor %}
         </div>

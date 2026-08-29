@@ -8,7 +8,8 @@ from werkzeug.utils import secure_filename
 from extensions import supabase, supabase_admin
 from config import VALID_STATUSES, GALLERY_BUCKET
 from utils import admin_required, _allowed_image
-
+from cert_utils import generate_certificate_pdf, generate_verification_code
+from config import CERTIFICATES_BUCKET
 bp = Blueprint("admin", __name__)
 
 
@@ -715,6 +716,107 @@ def admin_review_assignment(submission_id):
         flash(f"Could not update submission: {exc}", "error")
 
     return redirect(url_for("admin.admin_assignments"))
+
+
+#ADMIN CERTIFICATE ROUTE
+@bp.route("/admin/certificates")
+@admin_required
+def admin_certificates():
+    client = supabase_admin or supabase
+    certs = []
+
+    if client:
+        try:
+            res = client.table("certificates") \
+                .select("*, profiles(full_name, email, username), courses(title)") \
+                .order("generated_at", desc=True) \
+                .execute()
+            certs = res.data or []
+        except Exception as exc:
+            print(f"[ADMIN CERTS] {exc}")
+
+    return render_template(
+        "admin/admin_certificates.html",
+        email=session.get("user_email"),
+        certificates=certs,
+    )
+
+@bp.route("/admin/certificates/issue", methods=["POST"])
+@admin_required
+def admin_issue_certificate():
+    student_id = request.form.get("student_id", "").strip()
+    course_id = request.form.get("course_id", "").strip()
+
+    if not student_id or not course_id:
+        flash("Student and course are required.", "error")
+        return redirect(url_for("admin.admin_certificates"))
+
+    client = supabase_admin
+    if not client:
+        flash("Server error.", "error")
+        return redirect(url_for("admin.admin_certificates"))
+
+    # Prevent duplicates
+    try:
+        existing = client.table("certificates").select("*") \
+            .eq("student_id", student_id).eq("course_id", course_id).execute()
+        if existing.data:
+            flash("Certificate already exists for this student and course.", "error")
+            return redirect(url_for("admin.admin_certificates"))
+    except Exception:
+        pass
+
+    try:
+        prof = client.table("profiles").select("full_name, username") \
+            .eq("id", student_id).single().execute()
+        student_name = prof.data.get("full_name") or prof.data.get("username") or "Student"
+
+        course = client.table("courses").select("title") \
+            .eq("id", course_id).single().execute()
+        course_name = course.data.get("title", "Course")
+
+        verification_code = generate_verification_code()
+        pdf_buffer = generate_certificate_pdf(student_name, course_name, verification_code)
+
+        storage_path = f"{student_id}_{course_id}_{uuid.uuid4().hex}.pdf"
+        client.storage.from_(CERTIFICATES_BUCKET).upload(
+            storage_path,
+            pdf_buffer.getvalue(),
+            {"content-type": "application/pdf"}
+        )
+        public_url = client.storage.from_(CERTIFICATES_BUCKET).get_public_url(storage_path)
+
+        client.table("certificates").insert({
+            "student_id": student_id,
+            "course_id": course_id,
+            "verification_code": verification_code,
+            "file_url": public_url,
+            "storage_path": storage_path,
+        }).execute()
+
+        client.table("enrollments").update({
+            "certificate_generated": True
+        }).eq("student_id", student_id).eq("course_id", course_id).execute()
+
+        flash(f"✅ Certificate issued! Code: {verification_code}", "success")
+
+    except Exception as exc:
+        print(f"[ADMIN ISSUE CERT] {exc}")
+        flash(f"Could not issue certificate: {exc}", "error")
+
+    return redirect(url_for("admin.admin_certificates"))
+
+
+
+
+
+
+
+
+
+
+
+
 
 @bp.route("/admin/assignments/create", methods=["GET", "POST"])
 @admin_required
