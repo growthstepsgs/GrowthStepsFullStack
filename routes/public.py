@@ -133,7 +133,7 @@ def verify_certificate():
                 error = "Verification service temporarily unavailable."
 
     return render_template(
-        "public/verify_certificate.html",
+        "shared/verify_certificate.html",
         result=result,
         error=error
     )
