@@ -1,6 +1,8 @@
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 import config
+from routes.public import bp as public_bp
+
 
 def create_app():
     app = Flask(__name__)
@@ -26,6 +28,7 @@ def create_app():
     app.register_blueprint(admin_bp)
     app.register_blueprint(employee_bp)
     app.register_blueprint(student_bp)
+    
 
     return app
 
