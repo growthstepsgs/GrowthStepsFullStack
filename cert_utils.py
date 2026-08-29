@@ -48,7 +48,8 @@ def generate_certificate_pdf(student_name, course_name, verification_code):
 
         # Verification code — unchanged, same size as original
         code_font = ImageFont.truetype(str(CERT_FONT_PATH), int(CERT_FONT_SIZE * 0.65))
-    except Exception:
+    except Exception as e:
+        print(f"[CERT FONT ERROR] {e}")
         font = ImageFont.load_default()
         course_font = ImageFont.load_default()
         small_font = ImageFont.load_default()
