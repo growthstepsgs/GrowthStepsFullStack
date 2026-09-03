@@ -48,13 +48,19 @@
 
 <section class="student-hero" aria-labelledby="student-heading">
   <div class="container">
-    <div class="student-hero-inner reveal">
+    <div class="student-hero-inner">
       <div class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Student Dashboard</div>
 
       <div style="display: flex; align-items: center; gap: 16px; margin: 20px 0;">
         {% if profile and profile.avatar_url %}
           <a href="{{ url_for('student.student_profile') }}" style="text-decoration: none; flex-shrink: 0;">
-            <img src="{{ profile.avatar_url }}" alt="{{ profile.username or 'You' }}" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border);">
+            <img src="{{ profile.avatar_url }}" 
+                alt="{{ profile.username or 'You' }}" 
+                width="72" 
+                height="72"
+                fetchpriority="high"
+                decoding="async"
+                style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border);">
           </a>
         {% else %}
           <a href="{{ url_for('student.student_profile') }}" style="text-decoration: none; flex-shrink: 0;">
