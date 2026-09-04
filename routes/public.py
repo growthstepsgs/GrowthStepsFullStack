@@ -10,19 +10,9 @@ bp = Blueprint("public", __name__)
 
 @bp.route("/")
 def home():
-    """Root: push unauthenticated users to login; authenticated users to their dashboard."""
-    if "user_id" not in session:
-        return redirect(url_for("auth.login"))
-    
-    role = session.get("role")
-    if role == "admin":
-        return redirect(url_for("admin.admin_dashboard"))
-    elif role == "employee":
-        return redirect(url_for("employee.employee_dashboard"))
-    elif role == "student":
-        return redirect(url_for("student.student_dashboard"))
-    
-    return redirect(url_for("auth.login"))
+    """Public landing page — everyone can view it.
+    The login popup (in base.html) handles authentication."""
+    return render_template("index.html")
 
 
 @bp.route("/home")
