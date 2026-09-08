@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Employee Requests | GS-Growth Steps</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.min.css') }}" />
   <style>
     :root {
       --bg: #f8fafc;
@@ -382,7 +382,7 @@
   </div>
 </footer>
 
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script.min.js') }}" defer></script>
 <script>
   function toggleDetail(id) {
     const el = document.getElementById(id);
