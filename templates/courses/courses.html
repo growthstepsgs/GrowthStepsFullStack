@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}Agentic AI Sunday Workshop | Growth Steps{% endblock %}
 {% block description %}Join the free live demo for the Agentic AI Sunday Workshop — a 4-week live program covering AI Agents, No-Code Automation with n8n, Agent Code Development, and real AI Agent projects.{% endblock %}
@@ -910,7 +910,10 @@
 
       <div class="trainer-wrap reveal">
         <div class="trainer-avatar">
-          <img src="{{ url_for('static', filename='images/vijay.png') }}" alt="Vijay Sarathi R S" />
+          <picture>
+            <source srcset="{{ url_for('static', filename='images/vijay.webp') }}" type="image/webp">
+            <img src="{{ url_for('static', filename='images/vijay.png') }}" alt="Vijay Sarathi R S" width="140" height="140" loading="lazy" decoding="async" />
+          </picture>
         </div>
         <div class="trainer-body">
           <h3>Vijay Sarathi R S</h3>
