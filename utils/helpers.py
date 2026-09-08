@@ -12,8 +12,13 @@ def _allowed_image(filename: str) -> bool:
 
 
 def _get_current_role(user_id: str | None) -> str:
+    # Use cryptographic session cache first to eliminate remote DB query on every request
+    cached_role = session.get("role")
+    if cached_role:
+        return cached_role
+
     if not user_id:
-        return session.get("role", "student")
+        return "student"
 
     client = supabase_admin or supabase
     if client:
@@ -25,11 +30,13 @@ def _get_current_role(user_id: str | None) -> str:
                 .execute()
             )
             if prof.data:
-                return prof.data[0].get("role", "student")
+                role = prof.data[0].get("role", "student")
+                session["role"] = role
+                return role
         except Exception:
             pass
 
-    return session.get("role", "student")
+    return "student"
 
 
 def _profile_complete(user_id: str | None) -> bool:
