@@ -4,6 +4,7 @@ from flask import (
     url_for, session, flash, current_app
 )
 from extensions import supabase, supabase_admin
+from utils.cache import cache
 
 bp = Blueprint("public", __name__)
 
@@ -40,69 +41,25 @@ def verify_certificate():
             try:
                 client = supabase_admin
 
-                # 1. Find certificate
+                # Single-roundtrip query with PostgREST join
                 cert_res = (
                     client.table("certificates")
-                    .select("*")
+                    .select(
+                        "id, verification_code, file_url, generated_at, "
+                        "profiles(full_name, username, email, college, gender, avatar_url), "
+                        "courses(title, description, duration, trainer_name)"
+                    )
                     .eq("verification_code", code)
                     .execute()
                 )
 
-                print("[VERIFY] Certificate response:", cert_res.data)
-
                 if not cert_res.data:
                     error = "No certificate found with that verification code."
-
                 else:
                     cert = cert_res.data[0]
+                    profile = cert.get("profiles") or {}
+                    course = cert.get("courses") or {}
 
-                    print("[VERIFY] Certificate:", cert)
-
-                    # 2. Student profile
-                    profile = {}
-
-                    student_id = cert.get("student_id")
-
-                    if student_id:
-                        try:
-                            prof_res = (
-                                client.table("profiles")
-                                .select(
-                                    "full_name, username, email, college, gender, avatar_url"
-                                )
-                                .eq("id", student_id)
-                                .single()
-                                .execute()
-                            )
-
-                            profile = prof_res.data or {}
-
-                        except Exception as exc:
-                            print("[VERIFY] Profile error:", exc)
-
-                    # 3. Course
-                    course = {}
-
-                    course_id = cert.get("course_id")
-
-                    if course_id:
-                        try:
-                            course_res = (
-                                client.table("courses")
-                                .select(
-                                    "title, description, duration, trainer_name"
-                                )
-                                .eq("id", course_id)
-                                .single()
-                                .execute()
-                            )
-
-                            course = course_res.data or {}
-
-                        except Exception as exc:
-                            print("[VERIFY] Course error:", exc)
-
-                    # 4. Build safe result
                     result = {
                         "id": cert.get("id"),
                         "verification_code": cert.get("verification_code"),
@@ -112,15 +69,34 @@ def verify_certificate():
                         "courses": course,
                     }
 
-                    print("[VERIFY] Final result:", result)
-
             except Exception as exc:
-                print("[VERIFY ERROR]", repr(exc))
-
-                import traceback
-                traceback.print_exc()
-
-                error = "Verification service temporarily unavailable."
+                # Fallback to individual queries if relationship syntax encounters schema cache mismatch
+                try:
+                    client = supabase_admin
+                    cert_fallback = client.table("certificates").select("*").eq("verification_code", code).execute()
+                    if cert_fallback.data:
+                        cert = cert_fallback.data[0]
+                        profile = {}
+                        course = {}
+                        if cert.get("student_id"):
+                            prof_r = client.table("profiles").select("full_name, username, email, college, gender, avatar_url").eq("id", cert["student_id"]).single().execute()
+                            profile = prof_r.data or {}
+                        if cert.get("course_id"):
+                            crs_r = client.table("courses").select("title, description, duration, trainer_name").eq("id", cert["course_id"]).single().execute()
+                            course = crs_r.data or {}
+                        result = {
+                            "id": cert.get("id"),
+                            "verification_code": cert.get("verification_code"),
+                            "file_url": cert.get("file_url"),
+                            "generated_at": cert.get("generated_at"),
+                            "profiles": profile,
+                            "courses": course,
+                        }
+                    else:
+                        error = "No certificate found with that verification code."
+                except Exception as fallback_exc:
+                    print(f"[VERIFY ERROR] {fallback_exc}")
+                    error = "Verification service temporarily unavailable."
 
     return render_template(
         "shared/verify_certificate.html",
@@ -136,20 +112,23 @@ def courses():
 
 @bp.route("/available-courses")
 def available_courses():
-    courses = []
-    client = supabase_admin or supabase
-    if client:
-        try:
-            res = (
-                client.table("courses")
-                .select("*")
-                .eq("is_active", True)
-                .order("created_at", desc=True)
-                .execute()
-            )
-            courses = res.data or []
-        except Exception as exc:
-            print(f"courses fetch failed: {exc}")
+    courses = cache.get("available_courses")
+    if courses is None:
+        courses = []
+        client = supabase_admin or supabase
+        if client:
+            try:
+                res = (
+                    client.table("courses")
+                    .select("*")
+                    .eq("is_active", True)
+                    .order("created_at", desc=True)
+                    .execute()
+                )
+                courses = res.data or []
+                cache.set("available_courses", courses, ttl=300)
+            except Exception as exc:
+                print(f"courses fetch failed: {exc}")
     return render_template("available_courses.html", courses=courses)
 
 
@@ -170,20 +149,23 @@ def google_verify():
 
 @bp.route("/gallery")
 def gallery():
-    photos = []
-    client = supabase_admin or supabase
-    if client:
-        try:
-            res = (
-                client.table("gallery_photos")
-                .select("*")
-                .order("created_at", desc=True)
-                .execute()
-            )
-            photos = res.data or []
-        except Exception as exc:
-            print(f"gallery fetch failed: {exc}")
-            photos = []
+    photos = cache.get("gallery_photos")
+    if photos is None:
+        photos = []
+        client = supabase_admin or supabase
+        if client:
+            try:
+                res = (
+                    client.table("gallery_photos")
+                    .select("*")
+                    .order("created_at", desc=True)
+                    .execute()
+                )
+                photos = res.data or []
+                cache.set("gallery_photos", photos, ttl=300)
+            except Exception as exc:
+                print(f"gallery fetch failed: {exc}")
+                photos = []
     return render_template("gallery.html", photos=photos)
 
 
@@ -233,30 +215,36 @@ def reviews():
                 "rating": rating,
                 "content": content,
             }).execute()
+            cache.delete("public_reviews")
             flash("Thank you! Your review has been submitted.", "success")
         except Exception as exc:
             flash(f"Could not submit review: {exc}", "error")
 
         return redirect(url_for("public.reviews"))
 
-    all_reviews = []
-    avg_rating = 0.0
-    if client:
-        try:
-            res = (
-                client.table("reviews")
-                .select("*")
-                .order("is_pinned", desc=True)
-                .order("created_at", desc=True)
-                .execute()
-            )
-            all_reviews = res.data or []
-            if all_reviews:
-                avg_rating = round(
-                    sum(r["rating"] for r in all_reviews) / len(all_reviews), 1
+    cached = cache.get("public_reviews")
+    if cached is not None:
+        all_reviews, avg_rating = cached
+    else:
+        all_reviews = []
+        avg_rating = 0.0
+        if client:
+            try:
+                res = (
+                    client.table("reviews")
+                    .select("*")
+                    .order("is_pinned", desc=True)
+                    .order("created_at", desc=True)
+                    .execute()
                 )
-        except Exception as exc:
-            print(f"reviews fetch failed: {exc}")
+                all_reviews = res.data or []
+                if all_reviews:
+                    avg_rating = round(
+                        sum(r["rating"] for r in all_reviews) / len(all_reviews), 1
+                    )
+                cache.set("public_reviews", (all_reviews, avg_rating), ttl=120)
+            except Exception as exc:
+                print(f"reviews fetch failed: {exc}")
 
     return render_template(
         "reviewpage.html",

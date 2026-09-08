@@ -40,82 +40,150 @@ def student_dashboard():
     badges = []
     streak = 0
     points = 0
+    daily_challenge = None
+    daily_answered = False
 
     if client:
-# Profile + streak
-        try:
-            res = client.table("profiles").select("*").eq("id", user_id).execute()
-            if res.data:
-                profile = res.data[0]
-                streak = profile.get("login_streak") or 0
-                points = profile.get("points") or 0
+        from concurrent.futures import ThreadPoolExecutor
+        from datetime import date, timedelta
+        from utils.cache import cache
+        from threading import Thread
 
-                from datetime import date, timedelta
-                today = date.today()
-                last = profile.get("last_login_date")
+        today = date.today()
+        today_str = today.isoformat()
 
-                if last:
-                    if isinstance(last, str):
-                        last = date.fromisoformat(last[:10])
-                    elif hasattr(last, 'date'):
-                        last = last.date()
+        # Step 1: Execute independent initial queries concurrently in parallel threads
+        def _fetch_profile():
+            try:
+                r = client.table("profiles").select("*").eq("id", user_id).execute()
+                return r.data[0] if r.data else {}
+            except Exception as exc:
+                print(f"[DASHBOARD PROFILE ERROR] {exc}")
+                return {}
 
-                    if last == today - timedelta(days=1):
-                        streak += 1
-                    elif last < today - timedelta(days=1):
-                        streak = 1
-                    # else last == today, don't change
-                else:
-                    streak = 1
+        def _fetch_courses():
+            cached = cache.get("available_courses")
+            if cached is not None:
+                return cached
+            try:
+                r = client.table("courses").select("*").eq("is_active", True).order("created_at", desc=True).execute()
+                data = r.data or []
+                cache.set("available_courses", data, ttl=300)
+                return data
+            except Exception:
+                return []
 
-                if last != today:
+        def _fetch_enrollments():
+            try:
+                r = client.table("enrollments").select("*").eq("student_id", user_id).execute()
+                return r.data or []
+            except Exception:
+                return []
+
+        def _fetch_certificates():
+            try:
+                r = client.table("certificates").select("*").eq("student_id", user_id).execute()
+                return {cert["course_id"]: cert for cert in (r.data or [])}
+            except Exception:
+                return {}
+
+        def _fetch_daily_challenge():
+            cached = cache.get(f"daily_challenge_{today_str}")
+            if cached is not None:
+                return cached
+            try:
+                r = client.table("daily_challenges").select("*").eq("challenge_date", today_str).execute()
+                val = r.data[0] if r.data else None
+                cache.set(f"daily_challenge_{today_str}", val, ttl=3600)
+                return val
+            except Exception:
+                return None
+
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            f_prof = executor.submit(_fetch_profile)
+            f_courses = executor.submit(_fetch_courses)
+            f_enroll = executor.submit(_fetch_enrollments)
+            f_certs = executor.submit(_fetch_certificates)
+            f_challenge = executor.submit(_fetch_daily_challenge)
+
+            profile = f_prof.result()
+            all_courses = f_courses.result()
+            enrollments = f_enroll.result()
+            user_certificates = f_certs.result()
+            daily_challenge = f_challenge.result()
+
+        # Streak calculation & non-blocking asynchronous write
+        streak = profile.get("login_streak") or 0
+        points = profile.get("points") or 0
+        last = profile.get("last_login_date")
+
+        if last:
+            if isinstance(last, str):
+                last = date.fromisoformat(last[:10])
+            elif hasattr(last, 'date'):
+                last = last.date()
+
+            if last == today - timedelta(days=1):
+                streak += 1
+            elif last < today - timedelta(days=1):
+                streak = 1
+        else:
+            streak = 1
+
+        if last != today:
+            # Asynchronous background write — eliminates blocking write latency from HTTP TTFB
+            def _bg_update_streak():
+                try:
                     client.table("profiles").update({
                         "login_streak": streak,
-                        "last_login_date": today.isoformat()
+                        "last_login_date": today_str
                     }).eq("id", user_id).execute()
-        except Exception as exc:
-            print(f"[STREAK ERROR] {exc}")
-            streak = 0
+                except Exception as exc:
+                    print(f"[STREAK UPDATE ERROR] {exc}")
+            Thread(target=_bg_update_streak, daemon=True).start()
 
-
-
-        # Courses & enrollments
-        try:
-            res = client.table("courses").select("*").eq("is_active", True).order("created_at", desc=True).execute()
-            all_courses = res.data or []
-        except Exception:
-            pass
-
-        try:
-            res = client.table("enrollments").select("*").eq("student_id", user_id).execute()
-            enrollments = res.data or []
-        except Exception:
-            pass
-
+        # Step 2: Execute dependent content & submission queries concurrently
         approved_ids = [e["course_id"] for e in enrollments if e.get("status") == "approved"]
-        if approved_ids:
-            try:
-                res = client.table("course_contents").select("*").in_("course_id", approved_ids).order("sort_order").execute()
-                for item in (res.data or []):
-                    cid = item["course_id"]
-                    if cid not in course_contents:
-                        course_contents[cid] = []
-                    course_contents[cid].append(item)
-            except Exception:
-                pass
 
+        def _fetch_contents():
+            if not approved_ids:
+                return {}
             try:
-                a_ids = []
-                for cid, items in course_contents.items():
-                    for item in items:
-                        if item.get("type") == "assignment":
-                            a_ids.append(item["id"])
-                if a_ids:
-                    res = client.table("assignment_submissions").select("*").eq("student_id", user_id).in_("assignment_id", a_ids).execute()
-                    for sub in (res.data or []):
-                        assignment_submissions[sub["assignment_id"]] = sub
+                r = client.table("course_contents").select("*").in_("course_id", approved_ids).order("sort_order").execute()
+                contents_by_cid = {}
+                for item in (r.data or []):
+                    cid = item["course_id"]
+                    contents_by_cid.setdefault(cid, []).append(item)
+                return contents_by_cid
             except Exception:
-                pass
+                return {}
+
+        def _fetch_submissions():
+            if not approved_ids:
+                return {}
+            try:
+                r = client.table("assignment_submissions").select("*").eq("student_id", user_id).execute()
+                return {sub["assignment_id"]: sub for sub in (r.data or [])}
+            except Exception:
+                return {}
+
+        def _fetch_challenge_answer():
+            if not daily_challenge:
+                return False
+            try:
+                r = client.table("challenge_answers").select("id").eq("student_id", user_id).eq("challenge_id", daily_challenge["id"]).execute()
+                return bool(r.data)
+            except Exception:
+                return False
+
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            f_contents = executor.submit(_fetch_contents)
+            f_subs = executor.submit(_fetch_submissions)
+            f_ans = executor.submit(_fetch_challenge_answer)
+
+            course_contents = f_contents.result()
+            assignment_submissions = f_subs.result()
+            daily_answered = f_ans.result()
 
     # Calculate badges
     if profile.get("username") and profile.get("phone") and profile.get("college"):
@@ -139,22 +207,22 @@ def student_dashboard():
 
     course_by_id = {c["id"]: c for c in all_courses}
 
-    course_by_id = {c["id"]: c for c in all_courses}
-
-    # Fetch all certificates for this user
-    user_certificates = {}
-    try:
-        res = client.table("certificates").select("*").eq("student_id", user_id).execute()
-        for cert in (res.data or []):
-            user_certificates[cert["course_id"]] = cert
-    except Exception:
-        pass
-
+    # In-memory certificate eligibility check
     for e in approved_enrollments:
-        e["course"] = course_by_id.get(e["course_id"])
-        e["certificate"] = user_certificates.get(e["course_id"])
+        cid = e["course_id"]
+        e["course"] = course_by_id.get(cid)
+        e["certificate"] = user_certificates.get(cid)
         if not e["certificate"]:
-            e["certificate_eligible"] = is_certificate_eligible(user_id, e["course_id"], client)
+            c_items = course_contents.get(cid, [])
+            assignment_ids = [item["id"] for item in c_items if item.get("type") == "assignment"]
+            if assignment_ids:
+                approved_count = sum(
+                    1 for aid in assignment_ids
+                    if aid in assignment_submissions and assignment_submissions[aid].get("status") == "approved"
+                )
+                e["certificate_eligible"] = (approved_count == len(assignment_ids))
+            else:
+                e["certificate_eligible"] = False
         else:
             e["certificate_eligible"] = False
 
@@ -168,21 +236,6 @@ def student_dashboard():
                 sub = assignment_submissions.get(item["id"])
                 if not sub or sub.get("status") == "rejected":
                     pending_assignment_count += 1
-
-    # Daily challenge check
-    daily_challenge = None
-    daily_answered = False
-    try:
-        from datetime import date
-        today_str = date.today().isoformat()
-        res = client.table("daily_challenges").select("*").eq("challenge_date", today_str).execute()
-        if res.data:
-            daily_challenge = res.data[0]
-            # Check if already answered
-            ans = client.table("challenge_answers").select("*").eq("student_id", user_id).eq("challenge_id", daily_challenge["id"]).execute()
-            daily_answered = bool(ans.data)
-    except Exception:
-        pass
 
     return render_template(
         "student/student_dashboard.html",

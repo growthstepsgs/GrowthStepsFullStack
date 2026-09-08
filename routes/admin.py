@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 from extensions import supabase, supabase_admin
 from config import VALID_STATUSES, GALLERY_BUCKET
 from utils import admin_required, _allowed_image
+from utils.cache import cache
 from cert_utils import generate_certificate_pdf, generate_verification_code
 from config import CERTIFICATES_BUCKET
 bp = Blueprint("admin", __name__)
@@ -33,7 +34,8 @@ def admin_dashboard():
     course_count = 0
     if client:
         try:
-            res = client.table("courses").select("*").execute()
+            # Lightweight ID select instead of full select(*) with heavy jsonb columns
+            res = client.table("courses").select("id").execute()
             course_count = len(res.data or [])
         except Exception:
             pass
@@ -77,16 +79,15 @@ def admin_all_students():
             res = client.table("enrollments").select("*").execute()
             enrollments = res.data or []
 
-            student_ids = list({e["student_id"] for e in enrollments if e.get("student_id")})
-            names = {}
-            if student_ids:
-                r = client.table("profiles").select("id, full_name, email, username").in_("id", student_ids).execute()
-                for p in (r.data or []):
-                    names[p["id"]] = {
-                        "name": p.get("full_name") or p.get("username") or p.get("email") or "Unknown",
-                        "email": p.get("email", ""),
-                        "username": p.get("username", "")
-                    }
+            # Reuse profiles already loaded above instead of issuing an extra redundant in_() query
+            names = {
+                p["id"]: {
+                    "name": p.get("full_name") or p.get("username") or p.get("email") or "Unknown",
+                    "email": p.get("email", ""),
+                    "username": p.get("username", "")
+                }
+                for p in profiles
+            }
 
             for e in enrollments:
                 e["student_name"] = names.get(e.get("student_id"), {}).get("name", "Unknown")
@@ -350,6 +351,7 @@ def admin_gallery():
                 "caption": caption,
             }).execute()
 
+            cache.delete("gallery_photos")
             flash("Photo uploaded.", "success")
         except Exception as exc:
             flash(f"Upload failed: {exc}", "error")
@@ -411,6 +413,7 @@ def admin_courses():
                 payload["original_price"] = int(original_price)
 
             client.table("courses").insert(payload).execute()
+            cache.delete("available_courses")
             flash("Course published successfully.", "success")
         except Exception as exc:
             flash(f"Failed to publish course: {exc}", "error")
@@ -435,6 +438,7 @@ def admin_delete_course(course_id):
         return redirect(url_for("admin.admin_courses"))
     try:
         client.table("courses").delete().eq("id", course_id).execute()
+        cache.delete("available_courses")
         flash("Course deleted.", "success")
     except Exception as exc:
         flash(f"Could not delete course: {exc}", "error")
@@ -460,6 +464,7 @@ def admin_delete_gallery_photo(photo_id):
         if row.data:
             client.storage.from_(GALLERY_BUCKET).remove([row.data["storage_path"]])
         client.table("gallery_photos").delete().eq("id", photo_id).execute()
+        cache.delete("gallery_photos")
         flash("Photo deleted.", "success")
     except Exception as exc:
         flash(f"Could not delete photo: {exc}", "error")
@@ -489,6 +494,7 @@ def cleanup_orphaned_photos():
         return redirect(url_for("admin.admin_gallery"))
 
     flash(f"Cleanup done — removed {deleted} orphaned row(s).", "success")
+    cache.delete("gallery_photos")
     return redirect(url_for("admin.admin_gallery"))
 
 
@@ -579,6 +585,7 @@ def admin_pin_review(review_id):
         client.table("reviews").update({
             "is_pinned": is_pinned
         }).eq("id", review_id).execute()
+        cache.delete("public_reviews")
         flash("Review updated.", "success")
     except Exception as exc:
         flash(f"Could not update review: {exc}", "error")
@@ -596,6 +603,7 @@ def admin_delete_review(review_id):
 
     try:
         client.table("reviews").delete().eq("id", review_id).execute()
+        cache.delete("public_reviews")
         flash("Review deleted.", "success")
     except Exception as exc:
         flash(f"Could not delete review: {exc}", "error")
