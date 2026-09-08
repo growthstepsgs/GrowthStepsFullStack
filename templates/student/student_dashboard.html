@@ -5,17 +5,25 @@
 
 {% block styles %}
 <style>
+  /* CLS Prevention: neutralize delayed translateY transforms on dashboard */
+  .student-hero .reveal, .dash-section.reveal, .alert-banner.reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
   .student-hero { padding: var(--space-12) 0 var(--space-8); background: var(--bg-muted); border-bottom: 1px solid var(--border); }
-  .student-hero-inner { max-width: 900px; }
+  .student-hero-inner { max-width: 900px; min-height: 180px; }
   .student-hero h1 { font-size: clamp(var(--text-2xl), 4vw, var(--text-4xl)); font-weight: 800; color: var(--text); margin-bottom: var(--space-2); }
-  .stats-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0; }
+  .student-hero-avatar-wrap { width: 72px; height: 72px; min-width: 72px; min-height: 72px; aspect-ratio: 1 / 1; border-radius: 50%; overflow: hidden; display: block; flex-shrink: 0; }
+  .student-hero-profile-p { min-height: 1.4em; line-height: 1.4; margin: 0; color: var(--text-muted); font-size: var(--text-sm); }
+  .stats-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0; min-height: 48px; }
   .stat-chip { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 10px 18px; display: flex; align-items: center; gap: 8px; }
   .stat-chip strong { font-size: var(--text-lg); color: var(--text); }
   .stat-chip span { font-size: var(--text-xs); color: var(--text-subtle); }
-  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
+  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0; min-height: 32px; }
   .badge-chip { background: var(--primary-light); color: var(--primary-text); padding: 6px 14px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 700; display: flex; align-items: center; gap: 6px; }
-  .alert-banner { background: var(--warning-bg); border: 1px solid var(--warning); border-radius: var(--radius-lg); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; font-size: var(--text-sm); color: var(--warning); font-weight: 600; }
-  .dash-section { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: var(--space-6); margin-bottom: var(--space-8); }
+  .alert-banner { background: var(--warning-bg); border: 1px solid var(--warning); border-radius: var(--radius-lg); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; font-size: var(--text-sm); color: var(--warning); font-weight: 600; min-height: 52px; contain: layout; }
+  .dash-section { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: var(--space-6); margin-bottom: var(--space-8); contain: layout style; }
   .dash-section h2 { font-size: var(--text-xl); font-weight: 700; color: var(--text); margin-bottom: var(--space-4); display: flex; align-items: center; gap: var(--space-2); }
   .course-list { display: flex; flex-direction: column; gap: var(--space-4); }
   .course-row { display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); transition: all var(--transition-fast); }
@@ -51,28 +59,28 @@
     <div class="student-hero-inner">
       <div class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Student Dashboard</div>
 
-      <div style="display: flex; align-items: center; gap: 16px; margin: 20px 0;">
+      <div style="display: flex; align-items: center; gap: 16px; margin: 20px 0; min-height: 76px;">
         {% if profile and profile.avatar_url %}
-          <a href="{{ url_for('student.student_profile') }}" style="text-decoration: none; flex-shrink: 0;">
+          <a href="{{ url_for('student.student_profile') }}" class="student-hero-avatar-wrap">
             <img src="{{ profile.avatar_url }}" 
                 alt="{{ profile.username or 'You' }}" 
                 width="72" 
                 height="72"
                 fetchpriority="high"
                 decoding="async"
-                style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border);">
+                style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border); display: block; aspect-ratio: 1 / 1;">
           </a>
         {% else %}
-          <a href="{{ url_for('student.student_profile') }}" style="text-decoration: none; flex-shrink: 0;">
-            <div style="width: 72px; height: 72px; border-radius: 50%; background: var(--bg-muted); display: flex; align-items: center; justify-content: center; font-size: 28px; border: 3px solid var(--border);">👤</div>
+          <a href="{{ url_for('student.student_profile') }}" class="student-hero-avatar-wrap" style="text-decoration: none;">
+            <div style="width: 72px; height: 72px; border-radius: 50%; background: var(--bg-muted); display: flex; align-items: center; justify-content: center; font-size: 28px; border: 3px solid var(--border); aspect-ratio: 1 / 1;">👤</div>
           </a>
         {% endif %}
         <div>
-          <h1 id="student-heading" style="margin-bottom: 2px; font-size: clamp(var(--text-xl), 3vw, var(--text-3xl));">
+          <h1 id="student-heading" style="margin-bottom: 2px; font-size: clamp(var(--text-xl), 3vw, var(--text-3xl)); line-height: 1.2;">
             {{ profile.username or (email.split('@')[0] if email else 'Learner') }}
           </h1>
-          <p style="margin: 0; color: var(--text-muted); font-size: var(--text-sm);">{{ profile.college or '' }}</p>
-          <a href="{{ url_for('student.student_profile') }}" style="font-size: var(--text-xs); color: var(--primary-text); text-decoration: none; font-weight: 600;">Edit profile →</a>
+          <p class="student-hero-profile-p">{{ profile.college or '' }}</p>
+          <a href="{{ url_for('student.student_profile') }}" style="font-size: var(--text-xs); color: var(--primary-text); text-decoration: none; font-weight: 600; display: inline-block;">Edit profile →</a>
         </div>
       </div>
 
