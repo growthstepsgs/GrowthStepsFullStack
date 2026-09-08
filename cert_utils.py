@@ -2,7 +2,6 @@ import io
 import uuid
 import secrets
 from datetime import datetime
-from PIL import Image, ImageDraw, ImageFont
 
 from config import (
     CERTIFICATE_TEMPLATE_PATH,
@@ -20,6 +19,7 @@ def generate_certificate_pdf(student_name, course_name, verification_code):
     """
     Draws text onto the template image and returns a PDF buffer.
     """
+    from PIL import Image, ImageDraw, ImageFont
     img = Image.open(CERTIFICATE_TEMPLATE_PATH)
 
     # Convert to RGB (PDF does not support RGBA well)

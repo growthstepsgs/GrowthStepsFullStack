@@ -1,7 +1,6 @@
 Flask
 python-dotenv
 supabase
-gunicorn
 httpx
 werkzeug
 Pillow

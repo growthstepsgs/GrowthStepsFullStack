@@ -2,6 +2,8 @@ from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 import config
 from routes.public import bp as public_bp
+
+
 import os
 
 def create_app():
