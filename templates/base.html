@@ -1,7 +1,5 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
-<!DOCTYPE html>
-<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,14 +9,11 @@
   <!-- Preconnect to external domains -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  
-  <!-- If your Supabase storage bucket has a custom domain, add it here -->
-  <!-- <link rel="preconnect" href="https://your-project.supabase.co" crossorigin /> -->
 
   <!-- Preload critical resources -->
   <link rel="preload" as="image" href="{{ url_for('static', filename='images/logo.png') }}" type="image/png" fetchpriority="high" />
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" as="style" />
-  <link rel="preload" href="{{ url_for('static', filename='css/styles.css') }}" as="style" />
+  <link rel="preload" href="{{ url_for('static', filename='css/styles.min.css') }}" as="style" />
 
   <!-- Load fonts (display=swap prevents FOIT) -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -30,9 +25,9 @@
     
     /* Critical path: header layout to prevent CLS */
     header { position: sticky; top: 0; z-index: 100; background: var(--bg, #fff); border-bottom: 1px solid var(--border, #e5e7eb); }
-    .nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; max-width: 1200px; margin: 0 auto; }
+    .nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; max-width: 1200px; margin: 0 auto; height: 72px; }
     .brand { display: flex; align-items: center; text-decoration: none; }
-    .brand-logo { width: 140px; height: auto; display: block; }
+    .brand-logo { width: 140px; height: 40px; aspect-ratio: 140 / 40; display: block; }
     .nav-row { display: flex; align-items: center; gap: 16px; }
     .nav-row ul { display: flex; list-style: none; gap: 20px; margin: 0; padding: 0; }
     .nav-row a { text-decoration: none; color: inherit; font-weight: 500; }
@@ -41,9 +36,8 @@
     h1, h2, h3, h4, h5, h6, p, a, span, div, li { font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
   </style>
 
-  <!-- Defer non-critical CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" media="print" onload="this.media='all'" />
-  <noscript><link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" /></noscript>
+  <!-- Production Minified CSS loaded directly — avoids layout shift from late media swap -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.min.css') }}" />
 
   {% block styles %}{% endblock %}
   {% block head %}{% endblock %}
@@ -140,7 +134,8 @@
             width="140" 
             height="40"
             fetchpriority="high"
-            decoding="async" />
+            decoding="async"
+            style="aspect-ratio: 140 / 40;" />
       </a>
 
       <div class="nav-row">
@@ -560,7 +555,7 @@
 
 {% endblock %}
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script.min.js') }}" defer></script>
 {% block scripts %}{% endblock %}
 </body>
 </html>
