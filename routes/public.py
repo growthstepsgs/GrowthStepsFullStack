@@ -5,6 +5,7 @@ from flask import (
 )
 from extensions import supabase, supabase_admin
 from utils.cache import cache
+from config import LIBRARY_BOOKS_BUCKET, LIBRARY_COVERS_BUCKET
 
 bp = Blueprint("public", __name__)
 
@@ -253,12 +254,153 @@ def reviews():
     )
 
 
+@bp.route("/library")
+def library():
+    q = request.args.get("q", "").strip()
+    selected_tag = request.args.get("tag", "").strip()
+
+    cached_books = cache.get("public_books")
+    client = supabase_admin or supabase
+
+    if cached_books is None:
+        raw_books = []
+        if client:
+            try:
+                res = (
+                    client.table("books")
+                    .select("*")
+                    .order("uploaded_at", desc=True)
+                    .execute()
+                )
+                raw_books = res.data or []
+                cache.set("public_books", raw_books, ttl=120)
+            except Exception as exc:
+                print(f"[LIBRARY FETCH ERROR] {exc}")
+                raw_books = []
+        cached_books = raw_books
+
+    # Extract distinct tags across all books
+    all_tags_set = set()
+    for b in cached_books:
+        raw_t = b.get("tags") or ""
+        for tag_item in raw_t.split(","):
+            cleaned = tag_item.strip()
+            if cleaned:
+                all_tags_set.add(cleaned)
+    all_tags = sorted(list(all_tags_set), key=lambda s: s.lower())
+
+    # Filter books by query and selected tag
+    filtered = []
+    for b in cached_books:
+        if q:
+            match_q = (
+                (b.get("title") and q.lower() in b["title"].lower())
+                or (b.get("author") and q.lower() in b["author"].lower())
+                or (b.get("tags") and q.lower() in b["tags"].lower())
+                or (b.get("notes") and q.lower() in b["notes"].lower())
+            )
+            if not match_q:
+                continue
+
+        if selected_tag:
+            book_tags = [t.strip().lower() for t in (b.get("tags") or "").split(",") if t.strip()]
+            if selected_tag.lower() not in book_tags:
+                continue
+
+        book_copy = dict(b)
+        book_copy["tag_list"] = [t.strip() for t in (b.get("tags") or "").split(",") if t.strip()]
+
+        if b.get("cover_path") and client:
+            try:
+                book_copy["cover_url"] = client.storage.from_(LIBRARY_COVERS_BUCKET).get_public_url(b["cover_path"])
+            except Exception:
+                book_copy["cover_url"] = None
+        else:
+            book_copy["cover_url"] = None
+
+        filtered.append(book_copy)
+
+    return render_template(
+        "library.html",
+        books=filtered,
+        all_tags=all_tags,
+        selected_tag=selected_tag,
+        search_query=q,
+    )
+
+
+@bp.route("/library/<book_id>")
+def book_detail(book_id):
+    client = supabase_admin or supabase
+    if not client:
+        flash("Library service unavailable.", "error")
+        return redirect(url_for("public.library"))
+
+    try:
+        res = client.table("books").select("*").eq("id", book_id).single().execute()
+        if not res.data:
+            flash("Book not found.", "error")
+            return redirect(url_for("public.library"))
+
+        book = dict(res.data)
+        book["tag_list"] = [t.strip() for t in (book.get("tags") or "").split(",") if t.strip()]
+        if book.get("cover_path"):
+            try:
+                book["cover_url"] = client.storage.from_(LIBRARY_COVERS_BUCKET).get_public_url(book["cover_path"])
+            except Exception:
+                book["cover_url"] = None
+        else:
+            book["cover_url"] = None
+
+        return render_template("book_detail.html", book=book)
+    except Exception as exc:
+        print(f"[BOOK DETAIL ERROR] {exc}")
+        flash("Could not retrieve book details.", "error")
+        return redirect(url_for("public.library"))
+
+
+@bp.route("/library/download/<book_id>")
+def download_book(book_id):
+    client = supabase_admin or supabase
+    if not client:
+        flash("Storage service unavailable.", "error")
+        return redirect(url_for("public.library"))
+
+    try:
+        res = client.table("books").select("file_path, title, file_type").eq("id", book_id).single().execute()
+        if not res.data or not res.data.get("file_path"):
+            flash("Book file not found.", "error")
+            return redirect(url_for("public.library"))
+
+        file_path = res.data["file_path"]
+        signed_res = client.storage.from_(LIBRARY_BOOKS_BUCKET).create_signed_url(file_path, expires_in=3600)
+
+        signed_url = None
+        if hasattr(signed_res, "signedURL") and signed_res.signedURL:
+            signed_url = signed_res.signedURL
+        elif hasattr(signed_res, "signedUrl") and signed_res.signedUrl:
+            signed_url = signed_res.signedUrl
+        elif isinstance(signed_res, dict):
+            signed_url = signed_res.get("signedURL") or signed_res.get("signedUrl")
+
+        if signed_url:
+            return redirect(signed_url)
+        else:
+            flash("Unable to generate secure download link.", "error")
+            return redirect(url_for("public.library"))
+    except Exception as exc:
+        print(f"[BOOK DOWNLOAD ERROR] {exc}")
+        flash(f"Error accessing book file: {exc}", "error")
+        return redirect(url_for("public.library"))
+
+
 @bp.route("/sitemap.xml")
 def sitemap():
     pages = [
         {"loc": url_for("public.home", _external=True),              "priority": "1.0",  "changefreq": "weekly"},
         {"loc": url_for("public.courses", _external=True),           "priority": "0.8",  "changefreq": "weekly"},
         {"loc": url_for("public.available_courses", _external=True), "priority": "0.8",  "changefreq": "weekly"},
+        {"loc": url_for("public.library", _external=True),           "priority": "0.8",  "changefreq": "weekly"},
         {"loc": url_for("public.services", _external=True),          "priority": "0.8",  "changefreq": "monthly"},
         {"loc": url_for("public.workshop", _external=True),          "priority": "0.7",  "changefreq": "monthly"},
         {"loc": url_for("public.gallery", _external=True),           "priority": "0.7",  "changefreq": "weekly"},

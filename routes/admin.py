@@ -6,11 +6,14 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 from extensions import supabase, supabase_admin
-from config import VALID_STATUSES, GALLERY_BUCKET
-from utils import admin_required, _allowed_image
+from config import (
+    VALID_STATUSES, GALLERY_BUCKET, CERTIFICATES_BUCKET,
+    LIBRARY_BOOKS_BUCKET, LIBRARY_COVERS_BUCKET,
+    MAX_BOOK_FILE_SIZE, MAX_COVER_FILE_SIZE
+)
+from utils import admin_required, _allowed_image, _allowed_book, _allowed_cover
 from utils.cache import cache
 from cert_utils import generate_certificate_pdf, generate_verification_code
-from config import CERTIFICATES_BUCKET
 bp = Blueprint("admin", __name__)
 
 
@@ -870,3 +873,214 @@ def admin_create_assignment():
 def admin_assignment_list():
     """Quick redirect to the review page"""
     return redirect(url_for("admin.admin_assignments"))
+
+
+# ═══════════════════════════════════════════════════════════════════
+# E-BOOK LIBRARY ADMIN ROUTES
+# ═══════════════════════════════════════════════════════════════════
+
+@bp.route("/dashboard/admin/library")
+@admin_required
+def admin_library():
+    client = supabase_admin or supabase
+    books = []
+    if client:
+        try:
+            res = (
+                client.table("books")
+                .select("*")
+                .order("uploaded_at", desc=True)
+                .execute()
+            )
+            raw_books = res.data or []
+            for b in raw_books:
+                book_item = dict(b)
+                if b.get("cover_path"):
+                    try:
+                        book_item["cover_url"] = client.storage.from_(LIBRARY_COVERS_BUCKET).get_public_url(b["cover_path"])
+                    except Exception:
+                        book_item["cover_url"] = None
+                else:
+                    book_item["cover_url"] = None
+                books.append(book_item)
+        except Exception as exc:
+            print(f"[ADMIN LIBRARY FETCH ERROR] {exc}")
+            flash(f"Failed to load books: {exc}", "error")
+
+    return render_template("admin/admin_library.html", books=books)
+
+
+@bp.route("/dashboard/admin/library/add", methods=["POST"])
+@admin_required
+def admin_library_add():
+    client = supabase_admin
+    if not client:
+        flash("Supabase service role client is not configured on the server.", "error")
+        return redirect(url_for("admin.admin_library"))
+
+    title = request.form.get("title", "").strip()
+    author = request.form.get("author", "").strip()
+    tags = request.form.get("tags", "").strip()
+    notes = request.form.get("notes", "").strip()
+
+    if not title:
+        flash("Book title is required.", "error")
+        return redirect(url_for("admin.admin_library"))
+
+    book_file = request.files.get("book_file")
+    if not book_file or not book_file.filename:
+        flash("Please select a book file (.pdf, .epub, or .txt).", "error")
+        return redirect(url_for("admin.admin_library"))
+
+    if not _allowed_book(book_file.filename):
+        flash("Invalid book file format. Supported formats: .pdf, .epub, .txt", "error")
+        return redirect(url_for("admin.admin_library"))
+
+    book_bytes = book_file.read()
+    if len(book_bytes) > MAX_BOOK_FILE_SIZE:
+        flash(f"Book file is too large. Maximum size allowed is {MAX_BOOK_FILE_SIZE // (1024 * 1024)}MB.", "error")
+        return redirect(url_for("admin.admin_library"))
+
+    cover_file = request.files.get("cover_file")
+    cover_bytes = None
+    cover_storage_path = None
+
+    if cover_file and cover_file.filename:
+        if not _allowed_cover(cover_file.filename):
+            flash("Invalid cover image format. Supported formats: .jpg, .jpeg, .png, .webp", "error")
+            return redirect(url_for("admin.admin_library"))
+
+        cover_bytes = cover_file.read()
+        if len(cover_bytes) > MAX_COVER_FILE_SIZE:
+            flash(f"Cover image is too large. Maximum size allowed is {MAX_COVER_FILE_SIZE // (1024 * 1024)}MB.", "error")
+            return redirect(url_for("admin.admin_library"))
+
+    book_ext = secure_filename(book_file.filename).rsplit(".", 1)[1].lower()
+    book_storage_path = f"{uuid.uuid4().hex}.{book_ext}"
+
+    # Determine mime types
+    mime_map = {
+        "pdf": "application/pdf",
+        "epub": "application/epub+zip",
+        "txt": "text/plain",
+    }
+    book_mimetype = mime_map.get(book_ext, book_file.mimetype or "application/octet-stream")
+
+    try:
+        # 1. Upload book file to private bucket
+        client.storage.from_(LIBRARY_BOOKS_BUCKET).upload(
+            book_storage_path,
+            book_bytes,
+            {"content-type": book_mimetype},
+        )
+
+        # 2. Upload cover if provided to public bucket
+        if cover_bytes and cover_file and cover_file.filename:
+            cover_ext = secure_filename(cover_file.filename).rsplit(".", 1)[1].lower()
+            cover_storage_path = f"{uuid.uuid4().hex}.{cover_ext}"
+            client.storage.from_(LIBRARY_COVERS_BUCKET).upload(
+                cover_storage_path,
+                cover_bytes,
+                {"content-type": cover_file.mimetype or "image/jpeg"},
+            )
+
+        # 3. Insert row into books table
+        client.table("books").insert({
+            "title": title,
+            "author": author or None,
+            "tags": tags or None,
+            "notes": notes or None,
+            "file_path": book_storage_path,
+            "file_type": book_ext,
+            "cover_path": cover_storage_path,
+        }).execute()
+
+        cache.delete("public_books")
+        flash(f"'{title}' has been successfully added to the library.", "success")
+    except Exception as exc:
+        # Cleanup uploaded files on failure
+        try:
+            client.storage.from_(LIBRARY_BOOKS_BUCKET).remove([book_storage_path])
+            if cover_storage_path:
+                client.storage.from_(LIBRARY_COVERS_BUCKET).remove([cover_storage_path])
+        except Exception:
+            pass
+        print(f"[ADMIN BOOK UPLOAD ERROR] {exc}")
+        flash(f"Upload failed: {exc}", "error")
+
+    return redirect(url_for("admin.admin_library"))
+
+
+@bp.route("/dashboard/admin/library/edit/<book_id>", methods=["POST"])
+@admin_required
+def admin_library_edit(book_id):
+    client = supabase_admin
+    if not client:
+        flash("Supabase service role client is not configured on the server.", "error")
+        return redirect(url_for("admin.admin_library"))
+
+    title = request.form.get("title", "").strip()
+    author = request.form.get("author", "").strip()
+    tags = request.form.get("tags", "").strip()
+    notes = request.form.get("notes", "").strip()
+
+    if not title:
+        flash("Book title cannot be empty.", "error")
+        return redirect(url_for("admin.admin_library"))
+
+    try:
+        client.table("books").update({
+            "title": title,
+            "author": author or None,
+            "tags": tags or None,
+            "notes": notes or None,
+        }).eq("id", book_id).execute()
+
+        cache.delete("public_books")
+        flash(f"Book '{title}' metadata updated.", "success")
+    except Exception as exc:
+        print(f"[ADMIN BOOK EDIT ERROR] {exc}")
+        flash(f"Failed to update book: {exc}", "error")
+
+    return redirect(url_for("admin.admin_library"))
+
+
+@bp.route("/dashboard/admin/library/delete/<book_id>", methods=["POST"])
+@admin_required
+def admin_library_delete(book_id):
+    client = supabase_admin
+    if not client:
+        flash("Supabase service role client is not configured on the server.", "error")
+        return redirect(url_for("admin.admin_library"))
+
+    try:
+        res = client.table("books").select("id, title, file_path, cover_path").eq("id", book_id).single().execute()
+        if not res.data:
+            flash("Book not found.", "error")
+            return redirect(url_for("admin.admin_library"))
+
+        book = res.data
+        # Remove book file from private bucket
+        if book.get("file_path"):
+            try:
+                client.storage.from_(LIBRARY_BOOKS_BUCKET).remove([book["file_path"]])
+            except Exception as exc:
+                print(f"[ADMIN DELETE STORAGE ERROR] book file: {exc}")
+
+        # Remove cover file from public bucket
+        if book.get("cover_path"):
+            try:
+                client.storage.from_(LIBRARY_COVERS_BUCKET).remove([book["cover_path"]])
+            except Exception as exc:
+                print(f"[ADMIN DELETE STORAGE ERROR] cover file: {exc}")
+
+        # Delete database row
+        client.table("books").delete().eq("id", book_id).execute()
+
+        cache.delete("public_books")
+        flash(f"Book '{book.get('title', 'Unknown')}' and its associated files have been permanently deleted.", "success")
+    except Exception as exc:
+        print(f"[ADMIN BOOK DELETE ERROR] {exc}")
+        flash(f"Failed to delete book: {exc}", "error")
+
+    return redirect(url_for("admin.admin_library"))
