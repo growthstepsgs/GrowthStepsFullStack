@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage E-book Library | Growth Steps Admin{% endblock %}
+{% block description %}Upload, update, and manage e-books in the Growth Steps library.{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/library.css') }}" />
+{% endblock %}
+
+{% block content %}
+
+  <!-- Hero -->
+  <section class="hero" aria-labelledby="admin-library-heading">
+    <div class="container">
+      <div class="hero-inner reveal">
+        <div class="eyebrow">
+          <span class="eyebrow-dot" aria-hidden="true"></span>
+          Admin Panel
+        </div>
+        <h1 id="admin-library-heading" class="heading-hero">
+          Manage <strong>E-book Library</strong>
+        </h1>
+        <p class="body-large">
+          Upload books in PDF, EPUB, or TXT formats with optional cover artwork and topics. Books become immediately available to all site visitors.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Upload Form Section -->
+  <section class="section section-alt" aria-labelledby="upload-heading">
+    <div class="container" style="max-width: 800px;">
+      <div class="section-header reveal">
+        <span class="eyebrow">Add Resource</span>
+        <h2 id="upload-heading" class="heading-section">Upload <strong>New Book</strong></h2>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div class="card reveal" style="margin-bottom: var(--space-6); {% if category == 'error' %}border-color: var(--primary); background: var(--primary-light);{% else %}border-color: var(--success); background: var(--success-bg);{% endif %}">
+              <p style="{% if category == 'error' %}color: var(--primary-text);{% else %}color: var(--success);{% endif %} font-size: var(--text-sm); font-weight: 500;">{{ msg }}</p>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <article class="card reveal">
+        <form class="contact-form" method="POST" action="{{ url_for('admin.admin_library_add') }}" enctype="multipart/form-data">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+            <div class="form-group">
+              <label for="bookTitle">Book Title <span style="color: #dc2626;">*</span></label>
+              <input id="bookTitle" name="title" type="text" placeholder="e.g. Designing Data-Intensive Applications" required />
+            </div>
+            <div class="form-group">
+              <label for="bookAuthor">Author</label>
+              <input id="bookAuthor" name="author" type="text" placeholder="e.g. Martin Kleppmann" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="bookTags">Topic Tags (comma-separated)</label>
+            <input id="bookTags" name="tags" type="text" placeholder="e.g. System Design, Databases, Architecture" />
+            <small style="color: var(--text-subtle); font-size: var(--text-xs); margin-top: 4px; display: block;">These create dynamic filter chips for readers on the library page.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="bookNotes">Notes / Description</label>
+            <textarea id="bookNotes" name="notes" rows="3" placeholder="Short description, synopsis, or why this book is recommended..."></textarea>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+            <div class="form-group">
+              <label for="bookFile">Book File (.pdf, .epub, .txt) <span style="color: #dc2626;">*</span></label>
+              <input id="bookFile" name="book_file" type="file" accept=".pdf,.epub,.txt" required />
+              <small style="color: var(--text-subtle); font-size: var(--text-xs); margin-top: 4px; display: block;">Max size: 50 MB</small>
+            </div>
+            <div class="form-group">
+              <label for="coverFile">Cover Image (optional)</label>
+              <input id="coverFile" name="cover_file" type="file" accept=".jpg,.jpeg,.png,.webp" />
+              <small style="color: var(--text-subtle); font-size: var(--text-xs); margin-top: 4px; display: block;">.jpg, .png, .webp up to 5 MB</small>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" type="submit" style="width: 100%; margin-top: var(--space-4); justify-content: center;">
+            Upload Book to Library
+          </button>
+        </form>
+      </article>
+    </div>
+  </section>
+
+  <!-- Books Inventory Table -->
+  <section class="section" aria-labelledby="inventory-heading">
+    <div class="container">
+      <div class="admin-library-header reveal">
+        <div>
+          <span class="eyebrow">Catalog</span>
+          <h2 id="inventory-heading" class="heading-section">Existing <strong>Books</strong></h2>
+          <p>{{ books|length }} book(s) in the library catalog.</p>
+        </div>
+        <a href="{{ url_for('public.library') }}" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+          View Public Catalog ↗
+        </a>
+      </div>
+
+      {% if books %}
+      <div class="admin-table-wrap reveal">
+        <table class="admin-books-table">
+          <thead>
+            <tr>
+              <th style="width: 60px;">Cover</th>
+              <th>Title & Author</th>
+              <th>Format</th>
+              <th>Tags</th>
+              <th>Date Added</th>
+              <th style="text-align: right; min-width: 180px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in books %}
+            <tr id="admin-book-{{ b.id }}">
+              <td>
+                {% if b.cover_url %}
+                  <img class="book-table-cover" src="{{ b.cover_url }}" alt="" loading="lazy" />
+                {% else %}
+                  <div class="book-table-cover-fallback">📖</div>
+                {% endif %}
+              </td>
+              <td>
+                <strong style="color: var(--text); font-size: var(--text-base); display: block;">{{ b.title }}</strong>
+                <span style="color: var(--text-muted); font-size: var(--text-xs);">{{ b.author or 'Unknown Author' }}</span>
+              </td>
+              <td>
+                <span class="format-badge badge-{{ b.file_type|lower }}" style="position: static; display: inline-block;">
+                  {{ b.file_type|upper }}
+                </span>
+              </td>
+              <td>
+                {% if b.tags %}
+                  <span style="font-size: var(--text-xs); color: var(--text-muted);">{{ b.tags }}</span>
+                {% else %}
+                  <span style="color: var(--text-subtle); font-size: var(--text-xs);">None</span>
+                {% endif %}
+              </td>
+              <td>
+                <span style="font-size: var(--text-xs); color: var(--text-subtle);">
+                  {{ b.uploaded_at[:10] if b.uploaded_at else '—' }}
+                </span>
+              </td>
+              <td style="text-align: right;">
+                <div class="table-action-group" style="justify-content: flex-end;">
+                  <a
+                    href="{{ url_for('public.download_book', book_id=b.id) }}"
+                    class="btn btn-secondary"
+                    style="padding: 6px 12px; font-size: var(--text-xs);"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Open
+                  </a>
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    style="padding: 6px 12px; font-size: var(--text-xs);"
+                    onclick="openEditModal('{{ b.id }}', {{ b.title|tojson }}, {{ (b.author or '')|tojson }}, {{ (b.tags or '')|tojson }}, {{ (b.notes or '')|tojson }})"
+                  >
+                    Edit
+                  </button>
+                  <form
+                    method="POST"
+                    action="{{ url_for('admin.admin_library_delete', book_id=b.id) }}"
+                    onsubmit="return confirm('Are you sure you want to permanently delete this book and its storage files?');"
+                    style="display: inline;"
+                  >
+                    <button
+                      type="submit"
+                      class="btn"
+                      style="padding: 6px 12px; font-size: var(--text-xs); background: #ef4444; color: #fff; border-color: #ef4444;"
+                    >
+                      Delete
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% else %}
+      <div class="empty-state reveal" style="text-align: center; padding: var(--space-12) var(--space-6); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-xl);">
+        <div class="card-icon" aria-hidden="true" style="margin: 0 auto var(--space-4); font-size: 3rem;">📚</div>
+        <h3 class="heading-card" style="margin-bottom: var(--space-2);">No books in library yet</h3>
+        <p class="body" style="color: var(--text-muted);">Use the form above to upload the first book.</p>
+      </div>
+      {% endif %}
+
+    </div>
+  </section>
+
+  <!-- Edit Metadata Modal -->
+  <div class="modal-backdrop" id="editModalBackdrop" onclick="handleBackdropClick(event)">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <h3 id="modalTitle">Edit Book Metadata</h3>
+        <button type="button" class="modal-close-btn" onclick="closeEditModal()" aria-label="Close modal">&times;</button>
+      </div>
+      <form id="editBookForm" method="POST" action="">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="modalEditTitle">Title <span style="color: #dc2626;">*</span></label>
+            <input id="modalEditTitle" name="title" type="text" required />
+          </div>
+          <div class="form-group">
+            <label for="modalEditAuthor">Author</label>
+            <input id="modalEditAuthor" name="author" type="text" />
+          </div>
+          <div class="form-group">
+            <label for="modalEditTags">Tags (comma-separated)</label>
+            <input id="modalEditTags" name="tags" type="text" />
+          </div>
+          <div class="form-group">
+            <label for="modalEditNotes">Notes / Description</label>
+            <textarea id="modalEditNotes" name="notes" rows="4"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function openEditModal(bookId, title, author, tags, notes) {
+      const form = document.getElementById('editBookForm');
+      form.action = '/dashboard/admin/library/edit/' + bookId;
+      document.getElementById('modalEditTitle').value = title || '';
+      document.getElementById('modalEditAuthor').value = author || '';
+      document.getElementById('modalEditTags').value = tags || '';
+      document.getElementById('modalEditNotes').value = notes || '';
+      
+      const backdrop = document.getElementById('editModalBackdrop');
+      backdrop.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeEditModal() {
+      const backdrop = document.getElementById('editModalBackdrop');
+      backdrop.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function handleBackdropClick(event) {
+      if (event.target === document.getElementById('editModalBackdrop')) {
+        closeEditModal();
+      }
+    }
+
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closeEditModal();
+      }
+    });
+  </script>
+
+{% endblock %}

@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}E-book Library | Growth Steps{% endblock %}
+{% block description %}Explore, search, and download tech and development e-books curated by Growth Steps.{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/library.css') }}" />
+{% endblock %}
+
+{% block content %}
+
+  <!-- Hero Section -->
+  <section class="hero" style="padding-bottom: var(--space-8);" aria-labelledby="library-hero-heading">
+    <div class="container">
+      <div class="hero-inner reveal">
+        <div class="eyebrow">
+          <span class="eyebrow-dot" aria-hidden="true"></span>
+          Knowledge Hub
+        </div>
+        <h1 id="library-hero-heading" class="heading-hero">
+          E-book <strong>Library</strong>
+        </h1>
+        <p class="body-large">
+          Curated programming, artificial intelligence, and software engineering books. Free to read and download for everyone.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Library Section -->
+  <section class="section section-alt" id="library-section" aria-labelledby="catalog-heading">
+    <div class="container">
+
+      <!-- Search & Filters -->
+      <div class="library-controls reveal">
+        <form class="library-search-form" method="GET" action="{{ url_for('public.library') }}" role="search">
+          <div class="search-input-wrapper">
+            <span class="search-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </span>
+            <input
+              type="text"
+              name="q"
+              id="librarySearchInput"
+              class="library-search-input"
+              placeholder="Search by title, author, or topics..."
+              value="{{ search_query or '' }}"
+              aria-label="Search books"
+            />
+          </div>
+          {% if selected_tag %}
+            <input type="hidden" name="tag" value="{{ selected_tag }}" />
+          {% endif %}
+          <button type="submit" class="btn btn-primary search-btn">Search</button>
+          {% if search_query or selected_tag %}
+            <a href="{{ url_for('public.library') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; justify-content: center;" title="Clear filters">Clear</a>
+          {% endif %}
+        </form>
+
+        <!-- Dynamic Tag Filter Chips -->
+        {% if all_tags %}
+        <nav class="tag-filter-bar" aria-label="Book topic filters">
+          <a
+            href="{{ url_for('public.library', q=search_query) if search_query else url_for('public.library') }}"
+            class="tag-chip {% if not selected_tag %}active{% endif %}"
+          >
+            All Topics
+          </a>
+          {% for t in all_tags %}
+            <a
+              href="{{ url_for('public.library', tag=t, q=search_query) if search_query else url_for('public.library', tag=t) }}"
+              class="tag-chip {% if selected_tag and selected_tag.lower() == t.lower() %}active{% endif %}"
+            >
+              {{ t }}
+            </a>
+          {% endfor %}
+        </nav>
+        {% endif %}
+      </div>
+
+      <!-- Book Cards Grid -->
+      {% if books %}
+      <div class="library-grid" id="booksGrid">
+        {% for book in books %}
+        <article class="book-card reveal" id="book-{{ book.id }}">
+          <!-- Book Cover -->
+          <div class="book-cover-wrap">
+            <span class="format-badge badge-{{ book.file_type|lower }}">{{ book.file_type|upper }}</span>
+            <a href="{{ url_for('public.book_detail', book_id=book.id) }}" aria-label="View details of {{ book.title }}">
+              {% if book.cover_url %}
+                <img
+                  class="book-cover-img"
+                  src="{{ book.cover_url }}"
+                  alt="Cover for {{ book.title }}"
+                  loading="lazy"
+                />
+              {% else %}
+                <div class="book-cover-fallback">
+                  <div class="fallback-icon" aria-hidden="true">📖</div>
+                  <div class="fallback-title">{{ book.title }}</div>
+                </div>
+              {% endif %}
+            </a>
+          </div>
+
+          <!-- Book Info -->
+          <div class="book-card-body">
+            <h3 class="book-card-title">
+              <a href="{{ url_for('public.book_detail', book_id=book.id) }}">{{ book.title }}</a>
+            </h3>
+
+            <div class="book-card-author">
+              <span aria-hidden="true">✍️</span>
+              <span>{{ book.author or 'Unknown Author' }}</span>
+            </div>
+
+            {% if book.notes %}
+              <p class="book-card-notes">{{ book.notes }}</p>
+            {% endif %}
+
+            {% if book.tag_list %}
+              <div class="book-card-tags">
+                {% for tag in book.tag_list %}
+                  <span class="book-card-tag">{{ tag }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="book-card-actions">
+              <a
+                href="{{ url_for('public.download_book', book_id=book.id) }}"
+                class="btn btn-primary"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open Book →
+              </a>
+              <a
+                href="{{ url_for('public.book_detail', book_id=book.id) }}"
+                class="btn btn-secondary"
+              >
+                Details
+              </a>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+
+      {% else %}
+      <!-- Empty State -->
+      <div class="empty-state reveal" style="text-align: center; padding: var(--space-16) var(--space-6); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-xl); max-width: 600px; margin: var(--space-8) auto;">
+        <div class="card-icon" aria-hidden="true" style="font-size: 3rem; margin-bottom: var(--space-4);">📚</div>
+        <h3 class="heading-card" style="font-size: var(--text-2xl); margin-bottom: var(--space-2);">No books found</h3>
+        {% if search_query or selected_tag %}
+          <p class="body" style="color: var(--text-muted); margin-bottom: var(--space-6);">
+            No books matched your criteria <strong>"{{ search_query or selected_tag }}"</strong>.
+          </p>
+          <a href="{{ url_for('public.library') }}" class="btn btn-primary">View All Books</a>
+        {% else %}
+          <p class="body" style="color: var(--text-muted);">
+            Our digital library is currently being curated. Check back soon for new additions!
+          </p>
+        {% endif %}
+      </div>
+      {% endif %}
+
+    </div>
+  </section>
+
+{% endblock %}
