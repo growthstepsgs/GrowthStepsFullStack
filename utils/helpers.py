@@ -78,3 +78,21 @@ def _allowed_assignment(filename: str) -> bool:
         and "." in filename
         and filename.rsplit(".", 1)[1].lower() in ALLOWED_ASSIGNMENT_EXTENSIONS
     )
+
+
+def _allowed_book(filename: str) -> bool:
+    from config import ALLOWED_BOOK_EXTENSIONS
+    return (
+        bool(filename)
+        and "." in filename
+        and filename.rsplit(".", 1)[1].lower() in ALLOWED_BOOK_EXTENSIONS
+    )
+
+
+def _allowed_cover(filename: str) -> bool:
+    from config import ALLOWED_COVER_EXTENSIONS
+    return (
+        bool(filename)
+        and "." in filename
+        and filename.rsplit(".", 1)[1].lower() in ALLOWED_COVER_EXTENSIONS
+    )
