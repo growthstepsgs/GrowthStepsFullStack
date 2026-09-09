@@ -1,0 +1,32 @@
+# Virtual environments
+env/
+venv/
+.venv/
+
+# Secrets
+.env
+
+# Backups and scratch folders
+New folder/
+forms-gs/
+good_file/
+itrations/
+
+# Python cache & tests
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+test_certi.py
+calibrate_certificate.py
+summa.py
+certificate_test.pdf
+game_view_chess.html
+
+# Database scripts (applied directly in Supabase console)
+database/
+growth_steps_schema.sql
+
+# Git
+.git
+.gitignore
