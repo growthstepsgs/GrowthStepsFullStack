@@ -1,10 +1,9 @@
+import time
 import uuid
 from flask import (
     Blueprint, render_template, request, redirect,
-    url_for, session, flash, abort
+    url_for, session, flash, abort, make_response
 )
-from flask import send_file
-from io import BytesIO
 from werkzeug.utils import secure_filename
 from extensions import supabase, supabase_admin
 from config import AVATARS_BUCKET, ASSIGNMENTS_BUCKET
@@ -256,23 +255,36 @@ def student_dashboard():
     )
 
 
-
-#game route
+# game route
 @bp.route("/typing-test")
 @login_required
 def typing_test():
     return render_template("student/typing_test.html")
 
+
 @bp.route("/typing-test/save", methods=["POST"])
 @login_required
 def save_typing_score():
     data = request.get_json(force=True, silent=True) or {}
-    score = data.get("wpm", 0)
     user_id = session.get("user_id")
     client = supabase_admin
 
     if not client:
         return {"success": False, "error": "Admin client missing"}
+
+    # Validate the score: a number between 0 and 200 WPM
+    try:
+        score = int(float(data.get("wpm", 0)))
+    except (TypeError, ValueError):
+        return {"success": False, "error": "Invalid score"}, 400
+    if score < 0 or score > 200:
+        return {"success": False, "error": "Invalid score"}, 400
+
+    # Simple rate limit: one save per 30 seconds per session (stops console-spamming for points)
+    now = time.time()
+    if now - session.get("last_typing_save", 0) < 30:
+        return {"success": False, "error": "Please wait before submitting another score"}, 429
+    session["last_typing_save"] = now
 
     try:
         res = client.table("profiles").select("typing_high_score, points").eq("id", user_id).execute()
@@ -283,7 +295,7 @@ def save_typing_score():
         current_points = res.data[0].get("points") or 0
         new_high = max(current_high, score)
 
-        # Award 1 point per WPM over 30, capped at 20 per test
+        # Award 1 point per WPM, capped at 20 per test
         bonus = min(score, 20)
 
         client.table("profiles").update({
@@ -297,7 +309,6 @@ def save_typing_score():
         return {"success": False, "error": str(exc)}
 
 
-
 @bp.route("/leaderboard")
 @login_required
 def leaderboard():
@@ -307,13 +318,16 @@ def leaderboard():
 
     if client:
         try:
-            res = client.table("profiles") \
-    .select("*") \
-    .order("points", desc=True) \
-    .order("login_streak", desc=True) \
-    .order("typing_high_score", desc=True) \
-    .limit(20) \
-    .execute()
+            # Only the columns the leaderboard needs (no phone/email/etc.)
+            res = (
+                client.table("profiles")
+                .select("id, full_name, username, avatar_url, college, points, login_streak, typing_high_score")
+                .order("points", desc=True)
+                .order("login_streak", desc=True)
+                .order("typing_high_score", desc=True)
+                .limit(20)
+                .execute()
+            )
             all_students = res.data or []
             for i, s in enumerate(all_students, 1):
                 s["rank"] = i
@@ -326,6 +340,7 @@ def leaderboard():
     return render_template("student/leaderboard.html",
                            students=top_students,
                            my_rank=my_rank)
+
 
 @bp.route("/daily-challenge/answer", methods=["POST"])
 @login_required
@@ -423,6 +438,16 @@ def student_profile():
             "email": profile.get("email") or session.get("user_email") or "",
         }
 
+        # Job-match fields (only touched if the form actually sends them)
+        if "skills" in request.form:
+            update_data["skills"] = [
+                s.strip().lower() for s in request.form["skills"].split(",") if s.strip()
+            ]
+        if request.form.get("experience_years", "").isdigit():
+            update_data["experience_years"] = int(request.form["experience_years"])
+        if "preferred_location" in request.form:
+            update_data["preferred_location"] = request.form["preferred_location"].strip() or None
+
         if gender in ("male", "female", "other", "prefer_not_to_say"):
             update_data["gender"] = gender
         else:
@@ -500,7 +525,9 @@ def enroll_course(course_id):
         flash(f"Enrollment failed: {exc}", "error")
 
     return redirect(url_for("student.student_dashboard"))
-#CERTIFICATION ROUTE
+
+
+# CERTIFICATION ROUTE
 @bp.route("/certificate/customize/<course_id>")
 @login_required
 def customize_certificate(course_id):
@@ -529,6 +556,7 @@ def customize_certificate(course_id):
             pass
 
     return render_template("student/customize_certificate.html", course=course, course_id=course_id)
+
 
 @bp.route("/certificate/generate/<course_id>", methods=["POST"])
 @login_required
@@ -560,7 +588,7 @@ def generate_certificate(course_id):
 
     # Check eligibility
     if not is_certificate_eligible(user_id, course_id, client):
-        print(f"[CERT GEN] NOT ELIGIBLE")
+        print("[CERT GEN] NOT ELIGIBLE")
         flash("You are not eligible for a certificate yet. Complete all assignments first.", "error")
         return redirect(url_for("student.student_dashboard"))
 
@@ -584,7 +612,7 @@ def generate_certificate(course_id):
             pdf_bytes,
             {"content-type": "application/pdf"}
         )
-        print(f"[CERT GEN] Upload OK")
+        print("[CERT GEN] Upload OK")
 
         public_url = client.storage.from_(CERTIFICATES_BUCKET).get_public_url(storage_path)
         print(f"[CERT GEN] Public URL: {public_url}")
@@ -602,7 +630,7 @@ def generate_certificate(course_id):
         print(f"[CERT GEN] Insert result: {result}")
 
         if not result.data:
-            print(f"[CERT GEN] ERROR: insert returned no data")
+            print("[CERT GEN] ERROR: insert returned no data")
             flash("Certificate saved to storage but database insert failed.", "error")
             return redirect(url_for("student.student_dashboard"))
 
@@ -650,26 +678,12 @@ def certificate_success(cert_id):
     return render_template("student/certificate_success.html", cert=cert)
 
 
-
-@bp.route("/certificate/test-download")
-@login_required
-def test_download():
-    """Creates a dummy PDF on-the-fly and forces download."""
-    from io import BytesIO
-    from flask import make_response
-    
-    # Create a minimal valid PDF (header only, enough to trigger download)
-    dummy_pdf = b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n>>\nendobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer\n<<\n/Size 4\n/Root 1 0 R\n>>\nstartxref\n196\n%%EOF"
-    
-    response = make_response(dummy_pdf)
-    response.headers["Content-Type"] = "application/pdf"
-    response.headers["Content-Disposition"] = 'attachment; filename="test.pdf"'
-    return response
 @bp.route("/certificate/download/<cert_id>")
 @login_required
 def download_certificate(cert_id):
     user_id = session.get("user_id")
     client = supabase_admin
+    cert = None
 
     if not client:
         flash("Server error.", "error")
@@ -696,26 +710,27 @@ def download_certificate(cert_id):
             flash("File appears empty.", "error")
             return redirect(url_for("student.student_dashboard"))
 
-        # 3. Build response manually (100% reliable)
+        # 3. Build response manually
         response = make_response(file_bytes)
         response.headers["Content-Type"] = "application/pdf"
         response.headers["Content-Disposition"] = f"attachment; filename=\"{filename}\""
         response.headers["Content-Length"] = str(len(file_bytes))
 
-        print(f"[DOWNLOAD] Sending response with attachment header")
+        print("[DOWNLOAD] Sending response with attachment header")
         return response
 
     except Exception as exc:
         print(f"[DOWNLOAD ERROR] {exc}")
-        # Ultimate fallback: redirect to public URL
+        # Fallback: redirect to public URL
         try:
             if cert and cert.get("file_url"):
                 flash("Opening certificate...", "info")
                 return redirect(cert["file_url"])
-        except:
+        except Exception:
             pass
         flash(f"Download failed: {exc}", "error")
         return redirect(url_for("student.student_dashboard"))
+
 
 @bp.route("/course/<course_id>/content/<content_id>")
 @login_required

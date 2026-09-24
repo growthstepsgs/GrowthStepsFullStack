@@ -24,6 +24,15 @@ def _generate_pkce():
     return verifier, challenge
 
 
+def _safe_next():
+    """Return (and clear) a saved same-site path to send the user back to after login.
+    Set by routes/jobs.py when a logged-out visitor hits /jobs. Only local paths are allowed."""
+    n = session.pop("next_url", None)
+    if n and n.startswith("/") and not n.startswith("//") and "\\" not in n:
+        return n
+    return None
+
+
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     # Already logged in? Go to dashboard.
@@ -88,6 +97,11 @@ def login():
         session["user_email"] = email
         session["user_id"] = result.user.id
         session["role"] = role
+
+        # Send the user back to the page they originally wanted (e.g. /jobs?q=python)
+        next_url = _safe_next()
+        if next_url:
+            return redirect(next_url)
 
         if role == "employee":
             return redirect(url_for("employee.employee_dashboard"))
@@ -157,10 +171,11 @@ def auth_google():
     session.permanent = True
 
     next_param = request.args.get("next", "")
-    if next_param.startswith("/"):
+    if next_param.startswith("/") and not next_param.startswith("//"):
         session["oauth_next"] = next_param
     else:
-        session["oauth_next"] = url_for("employee.employee_dashboard")
+        # falls back to the page saved by /jobs (if any), otherwise the original default
+        session["oauth_next"] = _safe_next() or url_for("employee.employee_dashboard")
 
     callback_url = url_for("auth.auth_callback", _external=True)
 
