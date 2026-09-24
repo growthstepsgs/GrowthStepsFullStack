@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}My Job Dashboard | Growth Steps{% endblock %}
+{% block description %}Your saved, applied and recently viewed jobs.{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/jobs.css') }}" />{% endblock %}
+
+{% block content %}
+<section class="section jobs-page">
+  <div class="container">
+    <div class="jobs-head">
+      <h1 class="heading-section">My job <strong>dashboard</strong></h1>
+      <a class="btn btn-secondary" href="{{ url_for('jobs.jobs_page') }}">← Back to job search</a>
+    </div>
+    <div class="dash-tabs" role="tablist">
+      <button class="dash-tab active" data-tab="saved">Saved <span id="n-saved"></span></button>
+      <button class="dash-tab" data-tab="applied">Applied <span id="n-applied"></span></button>
+      <button class="dash-tab" data-tab="recent">Recently viewed</button>
+    </div>
+    <div id="dash-list"></div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>window.JOBS_DASHBOARD = true;</script>
+<script src="{{ url_for('static', filename='js/jobs.js') }}" defer></script>
+{% endblock %}

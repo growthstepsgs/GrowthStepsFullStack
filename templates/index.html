@@ -3,6 +3,67 @@
 {% block title %}Growth Steps | Home{% endblock %}
 {% block description %}Growth Steps is a digital growth company offering professional web development services and live Gen AI training. Everything you need to build, grow, and lead in the digital era.{% endblock %}
 
+{% block styles %}
+<style>
+  /* ── Job search: floating card that straddles the hero / next-section boundary ── */
+  .job-strip { position: relative; z-index: 2; margin: -3rem 0 -3rem; padding: 0 0; }
+  .job-card-wrap {
+    max-width: 860px; margin: 0 auto;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-4) var(--space-5) var(--space-4);
+  }
+  .js-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-3); }
+  .js-live { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--text-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--primary-text); }
+  .js-live i { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; box-shadow: 0 0 0 0 rgba(22,163,74,.5); animation: jsPulse 2s infinite; }
+  @keyframes jsPulse { 70% { box-shadow: 0 0 0 8px rgba(22,163,74,0); } 100% { box-shadow: 0 0 0 0 rgba(22,163,74,0); } }
+  .js-sub { font-size: var(--text-xs); color: var(--text-subtle); }
+
+  /* one unified pill instead of three separate boxes */
+  .js-bar {
+    display: flex; align-items: center; gap: 0;
+    background: var(--bg); border: 1px solid var(--border-strong);
+    border-radius: var(--radius-full); padding: 5px;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
+  .js-bar:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+  .js-field { display: flex; align-items: center; gap: var(--space-2); flex: 1 1 0; min-width: 0; padding: 0 var(--space-4); color: var(--text-subtle); }
+  .js-field + .js-field { border-left: 1px solid var(--border); }
+  .js-field svg { flex-shrink: 0; }
+  .js-field input {
+    width: 100%; min-width: 0; height: 40px; border: 0; outline: 0; background: transparent;
+    color: var(--text); font: inherit; font-size: var(--text-sm);
+  }
+  .js-field input::placeholder { color: var(--text-subtle); }
+  .js-go { flex-shrink: 0; min-height: 40px; padding: 0 var(--space-5); border-radius: var(--radius-full); }
+
+  .js-chips { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+  .js-chips-label { font-size: var(--text-xs); color: var(--text-subtle); font-weight: 600; margin-right: var(--space-1); }
+  .js-chips a {
+    font-size: var(--text-xs); font-weight: 600; color: var(--text-muted);
+    padding: 4px 12px; border: 1px solid var(--border); border-radius: var(--radius-full);
+    background: var(--bg); transition: all var(--transition-fast);
+  }
+  .js-chips a:hover { color: var(--primary-text); border-color: var(--primary); background: var(--primary-light); }
+  .js-note { margin-left: auto; font-size: var(--text-xs); color: var(--text-subtle); }
+
+  /* the section below needs room for the overlapping half of the card */
+  .job-strip + .section-alt { padding-top: calc(var(--space-16) + var(--space-4)); }
+
+  @media (max-width: 720px) {
+    .job-strip { margin: -2rem 0 -2rem; }
+    .job-card-wrap { padding: var(--space-4); border-radius: var(--radius-lg); }
+    .js-bar { flex-direction: column; align-items: stretch; border-radius: var(--radius-lg); padding: var(--space-2); }
+    .js-field { padding: 0 var(--space-3); }
+    .js-field + .js-field { border-left: 0; border-top: 1px solid var(--border); }
+    .js-go { width: 100%; margin-top: var(--space-2); min-height: 44px; }
+    .js-note { margin-left: 0; width: 100%; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
   <!-- Loading Screen -->
   <div id="gs-loader" aria-hidden="true">
@@ -60,6 +121,46 @@
           <div class="hero-badge hero-badge-counter">
             <img src="https://hits.sh/growthsteps.in/home.svg?style=flat-square&label=Visitors&color=b45309&labelColor=fafaf9" alt="Live site visitor count" loading="lazy" width="88" height="20" />
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Job search: floating card between hero and next section -->
+  <section class="job-strip" aria-label="Job search">
+    <div class="container">
+      <div class="job-card-wrap reveal">
+        <div class="js-head">
+          <span class="js-live"><i aria-hidden="true"></i> Live job openings</span>
+          <span class="js-sub">Tamil Nadu &amp; across India · fresh listings from trusted job sources</span>
+        </div>
+
+        <form class="js-bar" action="{{ url_for('jobs.jobs_page') }}" method="get" role="search" autocomplete="off">
+          <label class="js-field">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="search" name="q" placeholder="Job title, skill or company" aria-label="Job title, skill or company">
+          </label>
+          <label class="js-field">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <input type="text" name="location" list="home-cities" placeholder="City or state" aria-label="Location">
+          </label>
+          <button class="btn btn-primary js-go" type="submit">Search Jobs</button>
+          <datalist id="home-cities">
+            <option value="Tamil Nadu"><option value="Chennai"><option value="Coimbatore"><option value="Madurai">
+            <option value="Tiruchirappalli"><option value="Salem"><option value="Tirunelveli"><option value="Erode">
+            <option value="Tiruppur"><option value="Vellore"><option value="Hosur">
+          </datalist>
+        </form>
+
+        <div class="js-chips">
+          <span class="js-chips-label">Popular:</span>
+          <a href="{{ url_for('jobs.jobs_page', q='Python Developer', location='Tamil Nadu') }}">Python Developer</a>
+          <a href="{{ url_for('jobs.jobs_page', q='Data Analyst', location='Tamil Nadu') }}">Data Analyst</a>
+          <a href="{{ url_for('jobs.jobs_page', q='Web Developer', location='Tamil Nadu') }}">Web Developer</a>
+          <a href="{{ url_for('jobs.jobs_page', q='Fresher', location='Tamil Nadu') }}">Fresher</a>
+          <a href="{{ url_for('jobs.jobs_page') }}?mode=remote&location=">Remote</a>
+          <a href="{{ url_for('jobs.jobs_page', location='Coimbatore') }}">Coimbatore</a>
+          {% if not session.get('role') %}<span class="js-note">Free login required to view results</span>{% endif %}
         </div>
       </div>
     </div>

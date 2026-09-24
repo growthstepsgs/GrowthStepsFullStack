@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Find Jobs | Growth Steps{% endblock %}
+{% block description %}Search jobs in one place. Filter by skills, location, experience and work mode.{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/jobs.css') }}" />{% endblock %}
+
+{% block content %}
+<section class="section jobs-page">
+  <div class="container">
+    <div class="jobs-head">
+    <form id="job-form" class="jobs-searchbar" autocomplete="off">
+      <input type="search" name="q" placeholder="Job title, skill or company" aria-label="Search jobs">
+      <input type="text" name="location" placeholder="Location (e.g. Chennai)" aria-label="Location">
+      <button class="btn btn-primary" type="submit">Search</button>
+    </form>
+      <h1 class="heading-section">Find your next <strong>job</strong></h1>
+      <a class="btn btn-secondary" href="{{ url_for('jobs.dashboard_page') }}">My saved &amp; applied jobs</a>
+    </div>
+
+
+
+    <p class="jobs-elsewhere" id="elsewhere" aria-label="Search other platforms"></p>
+
+    <div class="jobs-layout">
+      <aside class="jobs-filters" aria-label="Filters">
+        <h2>Filters</h2>
+        <fieldset><legend>Work mode</legend>
+          <label><input type="checkbox" name="mode" value="remote"> Remote</label>
+          <label><input type="checkbox" name="mode" value="hybrid"> Hybrid</label>
+          <label><input type="checkbox" name="mode" value="onsite"> On-site</label>
+        </fieldset>
+        <fieldset><legend>Experience</legend>
+          <select name="exp">
+            <option value="">Any</option><option value="0">Fresher (0 yrs)</option>
+            <option value="1">Up to 1 yr</option><option value="2">Up to 2 yrs</option>
+            <option value="3">Up to 3 yrs</option><option value="5">Up to 5 yrs</option>
+          </select>
+        </fieldset>
+        <fieldset><legend>Min salary (per year)</legend>
+          <select name="min_salary">
+            <option value="">Any</option><option value="300000">3 LPA+</option>
+            <option value="600000">6 LPA+</option><option value="1000000">10 LPA+</option>
+          </select>
+        </fieldset>
+        <fieldset><legend>Posted</legend>
+          <select name="days">
+            <option value="">Any time</option><option value="1">Last 24 hours</option>
+            <option value="7">Last 7 days</option><option value="30">Last 30 days</option>
+          </select>
+        </fieldset>
+        {% if sources %}
+        <fieldset><legend>Source</legend>
+          {% for s in sources %}
+          <label><input type="checkbox" name="source" value="{{ s.name }}"> {{ s.label }}</label>
+          {% endfor %}
+        </fieldset>
+        {% endif %}
+        <fieldset><legend>Sort by</legend>
+          <select name="sort">
+            <option value="relevance">Relevance</option><option value="newest">Newest</option>
+            <option value="salary">Highest salary</option>
+          </select>
+        </fieldset>
+      </aside>
+
+      <div class="jobs-results">
+        <div id="job-count" class="jobs-count" aria-live="polite"></div>
+        <div id="job-list"></div>
+        <button id="load-more" class="btn btn-secondary" hidden>Load more</button>
+        <p class="jobs-attrib">Job listings provided by <a href="https://www.adzuna.in" target="_blank" rel="noopener noreferrer">Adzuna</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/jobs.js') }}" defer></script>
+{% endblock %}
