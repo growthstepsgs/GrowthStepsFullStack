@@ -1,0 +1,85 @@
+/* Uses your existing theme variables (--bg-elevated, --border, --text-muted, --primary, --radius-*) */
+.jobs-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+
+/* ── SEARCH BAR (corrected) ─────────────────────────────── */
+.jobs-searchbar{display:flex;gap:.5rem;flex-wrap:wrap;margin:1.25rem 0 .75rem;width:100%}
+.jobs-searchbar input{
+  flex:1 1 240px;            /* slightly wider basis so placeholder isn't cut */
+  min-width:0;               /* lets flex shrink properly */
+  padding:.8rem 1rem;
+  border:1px solid var(--border-strong, var(--border));   /* ← visible border */
+  border-radius:var(--radius, 10px);
+  font:inherit;
+  color:inherit;
+  background:var(--bg-elevated, var(--bg));
+  -webkit-appearance:none;   /* ← removes iOS/Safari default search styling */
+  appearance:none;
+  transition:border-color var(--transition-fast, 150ms), box-shadow var(--transition-fast, 150ms);
+}
+.jobs-searchbar input::placeholder{color:var(--text-subtle);opacity:1}
+.jobs-searchbar input:focus{
+  outline:none;                                        /* ← replaced outline with ring */
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px var(--primary-light);           /* matches .contact-form pattern */
+}
+.jobs-searchbar .btn{white-space:nowrap}              /* keep "Search" on one line */
+
+.jobs-elsewhere{font-size:.85rem;color:var(--text-muted);margin:0 0 1.5rem}
+.jobs-elsewhere a{margin-left:.6rem;font-weight:600}
+
+.jobs-layout{display:grid;grid-template-columns:260px 1fr;gap:2rem;align-items:start}
+.jobs-filters{border:1px solid var(--border);border-radius:var(--radius-xl,14px);padding:1rem 1.1rem;position:sticky;top:88px;background:var(--bg-elevated,var(--bg))}
+.jobs-filters h2{font-size:1rem;margin:0 0 .5rem}
+.jobs-filters fieldset{border:0;padding:0;margin:0 0 1rem}
+.jobs-filters legend{font-weight:600;font-size:.85rem;margin-bottom:.35rem}
+.jobs-filters label{display:block;font-size:.9rem;padding:.15rem 0}
+/* ← checkboxes now use theme primary instead of browser blue */
+.jobs-filters input[type="checkbox"]{accent-color:var(--primary);width:15px;height:15px;vertical-align:-2px;margin-right:.15rem}
+.jobs-filters select{
+  width:100%;
+  padding:.5rem;
+  border-radius:8px;
+  border:1px solid var(--border-strong, var(--border));  /* ← visible border */
+  font:inherit;
+  color:inherit;
+  background:var(--bg-elevated, var(--bg));              /* ← was transparent: unreadable in dark mode */
+  transition:border-color var(--transition-fast, 150ms), box-shadow var(--transition-fast, 150ms);
+}
+.jobs-filters select:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px var(--primary-light);
+}
+
+.jobs-count{margin-bottom:1rem;font-size:.9rem;color:var(--text-muted)}
+.jobs-attrib{margin-top:1.5rem;font-size:.8rem;color:var(--text-muted)}
+
+.job-card{border:1px solid var(--border);border-radius:var(--radius-xl,14px);padding:1.1rem 1.25rem;margin-bottom:1rem;background:var(--bg-elevated,var(--bg))}
+.job-card h3{margin:0 0 .15rem;font-size:1.1rem}
+.job-company{font-weight:600}
+.job-meta{font-size:.9rem;color:var(--text-muted);margin:.25rem 0}
+.job-skills{display:flex;flex-wrap:wrap;gap:.35rem;margin:.6rem 0}
+.chip{font-size:.75rem;padding:.2rem .55rem;border-radius:999px;background:rgba(127,127,127,.15)}
+.chip.matched{background:rgba(22,163,74,.18);color:#15803d}
+.source-badge{font-size:.75rem;font-weight:600;padding:.2rem .6rem;border-radius:6px;border:1px solid var(--border)}
+.job-foot{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-top:.8rem}
+.job-foot .grow{flex:1}
+.job-btn{padding:.5rem .9rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:inherit;font:inherit;cursor:pointer;text-decoration:none;font-size:.9rem;transition:border-color var(--transition-fast,150ms), background var(--transition-fast,150ms)}
+.job-btn:hover{border-color:var(--border-strong)}
+.job-btn.primary{background:var(--primary);color:#fff;border-color:transparent}
+.job-btn.primary:hover{background:var(--primary-hover)}
+.job-btn.on{background:rgba(22,163,74,.18);border-color:#15803d}
+.job-btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.match-pill{font-weight:700;color:#15803d}
+.match-detail{font-size:.85rem;margin-top:.5rem}
+
+.dash-tabs{display:flex;gap:.5rem;margin:1.25rem 0;flex-wrap:wrap}
+.dash-tab{padding:.5rem 1rem;border-radius:999px;border:1px solid var(--border);background:transparent;color:inherit;font:inherit;cursor:pointer;transition:border-color var(--transition-fast,150ms)}
+.dash-tab.active{background:var(--primary);color:#fff;border-color:transparent}
+.dash-tab:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+
+@media(max-width:800px){
+  .jobs-layout{grid-template-columns:1fr}
+  .jobs-filters{position:static}
+  .jobs-searchbar input{flex:1 1 100%}   /* full-width inputs stacked on mobile */
+}
