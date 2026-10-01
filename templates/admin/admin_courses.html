@@ -19,12 +19,12 @@
     </div>
   </section>
 
-  <!-- Add Course Form -->
+  <!-- Add / Edit Course Form -->
   <section class="section" style="padding-bottom: var(--space-6);">
     <div class="container" style="max-width: 720px;">
       <div class="section-header reveal" style="margin-bottom: var(--space-6);">
-        <span class="eyebrow">New Course</span>
-        <h2 class="heading-section">Add a <strong>Course</strong></h2>
+        <span class="eyebrow">Course</span>
+        <h2 class="heading-section" id="form-heading">Add a <strong>Course</strong></h2>
       </div>
 
       {% with messages = get_flashed_messages(with_categories=true) %}
@@ -39,13 +39,22 @@
 
       <div class="card reveal" style="padding: 0; overflow: hidden;">
         <div style="padding: var(--space-6); border-bottom: 1px solid var(--border); background: var(--bg-muted);">
-          <h3 class="heading-card" style="margin: 0;">Course Details</h3>
+          <h3 class="heading-card" style="margin: 0;" id="form-card-title">Course Details</h3>
         </div>
         <div style="padding: var(--space-6);">
-          <form class="contact-form" method="POST" action="{{ url_for('admin.admin_courses') }}">
+
+          <form id="course-form" class="contact-form" method="POST" action="{{ url_for('admin.admin_courses') }}">
+            <input type="hidden" id="course_id" name="course_id" value="" />
+
             <div class="form-group">
               <label for="title">Course Title</label>
               <input id="title" name="title" type="text" placeholder="e.g. Advanced Python Workshop" required />
+            </div>
+            <div class="form-group">
+              <label for="is_certified" style="display: flex; align-items: center; gap: var(--space-2); cursor: pointer;">
+                <input type="checkbox" id="is_certified" name="is_certified" value="true" style="width: auto;" />
+                This course offers a certificate
+              </label>
             </div>
             <div class="form-group">
               <label for="description">Description</label>
@@ -94,7 +103,12 @@
                 <option value="live">Live · Enrolling Now</option>
               </select>
             </div>
-            <button class="btn btn-primary" type="submit" style="width: 100%;">Publish Course</button>
+
+            <button id="submit-btn" class="btn btn-primary" type="submit" style="width: 100%;">Publish Course</button>
+            <a href="{{ url_for('admin.admin_courses') }}" id="cancel-edit"
+               style="display: none; text-align: center; margin-top: var(--space-3); color: var(--text-muted); font-size: var(--text-sm); text-decoration: underline;">
+              Cancel editing
+            </a>
           </form>
         </div>
       </div>
@@ -113,6 +127,7 @@
       {% if courses %}
         <div class="employee-grid">
           {% for c in courses %}
+            {% set desc = c.description or '' %}
             <article class="employee-card reveal" style="flex-direction: column; align-items: stretch;">
               <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-3);">
                 <h4 style="font-size: var(--text-base); font-weight: 700; color: var(--text);">{{ c.title }}</h4>
@@ -121,19 +136,28 @@
                 </span>
               </div>
               <p style="font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-3);">
-                {{ c.description[:80] }}{% if c.description|length > 80 %}...{% endif %}
+                {{ desc[:80] }}{% if desc|length > 80 %}...{% endif %}
               </p>
               <div style="display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-4);">
-                {% for tag in c.tags %}
+                {% if c.is_certified %}
+                  <span class="tag" style="background: var(--success-bg); color: var(--success);">🏅 Certified</span>
+                {% endif %}
+                {% for tag in (c.tags or []) %}
                   <span class="tag">{{ tag }}</span>
                 {% endfor %}
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="font-weight: 700; color: var(--primary-text);">₹{{ c.price }}</span>
-                <form method="POST" action="{{ url_for('admin.admin_delete_course', course_id=c.id) }}"
-                      onsubmit="return confirm('Delete this course?');">
-                  <button class="btn btn-ghost" type="submit" style="color: var(--red);">Delete</button>
-                </form>
+
+                <div style="display: flex; gap: var(--space-2); align-items: center;">
+                  <button type="button" class="btn btn-ghost" style="color: var(--primary-text);"
+                          data-course='{{ c | tojson }}'
+                          onclick="startEditCourse(this.dataset.course)">Edit</button>
+                  <form method="POST" action="{{ url_for('admin.admin_delete_course', course_id=c.id) }}"
+                        onsubmit="return confirm('Delete this course?');" style="margin: 0;">
+                    <button class="btn btn-ghost" type="submit" style="color: var(--red);">Delete</button>
+                  </form>
+                </div>
               </div>
             </article>
           {% endfor %}
@@ -145,5 +169,40 @@
       {% endif %}
     </div>
   </section>
+
+  <script>
+    const courseForm    = document.getElementById('course-form');
+    const formHeading   = document.getElementById('form-heading');
+    const formCardTitle = document.getElementById('form-card-title');
+    const submitBtn     = document.getElementById('submit-btn');
+    const cancelEdit    = document.getElementById('cancel-edit');
+    const EDIT_ACTION   = "{{ url_for('admin.admin_edit_course', course_id=0) }}"; // /admin/courses/0/edit
+
+    function startEditCourse(json) {
+      const c = JSON.parse(json);
+
+      document.getElementById('course_id').value      = c.id || '';
+      document.getElementById('title').value          = c.title || '';
+      document.getElementById('description').value    = c.description || '';
+      document.getElementById('price').value          = c.price ?? '';
+      document.getElementById('original_price').value = c.original_price ?? '';
+      document.getElementById('duration').value       = c.duration || '';
+      document.getElementById('schedule').value       = c.schedule || '';
+      document.getElementById('mode').value           = c.mode || '';
+      document.getElementById('tags').value           = Array.isArray(c.tags) ? c.tags.join(', ') : (c.tags || '');
+      document.getElementById('cta_link').value       = c.cta_link || '';
+      document.getElementById('cta_label').value      = c.cta_label || 'View Course Details';
+      document.getElementById('status').value         = c.status || 'coming_soon';
+      document.getElementById('is_certified').checked = !!c.is_certified;   // FIX: load checkbox state
+
+      courseForm.action = EDIT_ACTION.replace('/0/', '/' + c.id + '/');
+      formHeading.innerHTML     = 'Edit <strong>Course</strong>';
+      formCardTitle.textContent = 'Editing: ' + (c.title || '');
+      submitBtn.textContent     = 'Update Course';
+      cancelEdit.style.display  = 'block';
+
+      courseForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  </script>
 
 {% endblock %}

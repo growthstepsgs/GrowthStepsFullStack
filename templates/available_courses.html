@@ -26,72 +26,89 @@
   <!-- Courses Grid -->
   <section class="section section-alt" id="courses" aria-labelledby="catalog-heading">
     <div class="courses-grid">
-  {% for course in courses %}
-    <article class="course-card reveal">
-      <div class="course-card-eyebrow">
-        {% if course.status == 'live' %}
-          <span class="badge-live">
-            <span class="pulse" aria-hidden="true"></span>
-            Live · Enrolling Now
-          </span>
-          <span class="course-price">
-            {% if course.original_price %}<del>₹{{ course.original_price }}</del>{% endif %}
-            ₹{{ course.price }}
-          </span>
-        {% else %}
-          <span class="badge-soon">Coming Soon</span>
-          <span class="course-price" style="color: var(--text-subtle); font-weight: 500;">TBA</span>
-        {% endif %}
-      </div>
 
-      <h3 class="heading-card" style="font-size: var(--text-xl); margin-bottom: var(--space-3);">
-        {{ course.title }}
-      </h3>
-      <p class="body" style="font-size: var(--text-sm); margin-bottom: var(--space-5);">
-        {{ course.description }}
-      </p>
+      {% for course in courses %}
+        <article class="course-card reveal">
 
-      <div class="course-meta">
-        {% if course.duration %}
-          <div class="meta-item">
-            <span class="meta-icon" aria-hidden="true">📅</span>
-            <span><strong>{{ course.duration }}</strong></span>
+          <div class="course-card-eyebrow">
+            {% if course.status == 'live' %}
+              <span class="badge-live">
+                <span class="pulse" aria-hidden="true"></span>
+                Live · Enrolling Now
+              </span>
+              <span class="course-price">
+                {% if course.original_price %}<del>₹{{ course.original_price }}</del>{% endif %}
+                ₹{{ course.price }}
+              </span>
+            {% else %}
+              <span class="badge-soon">Coming Soon</span>
+              <span class="course-price" style="color: var(--text-subtle); font-weight: 500;">TBA</span>
+            {% endif %}
           </div>
-        {% endif %}
-        {% if course.schedule %}
-          <div class="meta-item">
-            <span class="meta-icon" aria-hidden="true">⏰</span>
-            <span><strong>{{ course.schedule }}</strong></span>
-          </div>
-        {% endif %}
-        {% if course.mode %}
-          <div class="meta-item">
-            <span class="meta-icon" aria-hidden="true">💻</span>
-            <span><strong>{{ course.mode }}</strong></span>
-          </div>
-        {% endif %}
-      </div>
 
-      <div class="skill-tags" style="margin-bottom: var(--space-6);">
-        {% for tag in course.tags %}
-          <span class="tag">{{ tag }}</span>
-        {% endfor %}
-      </div>
+          {# Certified sign: only shown for certified courses #}
+          {% if course.is_certified %}
+            <div style="margin-bottom: var(--space-3);">
+              <span class="tag" style="background: var(--success-bg); color: var(--success); font-weight: 600;">
+                🏅 Certified Course
+              </span>
+            </div>
+          {% endif %}
 
-      <a class="btn btn-{% if course.status == 'live' %}primary{% else %}secondary{% endif %}"
-         href="{{ course.cta_link or '#' }}"
-         style="width: 100%; justify-content: center;"
-         {% if course.cta_link and course.cta_link.startswith('http') %}target="_blank" rel="noopener noreferrer"{% endif %}>
-        {{ course.cta_label or 'View Details' }} →
-      </a>
-    </article>
-  {% else %}
-    <div class="empty-state reveal" style="grid-column: 1 / -1;">
-      <p>No courses available right now. Check back soon.</p>
-    </div>
-  {% endfor %}
-</div>
-      </div>
+          <h3 class="heading-card" style="font-size: var(--text-xl); margin-bottom: var(--space-3);">
+            {{ course.title }}
+          </h3>
+          <p class="body" style="font-size: var(--text-sm); margin-bottom: var(--space-5);">
+            {{ course.description }}
+          </p>
+
+          <div class="course-meta">
+            {% if course.duration %}
+              <div class="meta-item">
+                <span class="meta-icon" aria-hidden="true">📅</span>
+                <span><strong>{{ course.duration }}</strong></span>
+              </div>
+            {% endif %}
+            {% if course.is_certified %}
+              <div class="meta-item">
+                <span class="meta-icon" aria-hidden="true">🏅</span>
+                <span><strong>Certificate Included</strong></span>
+              </div>
+            {% endif %}
+            {% if course.schedule %}
+              <div class="meta-item">
+                <span class="meta-icon" aria-hidden="true">⏰</span>
+                <span><strong>{{ course.schedule }}</strong></span>
+              </div>
+            {% endif %}
+            {% if course.mode %}
+              <div class="meta-item">
+                <span class="meta-icon" aria-hidden="true">💻</span>
+                <span><strong>{{ course.mode }}</strong></span>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="skill-tags" style="margin-bottom: var(--space-6);">
+            {% for tag in (course.tags or []) %}
+              <span class="tag">{{ tag }}</span>
+            {% endfor %}
+          </div>
+
+          <a class="btn btn-{% if course.status == 'live' %}primary{% else %}secondary{% endif %}"
+             href="{{ course.cta_link or '#' }}"
+             style="width: 100%; justify-content: center;"
+             {% if course.cta_link and course.cta_link.startswith('http') %}target="_blank" rel="noopener noreferrer"{% endif %}>
+            {{ course.cta_label or 'View Details' }} →
+          </a>
+
+        </article>
+      {% else %}
+        <div class="empty-state reveal" style="grid-column: 1 / -1;">
+          <p>No courses available right now. Check back soon.</p>
+        </div>
+      {% endfor %}
+
     </div>
   </section>
 
