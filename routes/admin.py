@@ -375,62 +375,77 @@ def admin_gallery():
             photos = []
 
     return render_template("admin/admin_gallery.html", photos=photos)
-
+COURSE_LIST_COLUMNS = (
+    "id,title,description,price,original_price,duration,schedule,mode,"
+    "status,tags,cta_link,cta_label,is_certified,is_active,created_at"
+)
+ 
+ 
+def _course_form_payload():
+    """Shared parsing for create + edit so they can never drift apart again."""
+    price = request.form.get("price", "0").strip()
+    original_price = request.form.get("original_price", "").strip()
+    tags_raw = request.form.get("tags", "").strip()
+ 
+    return {
+        "title": request.form.get("title", "").strip(),
+        "description": request.form.get("description", "").strip(),
+        "price": int(price) if price else 0,
+        "original_price": int(original_price) if original_price else None,
+        "duration": request.form.get("duration", "").strip(),
+        "schedule": request.form.get("schedule", "").strip(),
+        "mode": request.form.get("mode", "").strip(),
+        "status": request.form.get("status", "coming_soon"),
+        "tags": [t.strip() for t in tags_raw.split(",") if t.strip()] if tags_raw else [],
+        "cta_link": request.form.get("cta_link", "").strip(),
+        "cta_label": request.form.get("cta_label", "View Course Details").strip(),
+        # FIX: this was missing from the edit route
+        "is_certified": request.form.get("is_certified") == "true",
+    }
 
 @bp.route("/admin/courses", methods=["GET", "POST"])
 @admin_required
 def admin_courses():
     client = supabase_admin or supabase
-
+ 
     if request.method == "POST":
-        title = request.form.get("title", "").strip()
-        description = request.form.get("description", "").strip()
-        price = request.form.get("price", "0").strip()
-        original_price = request.form.get("original_price", "").strip()
-        duration = request.form.get("duration", "").strip()
-        schedule = request.form.get("schedule", "").strip()
-        mode = request.form.get("mode", "").strip()
-        status = request.form.get("status", "coming_soon")
-        tags_raw = request.form.get("tags", "").strip()
-        cta_link = request.form.get("cta_link", "").strip()
-        cta_label = request.form.get("cta_label", "View Course Details").strip()
-
-        if not title:
+        if not client:
+            flash("Supabase isn't configured.", "error")
+            return redirect(url_for("admin.admin_courses"))
+ 
+        try:
+            payload = _course_form_payload()
+        except ValueError:
+            flash("Price must be a whole number.", "error")
+            return redirect(url_for("admin.admin_courses"))
+ 
+        if not payload["title"]:
             flash("Course title is required.", "error")
             return redirect(url_for("admin.admin_courses"))
-
+ 
         try:
-            payload = {
-                "title": title,
-                "description": description,
-                "price": int(price) if price else 0,
-                "duration": duration,
-                "schedule": schedule,
-                "mode": mode,
-                "status": status,
-                "tags": [t.strip() for t in tags_raw.split(",") if t.strip()] if tags_raw else [],
-                "cta_link": cta_link,
-                "cta_label": cta_label,
-            }
-            if original_price:
-                payload["original_price"] = int(original_price)
-
             client.table("courses").insert(payload).execute()
             cache.delete("available_courses")
             flash("Course published successfully.", "success")
         except Exception as exc:
             flash(f"Failed to publish course: {exc}", "error")
         return redirect(url_for("admin.admin_courses"))
-
+ 
     courses = []
     if client:
         try:
-            res = client.table("courses").select("*").order("created_at", desc=True).execute()
+            res = (
+                client.table("courses")
+                .select(COURSE_LIST_COLUMNS)
+                .order("created_at", desc=True)
+                .execute()
+            )
             courses = res.data or []
-        except Exception:
+        except Exception as exc:
+            print(f"[ADMIN COURSES FETCH] {exc}")
             courses = []
     return render_template("admin/admin_courses.html", courses=courses)
-
+ 
 
 @bp.route("/admin/courses/<course_id>/delete", methods=["POST"])
 @admin_required
@@ -439,14 +454,58 @@ def admin_delete_course(course_id):
     if not client:
         flash("Supabase isn't configured.", "error")
         return redirect(url_for("admin.admin_courses"))
+ 
     try:
+        # Certificate rows cascade-delete with the course, but the PDF files
+        # in storage don't. Remove the files first so they aren't orphaned.
+        try:
+            certs = (
+                client.table("certificates")
+                .select("storage_path")
+                .eq("course_id", course_id)
+                .execute()
+            )
+            paths = [c["storage_path"] for c in (certs.data or []) if c.get("storage_path")]
+            if paths:
+                client.storage.from_(CERTIFICATES_BUCKET).remove(paths)
+        except Exception as exc:
+            print(f"[ADMIN DELETE COURSE] certificate cleanup failed: {exc}")
+ 
         client.table("courses").delete().eq("id", course_id).execute()
         cache.delete("available_courses")
         flash("Course deleted.", "success")
     except Exception as exc:
         flash(f"Could not delete course: {exc}", "error")
+ 
     return redirect(url_for("admin.admin_courses"))
 
+
+@bp.route("/admin/courses/<course_id>/edit", methods=["POST"])
+@admin_required
+def admin_edit_course(course_id):
+    client = supabase_admin or supabase
+    if not client:
+        flash("Supabase isn't configured.", "error")
+        return redirect(url_for("admin.admin_courses"))
+ 
+    try:
+        payload = _course_form_payload()
+    except ValueError:
+        flash("Price must be a whole number.", "error")
+        return redirect(url_for("admin.admin_courses"))
+ 
+    if not payload["title"]:
+        flash("Course title is required.", "error")
+        return redirect(url_for("admin.admin_courses"))
+ 
+    try:
+        client.table("courses").update(payload).eq("id", course_id).execute()
+        cache.delete("available_courses")
+        flash("Course updated successfully.", "success")
+    except Exception as exc:
+        flash(f"Failed to update course: {exc}", "error")
+ 
+    return redirect(url_for("admin.admin_courses"))
 
 @bp.route("/dashboard/admin/gallery/<photo_id>/delete", methods=["POST"])
 @admin_required

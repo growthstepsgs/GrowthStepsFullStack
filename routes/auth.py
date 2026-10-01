@@ -7,7 +7,7 @@ from flask import (
     Blueprint, render_template, request, redirect,
     url_for, session, flash
 )
-from extensions import supabase, supabase_admin
+from extensions import supabase, supabase_admin, get_auth_client
 from config import SUPABASE_URL, SUPABASE_KEY, ADMIN_EMAIL, ADMIN_PASSWORD
 from utils import login_required
 
@@ -55,12 +55,16 @@ def login():
             session["role"] = "admin"
             return redirect(url_for("admin.admin_dashboard"))
 
-        if not supabase:
+        # A fresh client per login attempt — never reuse a shared singleton for
+        # .auth.sign_in_with_password(), or one user's session could leak into
+        # another user's concurrent request.
+        auth_client = get_auth_client()
+        if not auth_client:
             flash("Supabase isn't configured.", "error")
             return redirect(url_for("auth.login"))
 
         try:
-            result = supabase.auth.sign_in_with_password(
+            result = auth_client.auth.sign_in_with_password(
                 {"email": email, "password": password}
             )
         except Exception as exc:
@@ -73,26 +77,34 @@ def login():
 
         role = "student"
         try:
+            # IMPORTANT: read the role via supabase_admin (service role, bypasses
+            # RLS), not the plain `supabase` client. Using the RLS-gated client
+            # here was the actual bug that caused admin roles to reset: if that
+            # select ever came back empty (RLS/session timing), the old code
+            # assumed the profile didn't exist and upserted role="student",
+            # silently overwriting an admin role that had just been set.
+            role_client = supabase_admin or supabase
             prof = (
-                supabase.table("profiles")
+                role_client.table("profiles")
                 .select("role")
                 .eq("id", result.user.id)
                 .execute()
             )
             if prof.data:
                 role = prof.data[0].get("role", "student")
-            else:
-                if supabase_admin:
-                    try:
-                        supabase_admin.table("profiles").upsert({
-                            "id": result.user.id,
-                            "email": email,
-                            "role": "student",
-                        }).execute()
-                    except Exception as exc:
-                        print(f"[PROFILE CREATE FAIL] login user={result.user.id} error={exc}")
-        except Exception:
-            pass
+            elif supabase_admin:
+                # Profile genuinely doesn't exist (confirmed via the admin
+                # client, not the RLS-gated one) -> safe to create as new.
+                try:
+                    supabase_admin.table("profiles").upsert({
+                        "id": result.user.id,
+                        "email": email,
+                        "role": "student",
+                    }).execute()
+                except Exception as exc:
+                    print(f"[PROFILE CREATE FAIL] login user={result.user.id} error={exc}")
+        except Exception as exc:
+            print(f"[ROLE LOOKUP FAIL] login user={result.user.id} error={exc}")
 
         session["user_email"] = email
         session["user_id"] = result.user.id
@@ -123,21 +135,43 @@ def signup():
             flash("This email is reserved.", "error")
             return redirect(url_for("auth.signup"))
 
-        if not supabase:
+        # Fresh client for the signup attempt itself (sign_up attaches a
+        # session to whatever client makes the call) — never the shared one.
+        auth_client = get_auth_client()
+        if not auth_client:
             flash("Supabase isn't configured.", "error")
             return redirect(url_for("auth.signup"))
 
         try:
-            result = supabase.auth.sign_up({
+            result = auth_client.auth.sign_up({
                 "email": email,
                 "password": password,
-                "options": {"data": {"full_name": full_name}},
+                "options": {
+                    "data": {
+                        "full_name": full_name
+                    }
+                },
             })
+
         except Exception as exc:
+            msg = str(exc)
+
+            if (
+                "already registered" in msg.lower()
+                or "already been registered" in msg.lower()
+            ):
+                flash(
+                    "An account with this email already exists — please log in.",
+                    "error"
+                )
+                return redirect(url_for("auth.login"))
+
             flash(f"Could not sign up: {exc}", "error")
             return redirect(url_for("auth.signup"))
 
         user = result.user
+
+        # Create/update profile
         if user and supabase_admin:
             try:
                 supabase_admin.table("profiles").upsert({
@@ -146,10 +180,92 @@ def signup():
                     "email": email,
                     "role": "student",
                 }).execute()
-            except Exception as exc:
-                print(f"[PROFILE CREATE FAIL] signup user={user.id} error={exc}")
 
-        flash("Account created! Check your email to confirm, then log in.", "success")
+            except Exception as exc:
+                print(
+                    f"[PROFILE CREATE FAIL] "
+                    f"signup user={user.id} error={exc}"
+                )
+
+        # ─────────────────────────────────────────────
+        # CASE 1: Supabase returned a session directly
+        # ─────────────────────────────────────────────
+        if user and result.session:
+            session["user_email"] = email
+            session["user_id"] = user.id
+            session["role"] = "student"
+
+            flash("Welcome to Growth Steps!", "success")
+            return redirect(url_for("student.student_dashboard"))
+
+        # ─────────────────────────────────────────────
+        # CASE 2: User created but no session
+        # Auto-confirm email and login
+        # ─────────────────────────────────────────────
+        if user and not result.session:
+
+            # Confirm email using Supabase Admin API
+            if supabase_admin:
+                try:
+                    supabase_admin.auth.admin.update_user_by_id(
+                        user.id,
+                        {
+                            "email_confirm": True
+                        }
+                    )
+
+                except Exception as exc:
+                    print(
+                        f"[AUTO-CONFIRM FAIL] "
+                        f"user={user.id} error={exc}"
+                    )
+
+            # Try to create a session immediately — fresh client again, same
+            # reasoning as above (this is a second, separate sign-in attempt).
+            try:
+                login_client = get_auth_client() or auth_client
+                login_res = login_client.auth.sign_in_with_password({
+                    "email": email,
+                    "password": password
+                })
+
+                if login_res.user and login_res.session:
+                    session["user_email"] = email
+                    session["user_id"] = user.id
+                    session["role"] = "student"
+
+                    flash("Welcome to Growth Steps!", "success")
+                    return redirect(
+                        url_for("student.student_dashboard")
+                    )
+
+                flash(
+                    "Account created but automatic login failed. "
+                    "Please log in.",
+                    "error"
+                )
+                return redirect(url_for("auth.login"))
+
+            except Exception as exc:
+                print(
+                    f"[AUTO-LOGIN FAIL] "
+                    f"user={user.id} error={exc}"
+                )
+
+                flash(
+                    "Account created but automatic login failed. "
+                    "Please log in.",
+                    "error"
+                )
+                return redirect(url_for("auth.login"))
+
+        # ─────────────────────────────────────────────
+        # Unexpected case
+        # ─────────────────────────────────────────────
+        flash(
+            "Account created. Please log in.",
+            "success"
+        )
         return redirect(url_for("auth.login"))
 
     return render_template("signup.html")
@@ -234,8 +350,12 @@ def auth_callback():
     role = "student"
     profile_exists = False
     try:
+        # Same fix as login(): read via supabase_admin (bypasses RLS) so an
+        # empty result is never mistaken for "no profile yet" and used to
+        # reset an existing role.
+        role_client = supabase_admin or supabase
         prof = (
-            supabase.table("profiles")
+            role_client.table("profiles")
             .select("role")
             .eq("id", user_id)
             .execute()
@@ -243,8 +363,8 @@ def auth_callback():
         if prof.data:
             role = prof.data[0].get("role", "student")
             profile_exists = True
-    except Exception:
-        pass
+    except Exception as exc:
+        print(f"[ROLE LOOKUP FAIL] google user={user_id} error={exc}")
 
     if not profile_exists:
         if supabase_admin:
